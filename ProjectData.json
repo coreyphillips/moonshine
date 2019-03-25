@@ -1,0 +1,35 @@
+{
+  "Constants": {
+    "actions": {
+      "RESET": "RESET",
+      "UPDATE_USER": "UPDATE_USER",
+      "UPDATE_WALLET": "UPDATE_WALLET",
+      "ADD_ADDRESSES": "ADD_ADDRESSES",
+      "ADD_UTXOS": "ADD_UTXOS",
+      "RESET_UTXOS": "RESET_UTXOS",
+      "UPDATE_CONFIRMED_BALANCE": "UPDATE_CONFIRMED_BALANCE",
+      "UPDATE_BLOCK_HEIGHT": "UPDATE_BLOCK_HEIGHT",
+      "UPDATE_NEXT_AVAILABLE_ADDRESS": "UPDATE_NEXT_AVAILABLE_ADDRESS",
+      "UPDATE_TRANSACTION": "UPDATE_TRANSACTION",
+      "RESET_TRANSACTION": "RESET_TRANSACTION",
+      "BLACKLIST_TRANSACTION": "BLACKLIST_TRANSACTION",
+      "SEND_TRANSACTION_SUCCESS": "SEND_TRANSACTION_SUCCESS",
+      "SEND_TRANSACTION": "SEND_TRANSACTION",
+      "UPDATE_SETTINGS": "UPDATE_SETTINGS",
+      "LOGOUT": "LOGOUT",
+      "DELETE_WALLET": "DELETE_WALLET",
+      "WIPE_DEVICE": "WIPE_DEVICE",
+      "ADD_TRANSACTION": "ADD_TRANSACTION"
+    },
+    "colors": {
+      "red": "#F15B2A",
+      "black": "#1B1A1B",
+      "gray": "#f0f0f0",
+      "white": "#FFF",
+      "purple": "#631e9a",
+      "darkPurple": "#57158f",
+      "mediumPurple": "#5d2390",
+      "lightPurple": "#a25ad7"
+    }
+  }
+}

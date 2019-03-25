@@ -51,6 +51,7 @@ Bitbip's Alpha is available for download here:
     * UI Improvements/Redesign:
         * Settings View
         * SelectCoin View
+        * TransactionDetail View
 
 ## Contributing
 
@@ -69,9 +70,7 @@ TODOS:
 
 ## Support
 
-If you have any questions please feel free to create an issue on [Github](https://github.com/coreyphillips/bitbip/issues), reach out to me on [Twitter](https://twitter.com/coreylphillips) or send an email to support@ferrymanfin.com.
-
-Please forward all feature requests to [Github](https://github.com/coreyphillips/bitbip/issues). 
+If you have any questions, feature requests, etc., please feel free to create an issue on [Github](https://github.com/coreyphillips/bitbip/issues) or reach out to me on [Twitter](https://twitter.com/coreylphillips).
 
 ## Meta
 

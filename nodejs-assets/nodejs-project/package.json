@@ -1,0 +1,12 @@
+{
+  "name": "ReactNativeElectrumClientNodeJS-0",
+  "version": "0.0.1",
+  "description": "ReactNativeElectrumClientNodeJS-0",
+  "main": "main.js",
+  "author": "Corey Phillips",
+  "license": "",
+  "dependencies": {
+    "electrum-client": "https://github.com/coreyphillips/node-electrum-client",
+    "electrum-host-parse": "https://github.com/coreyphillips/node-electrum-host-parse"
+  }
+}
