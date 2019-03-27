@@ -8,4 +8,4 @@
 
 "electrum-host-parse@git+https://github.com/coreyphillips/node-electrum-host-parse.git":
   version "0.1.1"
-  resolved "git+https://github.com/coreyphillips/node-electrum-host-parse.git#cfbcfaee3ffb4c69e43321ea3037638733a7aa35"
+  resolved "git+https://github.com/coreyphillips/node-electrum-host-parse.git#b75cb03c92cc10419fd3d820744bc066e2c7e6b6"
