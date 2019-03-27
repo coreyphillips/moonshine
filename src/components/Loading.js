@@ -19,7 +19,8 @@ const {
 } = require("../../ProjectData.json");
 
 const {
-	availableCoins
+	availableCoins,
+	getCoinImage
 } = require("../utils/networks");
 
 const getAnimation = (name = "book") => {
@@ -30,14 +31,6 @@ const getAnimation = (name = "book") => {
 				break;
 			case "loader":
 				return require(`../assets/lottie/snap_loader_white.json`);
-				break;
-			case "litecoin":
-			case "litecoinTestnet":
-				return require(`../assets/litecoin.png`);
-				break;
-			case "bitcoin":
-			case "bitcoinTestnet":
-				return require(`../assets/bitcoin.png`);
 				break;
 			case "bitcoinMoon":
 				return require(`../assets/lottie/bitcoin_to_the_moon.json`);
@@ -52,7 +45,7 @@ const getAnimation = (name = "book") => {
 				return require(`../assets/lottie/strategy_shape`);
 				break;
 			default:
-				return require(`../assets/lottie/snap_loader_white.json`);
+				return getCoinImage(name); //Assume the requested image is a coin
 				break;
 		}
 	} catch (e) {

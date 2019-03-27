@@ -19,26 +19,14 @@ const {
 const { height, width } = Dimensions.get("window");
 const {
 	formatNumber,
-	getCoinData
+	capitalize
 } = require("../utils/helpers");
 
-const getImage = (coin = "bitcoin") => {
-	try {
-		switch (coin) {
-			case "bitcoin":
-			case "bitcoinTestnet":
-				return require("../assets/bitcoin.png");
-			case "litecoin":
-			case "litecoinTestnet":
-				return require("../assets/litecoin.png");
-			default:
-				return require("../assets/bitcoin.png");
-		}
-	} catch (e) {
-		console.log(e);
-		return require("../assets/bitcoin.png");
-	}
-};
+const {
+	availableCoins,
+	getCoinImage,
+	getCoinData
+} = require("../utils/networks");
 
 formatBalance = ({ coin = "", cryptoUnit = "satoshi", balance = 0 } = {}) => {
 	try {
@@ -68,7 +56,7 @@ class CoinButton extends PureComponent {
 
 					<Image
 						style={styles.buttonImage}
-						source={getImage(coin)}
+						source={getCoinImage(coin)}
 					/>
 
 					<Text style={styles.text}>{label}</Text>
@@ -125,7 +113,7 @@ class WalletSliderEntry extends PureComponent {
 					{this.Header()}
 					<View style={styles.scrollViewContent}>
 						{this.props.coins.map((coin, i) => (
-							<CoinButton key={`${coin}${i}`} coin={coin.coin} label={coin.label} onCoinPress={this.props.onCoinPress} wallet={this.props.data} balance={this.props.wallet[this.props.data].confirmedBalance[coin.coin]} cryptoUnit={this.props.settings.cryptoUnit} />
+							<CoinButton key={`${coin}${i}`} coin={coin} label={capitalize(coin)} onCoinPress={this.props.onCoinPress} wallet={this.props.data} balance={this.props.wallet[this.props.data].confirmedBalance[coin.coin]} cryptoUnit={this.props.settings.cryptoUnit} />
 						))}
 						{this.props.wallet.wallets.length > 1 &&
 						<TouchableOpacity onPress={() => this.deleteWallet({wallet: this.props.data })} style={[styles.button, { backgroundColor: colors.red, borderColor: colors.red, borderRadius: 10 }]}>
@@ -149,12 +137,7 @@ class WalletSliderEntry extends PureComponent {
 // Default values for props
 WalletSliderEntry.defaultProps = {
 	onCoinPress: () => null,
-	coins: [
-		{ coin: "bitcoin", label: "Bitcoin" },
-		{ coin: "bitcoinTestnet", label: "Bitcoin Testnet" },
-		{ coin: "litecoin", label: "Litecoin" },
-		{ coin: "litecoinTestnet", label: "Litecoin Testnet" }
-	],
+	coins: availableCoins,
 	wallet: "wallet0"
 };
 

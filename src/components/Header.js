@@ -16,9 +16,12 @@ const {
 } = require("../../ProjectData.json");
 const {
 	formatNumber,
-	getCoinData,
 	capitalize
 } = require("../utils/helpers");
+
+const {
+	getCoinData
+} = require("../utils/networks");
 
 const getCryptoLabel = ({ selectedCrypto = "bitcoin" } = {}) => {
 	try {

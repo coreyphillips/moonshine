@@ -6,7 +6,7 @@
   "author": "Corey Phillips",
   "license": "",
   "dependencies": {
-    "electrum-client": "https://github.com/coreyphillips/node-electrum-client",
-    "electrum-host-parse": "https://github.com/coreyphillips/node-electrum-host-parse"
+    "electrum-client": "git+https://github.com/coreyphillips/node-electrum-client.git",
+    "electrum-host-parse": "git+https://github.com/coreyphillips/node-electrum-host-parse.git"
   }
 }

@@ -20,9 +20,13 @@ const {
 const {
 	capitalize,
 	openUrl,
-	formatNumber,
-	getCoinData
+	formatNumber
 } = require("../utils/helpers");
+
+const {
+	getCoinData
+} = require("../utils/networks");
+
 const moment = require("moment");
 
 class TransactionDetail extends PureComponent <Props> {

@@ -44,9 +44,13 @@ const {
 	pauseExecution,
 	nthIndex,
 	removeAllButFirstInstanceOfPeriod,
-	formatNumber,
-	getCoinData
+	formatNumber
 } = require("../utils/helpers");
+
+const {
+	getCoinData
+} = require("../utils/networks");
+
 const moment = require("moment");
 const { width, height } = Dimensions.get("window");
 

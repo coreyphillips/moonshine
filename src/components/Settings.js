@@ -32,11 +32,10 @@ const {
 
 const {
 	resetKeychainValue,
-	getKeychainValue,
-	getCoinData
+	getKeychainValue
 } = require("../utils/helpers");
 const {
-	arrayTypeItem
+	getCoinData
 } = require("../utils/networks");
 const moment = require("moment");
 

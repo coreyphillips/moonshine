@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"electrum-client@https://github.com/coreyphillips/node-electrum-client":
+"electrum-client@git+https://github.com/coreyphillips/node-electrum-client.git":
   version "0.0.6"
-  resolved "https://github.com/coreyphillips/node-electrum-client#8ff3e759eba47ba5f799d61762d91e28a6674ff7"
+  resolved "git+https://github.com/coreyphillips/node-electrum-client.git#28b49428cfeb04817ceeb84416927a5a3dfa79e6"
 
-"electrum-host-parse@https://github.com/coreyphillips/node-electrum-host-parse":
+"electrum-host-parse@git+https://github.com/coreyphillips/node-electrum-host-parse.git":
   version "0.1.1"
-  resolved "https://github.com/coreyphillips/node-electrum-host-parse#116bac4cb7b4dc520f06420189c1d092350ad189"
+  resolved "git+https://github.com/coreyphillips/node-electrum-host-parse.git#cfbcfaee3ffb4c69e43321ea3037638733a7aa35"

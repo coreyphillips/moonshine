@@ -81,10 +81,58 @@ const defaultWalletShape = {
 	walletBackupTimestamp: "",
 };
 
+const getCoinImage = (coin = "bitcoin") => {
+	try {
+		coin = coin.toLowerCase();
+		coin = coin.replace("testnet", "");
+
+		switch (coin) {
+			case "bitcoin":
+				return require(`../assets/bitcoin.png`);
+			case "litecoin":
+				return require(`../assets/litecoin.png`);
+			default:
+				return require(`../assets/bitcoin.png`);
+		}
+	} catch (e) {
+		return require(`../assets/bitcoin.png`);
+	}
+};
+
+const getCoinData = ({ selectedCrypto = "bitcoin", cryptoUnit = "satoshi" }) => {
+	try {
+		let acronym = "BTC";
+		let satoshi = "satoshi";
+		switch (selectedCrypto) {
+			case "bitcoin":
+				acronym = cryptoUnit === "satoshi" ? "sats" : "BTC";
+				return { acronym, label: "Bitcoin", crypto: "BTC", satoshi };
+			case "bitcoinTestnet":
+				acronym = cryptoUnit === "satoshi" ? "sats" : "BTC";
+				return { acronym, label: "Bitcoin Testnet", crypto: "BTC", satoshi };
+			case "litecoin":
+				satoshi = "litoshi";
+				acronym = cryptoUnit === "satoshi" ? "lits" : "LTC";
+				return { acronym, label: "Litecoin", crypto: "LTC", satoshi };
+			case "litecoinTestnet":
+				satoshi = "litoshi";
+				acronym = cryptoUnit === "satoshi" ? "lits" : "LTC";
+				return { acronym, label: "Litecoin Testnet", crypto: "LTC", satoshi };
+			default:
+				acronym = cryptoUnit === "satoshi" ? "sats" : "BTC";
+				return { acronym, label: "Bitcoin", crypto: "BTC" };
+		}
+	} catch (e) {
+		console.log(e);
+	}
+};
+
 module.exports = {
 	networks,
 	availableCoins,
 	defaultWalletShape,
 	zeroValueItems,
-	arrayTypeItems
+	arrayTypeItems,
+	getCoinImage,
+	getCoinData
 };

@@ -16,9 +16,12 @@ const {
 } = require("../../ProjectData.json");
 const moment = require("moment");
 const {
-	formatNumber,
-	getCoinData
+	formatNumber
 } = require("../utils/helpers");
+
+const {
+	getCoinData
+} = require("../utils/networks");
 
 class TransactionRow extends PureComponent {
 	render() {

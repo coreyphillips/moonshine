@@ -378,19 +378,6 @@ const removeDupsFromArrOfObj = (arr = [], value = "") => {
 
 //This returns either "mainnet" or "testnet" and assumes the following selectedCrypto format "coinTestnet"
 const getNetworkType = (selectedCrypto = "bitcoin") => {
-	/*
-	switch (selectedCrypto) {
-		case "bitcoin":
-		case "litecoin":
-			return "mainnet";
-		case "bitcoinTestnet":
-		case "litecoinTestnet":
-			return "testnet";
-		default:
-			return "mainnet";
-			break;
-	}
-	*/
 	try {
 		selectedCrypto = selectedCrypto.toLowerCase();
 		const isTestnet = selectedCrypto.includes("testnet");
@@ -798,34 +785,6 @@ const removeAllButFirstInstanceOfPeriod = (s) => {
 
 };
 
-const getCoinData = ({ selectedCrypto = "bitcoin", cryptoUnit = "satoshi" }) => {
-	try {
-		let acronym = "BTC";
-		let satoshi = "satoshi";
-		switch (selectedCrypto) {
-			case "bitcoin":
-				acronym = cryptoUnit === "satoshi" ? "sats" : "BTC";
-				return { acronym, label: "Bitcoin", crypto: "BTC", satoshi };
-			case "bitcoinTestnet":
-				acronym = cryptoUnit === "satoshi" ? "sats" : "BTC";
-				return { acronym, label: "Bitcoin Testnet", crypto: "BTC", satoshi };
-			case "litecoin":
-				satoshi = "litoshi";
-				acronym = cryptoUnit === "satoshi" ? "lits" : "LTC";
-				return { acronym, label: "Litecoin", crypto: "LTC", satoshi };
-			case "litecoinTestnet":
-				satoshi = "litoshi";
-				acronym = cryptoUnit === "satoshi" ? "lits" : "LTC";
-				return { acronym, label: "Litecoin Testnet", crypto: "LTC", satoshi };
-			default:
-				acronym = cryptoUnit === "satoshi" ? "sats" : "BTC";
-				return { acronym, label: "Bitcoin", crypto: "BTC" };
-		}
-	} catch (e) {
-		console.log(e);
-	}
-};
-
 //Returns an array of messages from an OP_RETURN message
 const decodeOpReturnMessage = (opReturn = "") => {
 	try {
@@ -856,7 +815,6 @@ const decodeOpReturnMessage = (opReturn = "") => {
 };
 
 module.exports = {
-	getCoinData,
 	compareArrays,
 	getItem,
 	setItem,
