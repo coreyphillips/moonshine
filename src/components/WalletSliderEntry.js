@@ -6,7 +6,8 @@ import {
 	StyleSheet,
 	Dimensions,
 	ScrollView,
-	Image
+	Image,
+	Alert
 } from "react-native";
 import { systemWeights } from "react-native-typography/dist/index";
 import bitcoinUnits from "bitcoin-units";
@@ -30,18 +31,14 @@ const {
 
 formatBalance = ({ coin = "", cryptoUnit = "satoshi", balance = 0 } = {}) => {
 	try {
-		try {
-			//This prevents the view from displaying 0 BTC
-			if (balance < 50000 && cryptoUnit === "BTC") {
-				balance = `${Number((balance * 0.00000001).toFixed(8))}`;
-			} else {
-				balance = bitcoinUnits(balance, "satoshi").to(cryptoUnit).value();
-			}
-			balance = formatNumber(balance);
-			return `${balance} ${getCoinData({ selectedCrypto: coin, cryptoUnit }).acronym}`;
-		} catch (e) {
-			return 0;
+		//This prevents the view from displaying 0 BTC
+		if (balance < 50000 && cryptoUnit === "BTC") {
+			balance = `${Number((balance * 0.00000001).toFixed(8))}`;
+		} else {
+			balance = bitcoinUnits(balance, "satoshi").to(cryptoUnit).value();
 		}
+		balance = formatNumber(balance);
+		return `${balance} ${getCoinData({ selectedCrypto: coin, cryptoUnit }).acronym}`;
 	} catch (e) {
 		return 0;
 	}
@@ -87,20 +84,42 @@ class WalletSliderEntry extends PureComponent {
 		</View>
 	);
 
-	deleteWallet = async ({ wallet = "" } = {}) => {
+	_deleteWallet = async ({ wallet = "", walletIndex = 0 } = {}) => {
 		try {
 			if (this.props.wallet.wallets.length > 1) {
-				let index = 0;
-				const walletIndex =  this.props.wallet.wallets.indexOf(wallet);
-				if (this.props.wallet.wallets.length-1 > walletIndex) {
-					index = walletIndex;
-				} else {
-					index = walletIndex - 1;
-				}
-				await this.props.updateWallet({ selectedWallet: this.props.wallet.wallets[index]});
+				await this.props.updateWallet({ selectedWallet: this.props.wallet.wallets[walletIndex]});
 				await this.props.deleteWallet({ wallet });
-				await this.props.updateActiveSlide(index);
+				await this.props.updateActiveSlide(walletIndex);
 			}
+		} catch (e) {
+			console.log(e);
+		}
+	};
+
+	deleteWallet = async ({ wallet = "" } = {}) => {
+		try {
+			const selectedWallet = wallet.split("wallet").join("Wallet ");
+			let walletIndex = 0;
+			try {
+				const index = this.props.wallet.wallets.indexOf(wallet);
+				if (this.props.wallet.wallets.length - 1 > walletIndex) {
+					walletIndex = index;
+				} else {
+					walletIndex = index - 1;
+				}
+			} catch (e) {}
+			Alert.alert(
+				"Delete Wallet",
+				`Are you sure you wish to delete ${selectedWallet}?`,
+				[
+					{
+						text: "NO",
+						onPress: () => {},
+						style: "cancel",
+					},
+					{text: "YES", onPress: () => this._deleteWallet({ wallet, walletIndex })},
+				]
+			);
 		} catch (e) {
 			console.log(e);
 		}
@@ -113,17 +132,11 @@ class WalletSliderEntry extends PureComponent {
 					{this.Header()}
 					<View style={styles.scrollViewContent}>
 						{this.props.coins.map((coin, i) => (
-							<CoinButton key={`${coin}${i}`} coin={coin} label={capitalize(coin)} onCoinPress={this.props.onCoinPress} wallet={this.props.data} balance={this.props.wallet[this.props.data].confirmedBalance[coin.coin]} cryptoUnit={this.props.settings.cryptoUnit} />
+							<CoinButton key={`${coin}${i}`} coin={coin} label={capitalize(coin)} onCoinPress={this.props.onCoinPress} wallet={this.props.data} balance={this.props.wallet[this.props.data].confirmedBalance[coin]} cryptoUnit={this.props.settings.cryptoUnit} />
 						))}
 						{this.props.wallet.wallets.length > 1 &&
-						<TouchableOpacity onPress={() => this.deleteWallet({wallet: this.props.data })} style={[styles.button, { backgroundColor: colors.red, borderColor: colors.red, borderRadius: 10 }]}>
-							<View style={{ flex: 1, borderRadius: 11.5, backgroundColor: colors.red }}>
-								<View style={{ flexDirection: "row", flex: 1 }}>
-									<View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-										<Text style={[styles.text, { color: colors.white }]}>Delete Wallet</Text>
-									</View>
-								</View>
-							</View>
+						<TouchableOpacity onPress={() => this.deleteWallet({wallet: this.props.data })} style={styles.deleteButton}>
+							<Text style={[styles.text, { color: colors.white }]}>Delete Wallet</Text>
 						</TouchableOpacity>}
 					</View>
 					<View style={{ paddingVertical: 70 }} />
@@ -174,11 +187,21 @@ const styles = StyleSheet.create({
 		backgroundColor: "transparent",
 		marginBottom: 15
 	},
+	deleteButton: {
+		width: "80%",
+		minHeight: 60,
+		marginBottom: 15,
+		borderRadius: 10,
+		backgroundColor: colors.red,
+		borderColor: colors.red,
+		alignItems: "center",
+		justifyContent: "center"
+	},
 	buttonContent: {
 		flex: 1,
 		alignItems: "center",
-		justifyContent: "center",
 		borderRadius: 10,
+		justifyContent: "center",
 		backgroundColor: colors.white
 	},
 	buttonImage: {
