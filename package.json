@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "test": "jest",
+    "lint": "eslint '**/*.{js,jsx}' --quiet",
     "postinstall": "rn-nodeify --install buffer,stream,assert,events,crypto,vm --hack && cd node_modules/bs58 && yarn add base-x@3.0.4 && cd ../../"
   },
   "dependencies": {
@@ -27,7 +28,7 @@
     "prop-types": "^15.7.2",
     "query-string": "^6.4.2",
     "react": "^16.8.6",
-    "react-native": "^0.59.4",
+    "react-native": "^0.59.5",
     "react-native-camera": "^2.5.0",
     "react-native-crypto": "^2.1.2",
     "react-native-keychain": "^3.1.1",
@@ -55,7 +56,13 @@
     "@babel/core": "^7.4.3",
     "@babel/runtime": "^7.4.3",
     "babel-core": "^6.26.3",
+    "babel-eslint": "^10.0.1",
     "babel-jest": "^24.7.1",
+    "eslint": "^5.16.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-jsx-a11y": "^6.2.1",
+    "eslint-plugin-react": "^7.12.4",
+    "eslint-plugin-react-native": "^3.6.0",
     "jest": "^24.7.1",
     "metro-react-native-babel-preset": "^0.53.1",
     "react-test-renderer": "^16.8.6",
