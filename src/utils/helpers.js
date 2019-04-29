@@ -17,7 +17,7 @@ const bitcoin = require("rn-bitcoinjs-lib");
 const bip39 = require("bip39");
 const bip32 = require("bip32");
 const moment = require("moment");
-let coinSelect = require("coinselect");
+//let coinSelect = require("coinselect");
 const bip21 = require("bip21");
 const {
 	availableCoins
@@ -89,7 +89,7 @@ const resetKeychainValue = async ({ key = "" } = {}) => {
 /*
 This batch sends addresses and returns the balance of utxos from them
  */
-const getBalanceFromUtxos = ({ addresses = [], changeAddresses = [], selectedCrypto = "bitcoin" } = {}) => {
+const getBalanceFromUtxos = ({ addresses = [], changeAddresses = [] } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
 			const result = await walletHelpers.utxos.bitcoin.default({ addresses, changeAddresses });
@@ -101,19 +101,6 @@ const getBalanceFromUtxos = ({ addresses = [], changeAddresses = [], selectedCry
 	});
 };
 
-const importWallet = async ({ wallets = [], updateWallet = () => null, createWallet = () => null, mnemonic = "" } = {}) => {
-	try {
-		const result = await createWallet({ mnemonic });
-		if (result.error === false) {
-			return { error: false, data: result.data };
-		} else {
-			return { error: true, data: result.data };
-		}
-	} catch (e) {
-		console.log(e);
-	}
-};
-
 //Returns: { error: bool, isPrivateKey: bool, network: Object }
 const validatePrivateKey = (privateKey = "") => {
 	try {
@@ -123,12 +110,11 @@ const validatePrivateKey = (privateKey = "") => {
 			if (verified === true) return;
 			try {
 				bitcoin.ECPair.fromWIF(privateKey, networks[key]);
-				console.log("Is Key");
 				verified = true;
 				network = key;
 				break;
 			} catch(e) {
-				verified = false
+				verified = false;
 			}
 		}
 		return { error: false, isPrivateKey: verified, network };
@@ -182,7 +168,7 @@ const parsePaymentRequest = (data = "") => {
 				//Determine if we need to parse the data.
 				if (data.includes(":" || "?" || "&")) {
 					try {
-						const coin = data.match(/.+?(?=:)/);
+						//const coin = data.match(/.+?(?=:)/);
 						const result = bip21.decode(data);
 						const address = result.address;
 						validateAddressResult = validateAddress(address);
@@ -236,12 +222,14 @@ const getDifferenceBetweenDates = ({start = "", end = "", time = "minutes"} = {}
 };
 
 //Retrived from : https://github.com/bitcoinjs/bitcoinjs-lib/issues/1238
+/*
 const convert_zpub_to_xpub = (z) => {
 	let data = b58.decode(z);
 	data = data.slice(4);
 	data = Buffer.concat([Buffer.from("0488b21e","hex"), data]);
 	return b58.encode(data);
 };
+*/
 
 const getTransactionData = ({ txId = "", selectedCrypto = "bitcoin" } = {}) => {
 	return new Promise(async (resolve) => {
@@ -326,7 +314,7 @@ const getAllTransactions = async ({ allAddresses = [], addresses = [], changeAdd
 			resolve({ error: true, data });
 		};
 
-		const isConnected = await Promise.all(isOnline());
+		const isConnected = await isOnline();
 		if (!isConnected || isConnected === false) {
 			failure("Offline");
 			return;
@@ -358,7 +346,7 @@ const isOnline = async () => {
 					resolve(isConnected);
 				};
 				NetInfo.addEventListener("connectionChange", connectionHandler);
-			})
+			});
 		}
 		const connectionInfo = await NetInfo.getConnectionInfo();
 		if (connectionInfo.type === "none" || connectionInfo.type === "unknown") isConnected = false;
@@ -383,7 +371,7 @@ const getNetworkType = (selectedCrypto = "bitcoin") => {
 		const isTestnet = selectedCrypto.includes("testnet");
 		return isTestnet ? "testnet" : "mainnet";
 	} catch (e) {
-		return "testnet"
+		return "testnet";
 	}
 };
 
@@ -393,9 +381,6 @@ const getTransactionSize = (numInputs, numOutputs) => {
 
 const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confirmedBalance = 0, utxos = [], changeAddress = "", wallet = "wallet0", selectedCrypto = "bitcoin", message = "" } = {}) => {
 	return new Promise(async (resolve) => {
-		const failure = (errorTitle = "", errorMsg = "") => {
-			resolve({ error: true, errorTitle, errorMsg });
-		};
 		try {
 			const network = networks[selectedCrypto];
 			const totalFee = getTransactionSize(utxos.length, changeAddress ? 2 : 1) * transactionFee;
@@ -425,6 +410,7 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 					//const keyPair = root.derivePath("m/49");
 					const p2wpkh = bitcoin.payments.p2wpkh({pubkey: keyPair.publicKey, network});
 					//const p2sh = bitcoin.payments.p2sh({ redeem: p2wpkh, network });
+					/*
 					const p2pk = bitcoin.payments.p2pk({pubkey: keyPair.publicKey, network});
 					const p2wsh = bitcoin.payments.p2wsh({redeem: p2pk, network});
 					let p2wpkhOutScript = null;
@@ -437,9 +423,10 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 						p2wshOutScript = p2wsh.output;
 					} catch (e) {
 					}
-					let prevOutPutScript = null;
-					if (p2wpkhOutScript !== null) prevOutPutScript = p2wpkhOutScript; //22 bytes
-					if (p2wshOutScript !== null) prevOutPutScript = p2wshOutScript; //34 bytes
+					*/
+					//let prevOutPutScript = null;
+					//if (p2wpkhOutScript !== null) prevOutPutScript = p2wpkhOutScript; //22 bytes
+					//if (p2wshOutScript !== null) prevOutPutScript = p2wshOutScript; //34 bytes
 					// For P2WPKH (bech32): txb.addInput(unspent.txId, unspent.vout, null, p2wpkh.output) // NOTE: provide the prevOutScript!
 					// For P2SH (3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy): txb.addInput(unspent.txId, unspent.vout)
 					// For P2PWPKH txb.addInput(unspent.txId, unspent.vout, null, p2wpkh.output) // NOTE: provide the prevOutScript!
@@ -496,7 +483,6 @@ const fetchData = (type, params) => {
 					...params
 				})
 			};
-			break;
 		default:
 			return {
 				method: "GET",
@@ -528,11 +514,6 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 			const seed = bip39.mnemonicToSeed(mnemonic);
 			const root = bip32.fromSeed(seed, network);
 
-			console.log("Log: Retrieved Mnemonic & Root...");
-
-			console.log("Logging Change Address Index");
-			console.log(changeAddressIndex)
-
 			let addresses = [];
 			let changeAddresses = [];
 
@@ -547,7 +528,7 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 						const addressPath = `m/49'/${networkValue}'/0'/0/${i + addressIndex}`;
 						const addressKeypair = root.derivePath(addressPath);
 						const address = await getAddress(addressKeypair, network, type);
-						console.log(`Log: Created address ${i + addressIndex}: ${address}`);
+						//console.log(`Log: Created address ${i + addressIndex}: ${address}`);
 						addresses.push({ address, path: addressPath });
 						return {address, path: addressPath};
 					} catch (e) {}
@@ -557,9 +538,8 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 						const changeAddressPath = `m/49'/${networkValue}'/0'/1/${i + changeAddressIndex}`;
 						const changeAddressKeypair = root.derivePath(changeAddressPath);
 						const address = await getAddress(changeAddressKeypair, network, type);
-						console.log(`Log: Created changeAddress ${i + changeAddressIndex}: ${address}`);
 						changeAddresses.push({ address, path: changeAddressPath });
-						return {address, path: changeAddressPath}
+						return {address, path: changeAddressPath};
 					} catch (e) {}
 				})
 			);
@@ -697,25 +677,6 @@ const shuffleArray = (array) => {
 	return array;
 };
 
-//Returns true or false if there is a match between two arrays
-const compareArrays = (arr1,arr2) => {
-	return new Promise(async (resolve) => {
-		try {
-			arr1.forEach((e1) => arr2.forEach((e2) => {
-					if (e1 === e2) {
-						objMap[e1] = objMap[e1] + 1 || 1;
-					}
-				}
-			));
-			const count = Object.keys(objMap).map(e => Number(e));
-			resolve({ error: true, data: count[0] > 0 });
-		} catch (e) {
-			resolve({ error: true , data: false });
-		}
-	});
-
-};
-
 //Get the nth pattern in a string.
 const nthIndex = (str, pat, n) => {
 	let L= str.length, i= -1;
@@ -751,7 +712,7 @@ const formatNumber = (num) => {
 	return n.replace(
 		/\d(?=(?:\d{3})+(?:\.|$))/g,
 		(m, i) => p < 0 || i < p ? `${m},` : m
-	)
+	);
 };
 
 const removeAllButFirstInstanceOfPeriod = (s) => {
@@ -815,13 +776,11 @@ const decodeOpReturnMessage = (opReturn = "") => {
 };
 
 module.exports = {
-	compareArrays,
 	getItem,
 	setItem,
 	setKeychainValue,
 	getKeychainValue,
 	resetKeychainValue,
-	importWallet,
 	validatePrivateKey,
 	validateAddress,
 	parsePaymentRequest,

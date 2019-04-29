@@ -12,6 +12,38 @@ export const updateSettings = (payload) => ({
 	payload
 });
 
+export const updatePeersList = ({ peerList = [], coin = "bitcoin"} = {}) => (dispatch: any) => {
+	return new Promise(async (resolve) => {
+		const failure = (errorTitle = "", errorMsg = "") => {
+			resolve({ error: true, errorTitle, errorMsg });
+			return;
+		};
+		try {
+			let peers = [];
+			await Promise.all(peerList.map((peer) => {
+				try {
+					const host = peer[1];
+					const port = Number(peer[2][1].replace(/\D/g,''));
+					const protocol = "ssl";
+					peers.push({ host, port, protocol });
+				} catch (e) {}
+			}));
+			dispatch({
+				type: actions.UPDATE_PEERS_LIST,
+				payload: {
+					coin,
+					peers
+				}
+			});
+			resolve({ error: false, data: "" });
+		} catch (e) {
+			console.log(e);
+			failure(e);
+		}
+		failure();
+	});
+};
+
 export const wipeDevice = () => (dispatch: any) => {
 	return new Promise(async (resolve) => {
 		const failure = (errorTitle = "", errorMsg = "") => {

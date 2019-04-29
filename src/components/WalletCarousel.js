@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import {
 	Dimensions,
-	Platform,
 	StyleSheet,
 	View
 } from 'react-native';
@@ -147,7 +146,7 @@ const walletActions = require("../actions/wallet");
 const transactionActions = require("../actions/transaction");
 const settingsActions = require("../actions/settings");
 
-const mapStateToProps = ({...state}, props) => ({
+const mapStateToProps = ({...state}) => ({
 	...state
 });
 

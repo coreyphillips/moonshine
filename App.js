@@ -33,17 +33,16 @@ import XButton from "./src/components/XButton";
 import Camera from "./src/components/Camera";
 import SelectCoin from "./src/components/SelectCoin";
 import SendTransaction from "./src/components/SendTransaction";
+import SweepPrivateKey from "./src/components/SweepPrivateKey";
 import Settings from "./src/components/Settings";
 import Biometrics from "./src/components/Biometrics";
 import PinPad from "./src/components/PinPad";
 import Loading from "./src/components/Loading";
+//import ElectrumTesting from "./src/components/ElectrumTesting";
 
 import * as electrum from "./src/utils/electrum";
 import nodejs from "nodejs-mobile-react-native";
 import bitcoinUnits from "bitcoin-units";
-const {
-	networks
-} = require("./src/utils/networks");
 
 const {
 	Constants: {
@@ -55,7 +54,6 @@ const {
 	getDifferenceBetweenDates,
 	isOnline,
 	getNetworkType,
-	getAddress,
 	pauseExecution,
 	capitalize,
 	getInfoFromAddressPath,
@@ -63,59 +61,69 @@ const {
 	validatePrivateKey
 } = require("./src/utils/helpers");
 const { width } = Dimensions.get("window");
-const bitcoin = require("rn-bitcoinjs-lib");
 const bip39 = require("bip39");
 const moment = require("moment");
 
 export default class App extends PureComponent {
-
+	
 	state = {
 		upperContentFlex: new Animated.Value(1),
 		lowerContentFlex: new Animated.Value(0),
-
+		
 		displayCameraRow: false,
 		cameraRowOpacity: new Animated.Value(0),
-
+		
 		displayReceiveTransaction: false,
 		receiveTransactionOpacity: new Animated.Value(0),
-
+		
 		displayTransactionDetail: false,
 		transactionDetailOpacity: new Animated.Value(0),
-
+		
 		displaySelectCoin: false,
 		selectCoinOpacity: new Animated.Value(0),
-
+		
 		displayLoading: false,
 		loadingOpacity: new Animated.Value(0),
-
+		
 		displayTextInput: false,
 		textInputOpacity: new Animated.Value(0),
-
+		
+		displaySweepPrivateKey: false,
+		sweepPrivateKeyOpacity: new Animated.Value(0),
+		
 		displayPriceHeader: false,
 		priceHeaderOpacity: new Animated.Value(0),
-
+		
 		displayXButton: false,
 		xButtonOpacity: new Animated.Value(0),
-
+		
 		displayCamera: false,
 		cameraOpacity: new Animated.Value(0),
-
+		
 		displaySettings: false,
 		settingsOpacity: new Animated.Value(0),
-
+		
 		displayBiometrics: false,
 		biometricsOpacity: new Animated.Value(0),
 		displayBiometricAuthenticationRetry: false,
-
+		
 		displayPin: false,
 		pinOpacity: new Animated.Value(0),
-
+		
 		displayTransactionList: true,
 		transactionListOpacity: new Animated.Value(0),
-
+		
 		appState: AppState.currentState,
 		appHasLoaded: false,
-
+		
+		/*
+		I do wonder how long it will take for someone to find and sweep this private key...
+		Addr: bc1qcgt450ctz7c0zpgzq0wmua3je7mmpzzed9wyfg
+		Priv: L323HBXNkhn4ogPvmMZBa5fFVE7BjL6f5osyXYxmVsUjNoBvYAHG
+		*/
+		//Only used to pass as a prop to SweepPrivateKey when sweeping a private key.
+		privateKey: "",
+		
 		address: "",
 		amount: 0,
 		optionSelected: "",
@@ -125,7 +133,7 @@ export default class App extends PureComponent {
 		loadingTransactions: true,
 		loadingAnimationName: "cloudBook"
 	};
-
+	
 	setExchangeRate = async ({selectedCrypto = "bitcoin"} = {}) => {
 		//const start = this.props.transaction.feeTimestamp;
 		//const end = new Date();
@@ -142,7 +150,7 @@ export default class App extends PureComponent {
 		}
 		//}
 	};
-
+	
 	onCoinPress = async ({ coin = "bitcoin", wallet = "wallet0", initialLoadingMessage = "" } = {}) => {
 		try {
 			const sameCoin = this.props.wallet.selectedCrypto === coin;
@@ -151,12 +159,12 @@ export default class App extends PureComponent {
 				this.resetView();
 				return;
 			}
-
+			
 			this.updateSelectCoin({display: false, duration: 200});
-
+			
 			const network = getNetworkType(coin);
 			await this.props.updateWallet({ selectedCrypto: coin, network, selectedWallet: wallet });
-
+			
 			if (this.props.wallet[wallet].addresses[coin].length > 0) {
 				//This condition occurs when the user selects a coin that already has generated addresses from the "SelectCoin" view.
 				this.updateLoading({ display: false });
@@ -175,7 +183,7 @@ export default class App extends PureComponent {
 				});
 				return;
 			}
-
+			
 			this.setState({ loadingTransactions: true });
 			InteractionManager.runAfterInteractions(() => {
 				this.refreshWallet({reconnectToElectrum: !sameCoin});
@@ -185,15 +193,15 @@ export default class App extends PureComponent {
 			this.resetView();
 		}
 	};
-
+	
 	launchDefaultFuncs = async ({ displayLoading = true, resetView = true } = {}) => {
 		this.updateBiometrics({display: false});
 		this.updatePin({display: false});
 		if (displayLoading) this.updateLoading({display: true});
-
+		
 		//Push user to the default view while the rest of the wallet data loads.
 		//this.resetView();
-
+		
 		try {
 			const onBack = () => {
 				if (this.state.displayPin || this.state.displayBiometrics || this.state.appHasLoaded === false) return true;
@@ -214,10 +222,10 @@ export default class App extends PureComponent {
 		} catch (e) {
 			console.log(e);
 		}
-
+		
 		this.startDate = new Date();
 		clearInterval(this._refreshWallet);
-
+		
 		this.setState({ loadingMessage: "Fetching Network Status", loadingProgress: 0.35, appHasLoaded: true });
 		/*
 		 Clear or Reset any pending transactions to start from a clean slate.
@@ -226,29 +234,30 @@ export default class App extends PureComponent {
 		 */
 		const isConnected = await isOnline();
 		await Promise.all([this.props.resetTransaction(), this.props.updateUser({ isOnline: isConnected })]);
-
+		
 		//If online, connect to an electrum server.
 		if (isConnected) {
 			this.refreshWallet();
-			await pauseExecution()
+			await pauseExecution();
 		} else {
 			//Device is offline. Ensure any loading animations are disabled.
 			await pauseExecution();
 			this.setState({ loadingTransactions: false });
 		}
-
+		
 		//Push user to the default view while the rest of the wallet data loads.
 		if (resetView) this.resetView();
 	};
-
+	
 	refreshWallet = async ({ ignoreLoading = false, reconnectToElectrum = true } = {}) => {
 		//This helps to prevent the app from disconnecting and stalling when attempting to connect to an electrum server after some time.
-		await nodejs.start("main.js");
-
+		//await nodejs.start("main.js");
+		
 		try {
 			//Enable the loading state
 			this.setState({ loadingTransactions: true });
-
+			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			
 			//Check if the user is online
 			const isConnected = await isOnline();
 			if (!isConnected) {
@@ -258,26 +267,18 @@ export default class App extends PureComponent {
 				alert("Your device is currently offline. Please check your network connection and try again.");
 				return;
 			}
+			
 			//Save isConnected state to isOnline.
 			if (this.props.user.isOnline === false) this.props.updateUser({ isOnline: isConnected });
-
-			const { selectedWallet, selectedCrypto } = this.props.wallet;
-
-			await this.setExchangeRate({ selectedCrypto }); //Set the exchange rate for the selected currency
-
+			
+			this.setExchangeRate({ selectedCrypto }); //Set the exchange rate for the selected currency
 			//Update status of the user-facing loading message and progress bar
 			if (!ignoreLoading) this.setState({ loadingMessage: "Connecting to Electrum Server...", loadingProgress: 0.4 });
-
+			
 			if (reconnectToElectrum) {
-				//Disconnect from the currently connected Electrum server. Not entirely sure if this is necessary, but it seems to prevent the app from stalling in certain scenarios.
-				await electrum.stop();
-
 				//Spin up electrum, connect to a peer & start Electrum's keep-alive function;
 				//Returns: { customPeers: [], data: { host: "" port: 443 }, error: false, method: "connectToPeer" }
-				const electrumStartResponse = await electrum.start({
-					coin: selectedCrypto,
-					customPeers: this.props.settings.customPeers[selectedCrypto]
-				});
+				const electrumStartResponse = await this.restartElectrum({ coin: selectedCrypto });
 				if (electrumStartResponse.error === false) {
 					//Set the current electrum peer.
 					this.props.updateSettings({currentPeer: electrumStartResponse.data});
@@ -290,32 +291,30 @@ export default class App extends PureComponent {
 				}
 				//Remove any pre-existing instance of this._refreshWallet
 				clearInterval(this._refreshWallet);
-
-				if (!__DEV__) {
-					//Set an interval to run this.refreshWallet approximately every 2 minutes.
-					this._refreshWallet = setInterval(async () => {
-						const currentTime = new Date();
-						const seconds = (currentTime.getTime() - this.startDate.getTime()) / 1000;
-						let end = moment();
-						let difference = 0;
-						try {
-							end = this.props.wallet[selectedWallet].lastUsedAddress[selectedCrypto];
-						} catch (e) {
-						}
-						try {
-							difference = getDifferenceBetweenDates({start: moment(), end});
-						} catch (e) {
-						}
-						if (seconds > 10 && difference >= 1.8) {
-							await this.refreshWallet();
-						}
-					}, 60 * 2000);
-				}
+				
+				//Set an interval to run this.refreshWallet approximately every 2 minutes.
+				this._refreshWallet = setInterval(async () => {
+					const currentTime = new Date();
+					const seconds = (currentTime.getTime() - this.startDate.getTime()) / 1000;
+					let end = moment();
+					let difference = 0;
+					try {
+						end = this.props.wallet[selectedWallet].lastUsedAddress[selectedCrypto];
+					} catch (e) {
+					}
+					try {
+						difference = getDifferenceBetweenDates({start: moment(), end});
+					} catch (e) {
+					}
+					if (seconds > 10 && difference >= 1.8) {
+						await this.refreshWallet();
+					}
+				}, 60 * 2000);
 			}
-
+			
 			//Update status of the user-facing loading message and progress bar
 			if (ignoreLoading === false) this.setState({ loadingMessage: "Getting Current Block Height & Exchange Rate...", loadingProgress: 0.5 });
-
+			
 			//Gather existing addresses, changeAddresses and their respective indexes for use later on
 			let addresses = [];
 			try {
@@ -325,10 +324,10 @@ export default class App extends PureComponent {
 			try {
 				changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto];
 			} catch (e) {}
-
+			
 			let addressIndex = this.props.wallet[selectedWallet].addressIndex[selectedCrypto];
 			let changeAddressIndex = this.props.wallet[selectedWallet].changeAddressIndex[selectedCrypto];
-
+			
 			/*
 			 //Rescan Addresses if user is waiting for any pending transactions
 			 await Promise.all(this.props.wallet[selectedWallet].addresses[selectedCrypto].map((add, i) => {
@@ -339,40 +338,41 @@ export default class App extends PureComponent {
 			 if (add.block <= 0 && i < changeAddressIndex) changeAddressIndex = i;
 			 }));
 			 */
-
+			
 			//Gather existing utxo's for use later on
 			let utxos = [];
 			try {
 				utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
 			} catch (e) {
 			}
-
+			
 			//Specify the threshold at which the app will continue searching empty addresses before giving up.
-			const indexThreshold = addresses.length < 20 ? addresses.length-1 : 20;
-
+			//const indexThreshold = addresses.length < 20 ? addresses.length-1 : 20;
+			
+			
 			//Get & Set Current Block Height
 			await this.props.updateBlockHeight({ selectedCrypto });
 			const currentBlockHeight = this.props.wallet.blockHeight[selectedCrypto];
-
+			
 			//Update status of the user-facing loading message and progress bar
 			if (ignoreLoading === false) this.setState({ loadingMessage: "Generating Addresses,\nUpdating Transactions.\nThis may take a while...", loadingProgress: 0.65 });
-
+			
 			//This function loads up the user's transaction history for the transaction list, gathers the wallet's next available addresses/changeAddresses and creates more as needed
 			//TODO: This function is way too large/multipurpose and needs to be broken up for easier use and testing.
-			await this.props.getNextAvailableAddress({ addresses, changeAddresses, addressIndex, changeAddressIndex, indexThreshold: 1, currentBlockHeight, selectedCrypto, selectedWallet, wallet: selectedWallet, customPeers: this.props.settings.customPeers[selectedCrypto] });
 
+			await this.props.getNextAvailableAddress({ addresses, changeAddresses, addressIndex, changeAddressIndex, indexThreshold: 1, currentBlockHeight, selectedCrypto, selectedWallet, wallet: selectedWallet, customPeers: this.props.settings.customPeers[selectedCrypto] });
+			
 			//Update status of the user-facing loading message and progress bar
 			if (ignoreLoading === false) this.setState({ loadingMessage: "Updating UTXO's", loadingProgress: 0.8 });
-
+			
 			//Fetch any new utxos.
 			//Re-gather all known addresses and changeAddresses in case more were created from the getNextAvailableAddress function.
 			addresses = this.props.wallet[selectedWallet].addresses[selectedCrypto];
 			changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto];
-
+			
 			//Scan all addresses & changeAddresses for UTXO's and save them.
 			//Note: The app uses the saved UTXO response to verify/update the wallet's balance.
 			const resetUtxosResponse = await this.props.resetUtxos({ addresses, changeAddresses, currentUtxos: utxos, selectedCrypto, selectedWallet, wallet: selectedWallet, currentBlockHeight });
-
 			//Iterate over the new utxos and rescan the transactions if a utxo with a new hash appears
 			let needsToRescanTransactions = false;
 			addressIndex = this.props.wallet[selectedWallet].addressIndex[selectedCrypto];
@@ -384,8 +384,8 @@ export default class App extends PureComponent {
 						if (newUtxo.tx_hash === transaction.hash) {
 							noHashMatches = false;
 						}
-					} catch (e) { console.log(e) }
-
+					} catch (e) {}
+					
 				}));
 				//If the transactions need to be rescanned set the index. Use the lowest index based on the results.
 				if (noHashMatches) {
@@ -398,10 +398,10 @@ export default class App extends PureComponent {
 						} else {
 							if (Number(pathInfo.addressIndex) < addressIndex) addressIndex = pathInfo.addressIndex;
 						}
-					} catch (e) { console.log(e) }
+					} catch (e) {}
 				}
 			}));
-
+			
 			//Check if any transactions have <1 confirmations. If so, rescan them by the lowest index.
 			let transactionsThatNeedRescanning = [];
 			await Promise.all(this.props.wallet[selectedWallet].transactions[selectedCrypto].map((transaction) => {
@@ -410,31 +410,30 @@ export default class App extends PureComponent {
 					transactionsThatNeedRescanning.push(transaction.address);
 				}
 			}));
-
+			
 			//Push all addresses and changeAddresses into the same array.
 			const allAddresses = this.props.wallet[selectedWallet].addresses[selectedCrypto].concat(this.props.wallet[selectedWallet].changeAddresses[selectedCrypto]);
-
+			
 			//Get lowest index to rescan addresses & changeAddresses with.
 			await Promise.all(
 				transactionsThatNeedRescanning.map(async (transactionAddress) => {
 					try {
 						//Filter for the transaction address
 						const filteredTransactionAddress = allAddresses.filter((address) => address.address === transactionAddress);
-
 						//Extract the addresses path (Ex: m/49'/1'/0'/1/6)
 						const path = filteredTransactionAddress[0].path;
 						const pathInfo = await getInfoFromAddressPath(path);
-
+						
 						//Check the path's index and save the lowest value.
 						if (pathInfo.isChangeAddress) {
 							if (Number(pathInfo.addressIndex) < changeAddressIndex) changeAddressIndex = pathInfo.addressIndex;
 						} else {
 							if (Number(pathInfo.addressIndex) < addressIndex) addressIndex = pathInfo.addressIndex;
 						}
-					} catch (e) { console.log(e); }
+					} catch (e) {}
 				})
 			);
-
+			
 			/*
 			 let transactionPathsThatNeedRescanning = [];
 			 await Promise.all(this.props.wallet[selectedWallet].transactions[selectedCrypto].map((transaction) => {
@@ -454,16 +453,16 @@ export default class App extends PureComponent {
 			 })
 			 );
 			 */
-
+			
 			//Begin Rescan of transactions if necessary based on the saved path indexes.
 			let getNextAvailableAddressResponse = { error: false, data: [] };
 			if (needsToRescanTransactions) {
 				getNextAvailableAddressResponse = await this.props.getNextAvailableAddress({ addresses, changeAddresses, addressIndex, changeAddressIndex, indexThreshold: 1, currentBlockHeight, selectedCrypto, selectedWallet, wallet: selectedWallet, customPeers: this.props.settings.customPeers[selectedCrypto] });
 			}
-
+			
 			//Update status of the user-facing loading message and progress bar
 			if (ignoreLoading === false) this.setState({ loadingMessage: "Updating Balance", loadingProgress: 1 });
-
+			
 			//If there was no issue fetching the UTXO sets or the next available addresses, update the balance using the newly acquired UTXO's.
 			if (resetUtxosResponse.error === false && getNextAvailableAddressResponse.error === false) {
 				try {
@@ -473,7 +472,7 @@ export default class App extends PureComponent {
 					console.log(e);
 				}
 			}
-
+			
 			//Cease the loading state.
 			this.setState({ loadingTransactions: false });
 		} catch (e) {
@@ -481,14 +480,14 @@ export default class App extends PureComponent {
 			this.setState({ loadingTransactions: false });
 		}
 	};
-
+	
 	authenticateUserWithBiometrics = () => {
 		const optionalConfigObject = {
 			unifiedErrors: false // use unified error messages (default false)
 		};
 		const authenticate = () => {
 			TouchID.authenticate("To open Bitbip", optionalConfigObject)
-				.then(success => {
+				.then(() => {
 					//Hide the retry button on the Biometric Authentication view.
 					this.setState({ displayBiometricAuthenticationRetry: false });
 					//Forward the user to the Pin view if they've enabled it. Otherwise, forward them to the app via launchDefaultFuncs.
@@ -499,7 +498,7 @@ export default class App extends PureComponent {
 					}
 					this.launchDefaultFuncs();
 				})
-				.catch(error => {
+				.catch(() => {
 					//Display the retry button on the Biometric Authentication view in case they hit cancel or encountered some other error during the authentication process.
 					this.setState({ displayBiometricAuthenticationRetry: true });
 				});
@@ -514,16 +513,18 @@ export default class App extends PureComponent {
 					authenticate(); //TouchID is supported.
 				}
 			})
-			.catch(e => {});
+			.catch(() => {});
 	};
-
+	
 	createWallet = async (walletName = "wallet0", ignoreAddressCheck = false) => {
 		try {
+			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			
 			this.updateBiometrics({display: false});
 			this.updatePin({display: false});
 			await this.updateLoading({display: true});
 			await this.props.updateWallet({ selectedCrypto: "bitcoin" });
-
+			
 			//Figure out what type of security/authentication is allowed for settings.
 			let biometricsIsSupported = false;
 			let biometricTypeSupported = "";
@@ -541,8 +542,10 @@ export default class App extends PureComponent {
 					}
 					this.props.updateSettings({ biometricsIsSupported, biometricTypeSupported });
 				})
-				.catch(e => { this.props.updateSettings({ biometricsIsSupported, biometricTypeSupported }) });
-
+				.catch(() => {
+					this.props.updateSettings({ biometricsIsSupported, biometricTypeSupported });
+				});
+			
 			//Create Wallet if first timer
 			this.setState({loadingMessage: "Creating Wallet...", loadingProgress: 0.1});
 			await this.props.createWallet({addressAmount: 2, changeAddressAmount: 2, wallet: walletName, generateAllAddresses: true});
@@ -550,11 +553,7 @@ export default class App extends PureComponent {
 			const wallets = this.props.wallet.wallets.concat(walletName);
 			//Set the selectedWallet accordingly and update the wallets array.
 			await this.props.updateWallet({ selectedWallet: walletName, wallets });
-			const { selectedWallet, selectedCrypto } = this.props.wallet;
 			this.setState({loadingMessage: "Fetching Current Block Height...", loadingProgress: 0.15});
-			//Get Current Block Height
-			await this.props.updateBlockHeight({ selectedCrypto });
-			const currentBlockHeight = this.props.wallet.blockHeight[selectedCrypto];
 			let addresses = [];
 			try {
 				addresses = this.props.wallet[selectedWallet].addresses[selectedCrypto];
@@ -566,6 +565,14 @@ export default class App extends PureComponent {
 			} catch (e) {
 			}
 			if (ignoreAddressCheck === false) {
+				//Spin up the nodejs thread and connect to electrum.
+				//await nodejs.start("main.js");
+				//await electrum.stop({ coin: selectedCrypto });
+				await this.restartElectrum({ coin: selectedCrypto });
+				//Get Current Block Height
+				await this.props.updateBlockHeight({ selectedCrypto });
+				const currentBlockHeight = this.props.wallet.blockHeight[selectedCrypto];
+				
 				this.setState({loadingMessage: "Syncing...", loadingProgress: 0.15});
 				//Load up the user's transaction history and next available addresses
 				await this.props.getNextAvailableAddress({
@@ -577,23 +584,18 @@ export default class App extends PureComponent {
 					currentBlockHeight,
 					wallet: selectedWallet
 				});
-				this.setState({loadingMessage: "Finished Creating Wallet", loadingProgress: 0.3});
+				this.setState({loadingMessage: "Finished Creating Wallet", loadingProgress: 0.3, loadingAnimationName: "cloudBook"});
 			}
 			this.launchDefaultFuncs({ displayLoading: false });
 		} catch (e) {
 			console.log(e);
 		}
 	};
-
-	async componentWillMount() {
-		//Spin up the nodejs thread
-		await nodejs.start("main.js");
-	}
-
+	
 	_handleAppStateChange = async (nextAppState) => {
 		//Foreground -> Background
 		if (this.state.appState.match(/active/) && nextAppState.match(/inactive|background/) && !this.state.displayCamera) {
-			electrum.stop();
+			electrum.stop({ coin: this.props.wallet.selectedCrypto });
 			//Clear/Remove Wallet Refresh Timer
 			clearInterval(this._refreshWallet);
 			this.setState({appHasLoaded: false});
@@ -611,7 +613,7 @@ export default class App extends PureComponent {
 				this.updateReceiveTransaction({display: false});
 				this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
 				//this.updateLoading({ display: true });
-
+				
 				try {
 					//Determine if user is a first timer. Create a new wallet if so.
 					if (this.props.wallet.wallet0.addresses.bitcoin.length === 0) {
@@ -619,7 +621,7 @@ export default class App extends PureComponent {
 						return;
 					}
 				} catch (e) {}
-
+				
 				try {
 					//Check if Biometrics is Enabled
 					if (this.props.settings.biometrics) {
@@ -627,7 +629,7 @@ export default class App extends PureComponent {
 						return;
 					}
 				} catch (e) {}
-
+				
 				try {
 					//Check if Pin is Enabled
 					if (this.props.settings.pin) {
@@ -640,9 +642,10 @@ export default class App extends PureComponent {
 				/*
 				 const { selectedCrypto } = this.props.wallet;
 				 await nodejs.start("main.js");
-				 await electrum.stop();
+				 await electrum.stop({ coin: selectedCrypto });
 				 await electrum.start({
 				 coin: selectedCrypto,
+				 peers: this.props.settings.peers[selectedCrypto],
 				 customPeers: this.props.settings.customPeers[selectedCrypto]
 				 });
 				 */
@@ -652,45 +655,49 @@ export default class App extends PureComponent {
 		}
 		this.setState({appState: nextAppState});
 	};
-
+	
 	async componentDidMount() {
 		//This gets called after redux-persist rehydrates
-		InteractionManager.runAfterInteractions(() => {
+		//Spin up the nodejs thread
+		await nodejs.start("main.js");
+		
+		InteractionManager.runAfterInteractions(async () => {
 			try {
 				//Determine if the user has any existing wallets. Create a new wallet if so.
 				if (this.props.wallet.wallets.length === 0) {
 					this.createWallet("wallet0", true);
 					return;
 				}
-
+				
 				//Check if Biometrics is Enabled
 				if (this.props.settings.biometrics) {
 					this.onBiometricsPress();
 					return;
 				}
-
+				
 				//Check if Pin is Enabled
 				if (this.props.settings.pin) {
 					this.onPinPress();
 					return;
 				}
-
+				
 				//Resume normal operations
 				this.launchDefaultFuncs();
 			} catch (e) {
 				console.log(e);
 			}
 		});
+		
 	}
-
-	componentWillUpdate() {
+	
+	componentDidUpdate() {
 		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
 	}
-
+	
 	componentWillUnmount() {
 		try {
 			//Stop Electrum Process
-			electrum.stop();
+			electrum.stop({ coin: this.props.wallet.selectedCrypto });
 			//Remove Back Button Listener
 			BackHandler.removeEventListener("hardwareBackPress", this.resetView);
 			//Start the listener that detects if the app is in the background or foreground
@@ -701,7 +708,7 @@ export default class App extends PureComponent {
 			console.log(e);
 		}
 	}
-
+	
 	//Handles The "upper" & "lower" Flex Animation
 	updateFlex = ({upperContentFlex = 1, lowerContentFlex = 1, duration = 250} = {}) => {
 		return new Promise(async (resolve) => {
@@ -731,7 +738,7 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
 	//Handles The "QRCode" Opacity Animation
 	updateReceiveTransaction = async ({ display = true, duration = 400 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -754,7 +761,7 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
 	//Handles The "TransactionDetail" Opacity Animation
 	updateTransactionDetail = async ({ display = true, duration = 400 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -776,7 +783,7 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
 	//Handles The "SelectCoin" Opacity Animation
 	updateSelectCoin = async ({ display = true, duration = 400 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -798,7 +805,7 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
 	//Handles The "Loading" Opacity Animation
 	updateLoading = async ({ display = true, duration = 600 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -820,7 +827,7 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
 	//Handles The "TransactionList" View Opacity Animation
 	updateTransactionList = async ({ display = true, duration = 0 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -843,7 +850,7 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
 	//Handles The "Camera" View Opacity Animation
 	updateCamera = async ({ display = true, duration = 400 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -865,7 +872,7 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
 	//Handles The "Settings" View Opacity Animation
 	updateSettings = async ({ display = true, duration = 400 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -887,7 +894,7 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
 	//Handles The "Biometrics" View Opacity Animation
 	updateBiometrics = async ({ display = true, duration = 400 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -910,7 +917,7 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
 	//Handles The "PinPad" View Opacity Animation
 	updatePin = async ({ display = true, duration = 400 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -932,7 +939,7 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
 	//Handles The "Header" Opacity Animation
 	updatePriceHeader = async ({ display = true, duration = 400 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -955,7 +962,7 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
 	//Handles The TextInput Opacity Animation
 	updateTextInput = async ({ display = true, duration = 400 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -978,7 +985,29 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
+	updateSweepPrivateKey = async ({ display = true, duration = 400 } = {}) => {
+		return new Promise(async (resolve) => {
+			try {
+				if (display) this.setState({ displaySweepPrivateKey: display });
+				Animated.timing(
+					this.state.sweepPrivateKeyOpacity,
+					{
+						toValue: display ? 1 : 0,
+						duration
+					}
+				).start(async () => {
+					//Perform any other action after the update has been completed.
+					if (!display) this.setState({ displaySweepPrivateKey: display });
+					resolve({error: false});
+				});
+			} catch (e) {
+				console.log(e);
+				resolve({ error: true, data: e });
+			}
+		});
+	};
+	
 	//Handles The "Send", "Camera" and "Receive" Row Opacity Animation
 	updateCameraRow = async ({ display = true, duration = 400 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -1001,7 +1030,7 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
 	//Handles The "X" Button Opacity Animation
 	updateXButton = async ({ display = true, duration = 400 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -1024,7 +1053,7 @@ export default class App extends PureComponent {
 			}
 		});
 	};
-
+	
 	//Handles the series of animations necessary when the user taps "Send"
 	onSendPress = async () => {
 		try {
@@ -1043,7 +1072,32 @@ export default class App extends PureComponent {
 			console.log(e);
 		}
 	};
-
+	
+	//Handles the series of animations necessary when the user intends to sweep a transaction
+	onSweep = async (key = "") => {
+		try {
+			if (!key) {
+				alert("No private key detected.");
+				return;
+			}
+			await this.setState({ privateKey: key });
+			//Open Send State
+			this.updateCameraRow({display: false});
+			this.updateXButton({display: true});
+			this.updateCamera({ display: false });
+			this.updatePriceHeader({display: false, duration: 250});
+			this.updateTransactionList({ display: false, duration: 200 });
+			this.updateTextInput({display: false, duration: 200});
+			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
+			this.updateSweepPrivateKey({display: true, duration: Platform.OS === "ios" ? 800 : 300});
+			InteractionManager.runAfterInteractions(() => {
+				this.setState({optionSelected: "send"});
+			});
+		} catch (e) {
+			console.log(e);
+		}
+	};
+	
 	//Handles the series of animations necessary when the user taps "Receive"
 	onReceivePress = async () => {
 		if (this.state.optionSelected !== "receive") {
@@ -1068,7 +1122,7 @@ export default class App extends PureComponent {
 			this.updatePriceHeader({display: true, duration: 350});
 		}
 	};
-
+	
 	//Handles the series of animations necessary when the user taps a specific transaction from the TransactionList.
 	onTransactionPress = async (transaction = "") => {
 		try {
@@ -1079,13 +1133,13 @@ export default class App extends PureComponent {
 			this.updateTransactionList({display: false, duration: 400});
 			this.updateFlex({upperContentFlex: 0, lowerContentFlex: 1, duration: 400});
 			this.updateTransactionDetail({display: true});
-
+			
 			const {selectedWallet, selectedCrypto} = this.props.wallet;
 			transaction = await this.props.wallet[selectedWallet].transactions[selectedCrypto].filter((tx) => tx.hash === transaction);
 			this.props.updateWallet({selectedTransaction: transaction[0]});
 		} catch (e) {}
 	};
-
+	
 	//Handles the series of animations necessary when the user taps the selected crypto symbol
 	onSelectCoinPress = async () => {
 		//This prevents any possibility of the user tapping into the view without prior authorization.
@@ -1112,7 +1166,7 @@ export default class App extends PureComponent {
 			this.updatePriceHeader({display: true, duration: 350});
 		}
 	};
-
+	
 	//Handles the series of animations necessary when the user taps the Camera icon.
 	onCameraPress = async () => {
 		try {
@@ -1129,7 +1183,7 @@ export default class App extends PureComponent {
 			console.log(e);
 		}
 	};
-
+	
 	//Handles the series of animations necessary when the user taps the Settings icon.
 	onSettingsPress = async () => {
 		try {
@@ -1147,7 +1201,7 @@ export default class App extends PureComponent {
 			console.log(e);
 		}
 	};
-
+	
 	//Handles the series of animations necessary to transition the view to handle Biometrics.
 	onBiometricsPress = async () => {
 		try {
@@ -1168,7 +1222,7 @@ export default class App extends PureComponent {
 			console.log(e);
 		}
 	};
-
+	
 	//Handles the series of animations necessary to transition the view to handle Pin.
 	onPinPress = async () => {
 		try {
@@ -1190,7 +1244,7 @@ export default class App extends PureComponent {
 			console.log(e);
 		}
 	};
-
+	
 	//Handles the series of animations necessary to revert the view back to it's original layout.
 	resetView = async () => {
 		this.updateTransactionList({ display: true });
@@ -1198,6 +1252,7 @@ export default class App extends PureComponent {
 		if (this.state.displayCamera) this.updateCamera({ display: false });
 		if (this.state.displayXButton) this.updateXButton({display: false, duration: 100});
 		if (this.state.displayTextInput) this.updateTextInput({display: false, duration: 200});
+		if (this.state.displaySweepPrivateKey) this.updateSweepPrivateKey({display: false, duration: 200});
 		if (this.state.displayLoading) this.updateLoading({display: false, duration: 200});
 		if (this.state.displayReceiveTransaction) this.updateReceiveTransaction({display: false, duration: 200});
 		if (this.state.displaySettings) this.updateSettings({display: false, duration: 200});
@@ -1207,10 +1262,10 @@ export default class App extends PureComponent {
 		this.updateFlex({ duration: 400 });
 		InteractionManager.runAfterInteractions(() => {
 			this.props.updateWallet({ selectedTransaction: "" });
-			this.setState({optionSelected: "", transactionsAreExpanded: false, loadingAnimationName: "loader"});
+			this.setState({optionSelected: "", transactionsAreExpanded: false, loadingAnimationName: "loader", privateKey: ""});
 		});
 	};
-
+	
 	//Handles the series of animations necessary for the user to expand the transaction list.
 	expandTransactions = () => {
 		this.setState({ transactionsAreExpanded: true });
@@ -1222,268 +1277,62 @@ export default class App extends PureComponent {
 		//this.updateReceiveTransaction({display: false, duration: 200});
 		//this.updateSelectCoin({display: false, duration: 200});
 	};
-
+	
 	//Handles any action that requires the Keyboard to be dismissed.
 	dismissKeyboard = async () => {
 		Keyboard.dismiss();
 	};
-
-	//Handles any action that requires a private key to be swept.
-	//This function will auto-sweep the funds of any private key into the user's currently selected wallet.
-	//TODO: Add ability for user to specify the fee when sweeping. Disable this method until a custom fee can be applied.
-	sweepPrivateKey = async ({ privateKey = "", network = "bitcoin" } = {}) => {
-		return new Promise(async (resolve) => {
+	
+	restartElectrum = ({ coin = "" } = {}) => {
+		return new Promise(async(resolve) => {
 			try {
-				//Switch to the specified network in order to sweep the coins
-				if (network !== this.props.wallet.selectedCrypto) {
-					await this.props.updateWallet({selectedCrypto: network});
-					//Disconnect from the current electurm server.
-					await electrum.stop();
-					await electrum.start({coin: network, customPeers: this.props.settings.customPeers[network]});
-				}
-
-				//Get addresses from the private key
-				const keyPair = bitcoin.ECPair.fromWIF(privateKey, networks[network]);
-				const bech32Address = await getAddress(keyPair, networks[network], "bech32"); //Bech32
-				const p2shAddress = await getAddress(keyPair, networks[network], "p2sh"); //(3) Address
-				const p2pkhAddress = await getAddress(keyPair, networks[network], "p2pkh");//(1) Address
-
-				//Get the balance for each address.
-				const bech32BalanceResult = await Promise.all([
-					electrum.getAddressScriptHashBalance({address: bech32Address, id: 6, network: networks[network]}), //Bech32 format demands we use the scriptHash variant of the getAddressBalance function
-					electrum.getAddressScriptHashMempool({address: bech32Address, id: 5, network: networks[network]})
-				]);
-				const p2shBalanceResult = await Promise.all([
-					electrum.getAddressBalance({address: p2shAddress, id: 1}),
-					electrum.getMempool({address: p2shAddress, id: 3}),
-				]);
-				const p2pkhBalanceResult = await Promise.all([
-					electrum.getAddressBalance({address: p2pkhAddress, id: 2}),
-					electrum.getMempool({address: p2pkhAddress, id: 4})
-				]);
-
-				let balance = 0;
-				let bech32Balance = 0;
-				let p2shBalance = 0;
-				let p2pkhBalance = 0;
-				const selectedWallet = this.props.wallet.selectedWallet;
-				const selectedCrypto = this.props.wallet.selectedCrypto;
-				const changeAddressIndex = this.props.wallet[selectedWallet].changeAddressIndex[selectedCrypto];
-				const changeAddress = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto][changeAddressIndex].address;
-				//Add up and store all balances from each address
-				await Promise.all(
-					bech32BalanceResult.map((balanceResult) => {
-						if (balanceResult.error === false && !!balanceResult.data && balanceResult.data.constructor === Object) {
-							try {
-								let unconfirmed, confirmed = 0;
-								try {
-									unconfirmed = balanceResult.data.unconfirmed;
-									confirmed = balanceResult.data.confirmed;
-								} catch (e) {
-								}
-								balance = Number(unconfirmed) + Number(confirmed) + Number(balance);
-								bech32Balance = Number(unconfirmed) + Number(confirmed) + Number(bech32Balance);
-							} catch (e) {
-							}
-						}
-					}),
-					p2shBalanceResult.map((balanceResult) => {
-						if (balanceResult.error === false && !!balanceResult.data && balanceResult.data.constructor === Object) {
-							try {
-								let unconfirmed, confirmed = 0;
-								try {
-									unconfirmed = balanceResult.data.unconfirmed;
-									confirmed = balanceResult.data.confirmed;
-								} catch (e) {
-								}
-								balance = Number(unconfirmed) + Number(confirmed) + Number(balance);
-								p2shBalance = Number(unconfirmed) + Number(confirmed) + Number(p2shBalance);
-							} catch (e) {
-							}
-						}
-					}),
-					p2pkhBalanceResult.map((balanceResult) => {
-						if (balanceResult.error === false && !!balanceResult.data && balanceResult.data.constructor === Object) {
-							try {
-								let unconfirmed, confirmed = 0;
-								try {
-									unconfirmed = balanceResult.data.unconfirmed;
-									confirmed = balanceResult.data.confirmed;
-								} catch (e) {
-								}
-								balance = Number(unconfirmed) + Number(confirmed) + Number(balance);
-								p2pkhBalance = Number(unconfirmed) + Number(confirmed) + Number(p2pkhBalance);
-							} catch (e) {
-							}
-						}
-					})
-				);
-
-				console.log("Logging Address Balances...");
-				console.log(`${bech32Address}: ${bech32Balance}`);
-				console.log(`${p2shAddress}: ${p2shBalance}`);
-				console.log(`${p2pkhAddress}: ${p2pkhBalance}`);
-				console.log(`Total Balance: ${balance}`);
-
-				//Setup transaction builder for the given network
-				let txb = new bitcoin.TransactionBuilder(networks[network]);
-
-				//Set the target to the current wallet's next available changeAddress.
-				let targets = [{address: changeAddress, value: balance}];
-
-				//Fetch the utxos for each address
-				let bech32Utxos, p2shUtxos, p2pkhUtxos = [];
+				if (!coin) resolve({ error: true, data: {} });
+				
+				//This helps to prevent the app from disconnecting and stalling when attempting to connect to an electrum server after some time.
+				//await nodejs.start("main.js");
+				
+				//Disconnect from the currently connected Electrum server. Not entirely sure if this is necessary, but it seems to prevent the app from stalling in certain scenarios.
 				try {
-					if (bech32Balance) {
-						const utxoResponse = await electrum.listUnspentAddressScriptHash({
-							id: Math.random(),
-							address: bech32Address,
-							network: networks[selectedCrypto]
+					//await electrum.stop({ coin });
+				} catch (e) {}
+				
+				try {
+					let hasPeers = false;
+					let hasCustomPeers = false;
+					try {hasPeers = Array.isArray(this.props.settings.peers[coin]) && this.props.settings.peers[coin].length;} catch (e) {}
+					try {hasCustomPeers = Array.isArray(this.props.settings.customPeers[coin]) && this.props.settings.customPeers[coin].length;} catch (e) {}
+					
+					if (!hasPeers && !hasCustomPeers) {
+						//Attempt to retrieve a list of peers from the default servers.
+						const startResponse = await electrum.start({
+							coin,
+							peers: [],
+							customPeers: []
+							
 						});
-						if (utxoResponse.error === false) bech32Utxos = utxoResponse.data;
-					}
-				} catch (e) {
-					bech32Utxos = []
-				}
-				try {
-					if (p2shBalance) {
-						const utxoResponse = await electrum.listUnspentAddressScriptHash({
-							id: Math.random(),
-							address: p2shAddress,
-							network: networks[selectedCrypto]
-						});
-						if (utxoResponse.error === false) p2shUtxos = utxoResponse.data;
-					}
-				} catch (e) {
-					p2shUtxos = []
-				}
-				try {
-					if (p2pkhBalance) {
-						const utxoResponse = await electrum.listUnspentAddressScriptHash({
-							id: Math.random(),
-							address: p2pkhAddress,
-							network: networks[selectedCrypto]
-						});
-						if (utxoResponse.error === false) p2pkhUtxos = utxoResponse.data;
-					}
-				} catch (e) {
-					p2pkhUtxos = []
-				}
-
-				//Start adding the inputs for each address if any utxo's are available
-				try {
-					//Add Inputs
-					await Promise.all(
-						bech32Utxos.map((utxo) => {
-							const p2wpkh = bitcoin.payments.p2wpkh({
-								pubkey: keyPair.publicKey,
-								network: networks[network]
-							});
-							txb.addInput(utxo.tx_hash, utxo.tx_pos, null, p2wpkh.output);
-						})
-					);
-				} catch (e) {}
-				try {
-					//Add Inputs
-					await Promise.all(
-						p2shUtxos.map((utxo) => {
-							txb.addInput(utxo.tx_hash, utxo.tx_pos)
-						})
-					);
-				} catch (e) {}
-				try {
-					//Add Inputs
-					await Promise.all(
-						p2pkhUtxos.map((utxo) => {
-							txb.addInput(utxo.tx_hash, utxo.tx_pos)
-						})
-					);
-				} catch (e) {}
-
-				//Add our next available changeAddress for the given wallet as an output minus whatever the user decides the fee to be.
-				await Promise.all(
-					targets.map((target) => {
-						try {
-							txb.addOutput(target.address, target.value - 500);
-						} catch (e) {
+						if (startResponse.error === true) {
+							resolve(startResponse);
+							return;
 						}
-					})
-				);
-
-				//Loop through and sign
-				try {
-					if (bech32Utxos.length > 0) {
-						await Promise.all(
-							bech32Utxos.map((utxo, i) => {
-								try {
-									txb.sign(i, keyPair, null, null, utxo.value);
-								} catch (e) {
-								}
-							})
-						);
+						const peers = await electrum.getPeers({coin});
+						await this.props.updatePeersList({peerList: peers.data, coin});
 					}
 				} catch (e) {}
-				try {
-					if (p2shUtxos.length > 0) {
-						let utxoLength = 0;
-						try {
-							utxoLength = bech32Utxos.length;
-						} catch (e) {}
-						await Promise.all(
-							p2shUtxos.map((utxo, i) => {
-								try {
-									const p2wpkh = bitcoin.payments.p2wpkh({
-										pubkey: keyPair.publicKey,
-										network: networks[network]
-									});
-									const p2sh = bitcoin.payments.p2sh({redeem: p2wpkh, network: networks[network]});
-									txb.sign(utxoLength+i, keyPair, p2sh.redeem.output, null, utxo.value);
-								} catch (e) {
-									console.log(e);
-									console.log(i);
-								}
-							})
-						);
-					}
-				} catch (e) {
-					console.log(e);
+				
+				//Connect to an electrum server
+				const result = await electrum.start({ coin, peers: this.props.settings.peers[coin], customPeers: this.props.settings.customPeers[coin] });
+				if (result.error === true) {
+					resolve(result);
+					return;
 				}
-				try {
-					if (p2pkhUtxos.length > 0) {
-						let utxoLength = 0;
-						try {
-							utxoLength = bech32Utxos.length;
-						} catch (e) {}
-						try {
-							utxoLength = utxoLength + p2shUtxos.length;
-						} catch (e) {}
-						await Promise.all(
-							p2pkhUtxos.map((utxo, i) => {
-								try {
-									txb.sign(utxoLength+i, keyPair);
-								} catch (e) {
-									console.log(e);
-								}
-							})
-						);
-					}
-				} catch (e) {}
-
-				//Create the raw transaction hex
-				const rawTx = txb.build().toHex();
-				console.log(rawTx);
-
-				//Reset the user's view
-				this.resetView();
-
-				resolve({error: false, data: rawTx});
-				//alert(`Private Key Detected with a balance of ${balance}:\n${privateKey}\nApologies, but private key sweep functionality has not been implemented yet. I'm getting there, I promise!  :-)`);
+				await pauseExecution();
+				resolve(result);
 			} catch (e) {
 				console.log(e);
 			}
-		})
+		});
 	};
-
+	
 	//Handles any BarCodeRead action.
 	onBarCodeRead = async ({ data }) => {
 		try {
@@ -1492,24 +1341,18 @@ export default class App extends PureComponent {
 				await this.updateCamera({ display: false });
 				this.createNewWallet({ mnemonic: data });
 				return;
-				//const result = await importWallet({ updateWallet: this.props.updateWallet, wallets: this.props.wallet.wallets, createWallet: this.createNewWallet, mnemonic: data });
 			}
-
+			
 			//Determine if we need to sweep a private key
 			const validatePrivateKeyResults = await validatePrivateKey(data);
 			if (validatePrivateKeyResults.isPrivateKey === true) {
-
+				
 				//Remove Camera View
 				await this.updateCamera({ display: false });
-
-				alert("Private Key Detected. Unfortunately, Bitbip is not able to sweep this key into your wallet just yet, but we're getting there!");
-				//Auto sweep the data.
-				//TODO: Add ability for user to specify the fee when sweeping. Disable this method until a custom fee can be applied.
-				//this.sweepPrivateKey({ privateKey: data, network: validatePrivateKeyResults.network });
-
+				this.onSweep(data);
 				return;
 			}
-
+			
 			//Check if this is a BitId Request
 			//TODO: Complete this BitId function.
 			if (data.substr(0, 5).toLowerCase() === "bitid") {
@@ -1519,7 +1362,7 @@ export default class App extends PureComponent {
 				//Reveal Sign Message View
 				//await this.updateSignMessage({ display: true });
 			}
-
+			
 			const qrCodeData = await parsePaymentRequest(data);
 			//Throw error if unable to interpret the qrcode data.
 			if (qrCodeData.error) {
@@ -1528,17 +1371,17 @@ export default class App extends PureComponent {
 				return;
 			}
 			InteractionManager.runAfterInteractions(async () => {
-
+				
 				//Switch to proper Electrum Server if the qrcode coin data doesn't match our currently selected coin.
 				if (qrCodeData.data.coin !== this.props.wallet.selectedCrypto) {
 					const coin = qrCodeData.data.coin;
 					await this.props.updateWallet({selectedCrypto: coin});
 					//Disconnect from the current electurm server.
-					await electrum.stop();
+					//await electrum.stop({ coin });
 					//Connect to the relevant electrum server as per the qrcode data.
-					await electrum.start({coin, customPeers: this.props.settings.customPeers[coin]});
+					await this.restartElectrum({ coin });
 				}
-
+				
 				//Pass the transaction data forward for use.
 				this.props.updateTransaction(qrCodeData.data);
 				//Trigger the onSendPress animation to expose the transaction view.
@@ -1548,7 +1391,7 @@ export default class App extends PureComponent {
 			//console.log(e);
 		}
 	};
-
+	
 	//Returns the fiat balance based on the most recent exchange rate of the selected crypto.
 	getFiatBalance = () => {
 		try {
@@ -1562,7 +1405,7 @@ export default class App extends PureComponent {
 			return 0;
 		}
 	};
-
+	
 	//Returns the confirmed balance of the selected crypto.
 	getCryptoBalance = () => {
 		let confirmedBalance = 0;
@@ -1572,7 +1415,7 @@ export default class App extends PureComponent {
 		} catch (e) {}
 		return confirmedBalance;
 	};
-
+	
 	//Returns the next available empty address of the selected crypto.
 	getQrCodeAddress = () => {
 		try {
@@ -1583,7 +1426,7 @@ export default class App extends PureComponent {
 			return "";
 		}
 	};
-
+	
 	//Returns all transactions for the selected crypto.
 	getTransactions = () => {
 		try {
@@ -1598,15 +1441,15 @@ export default class App extends PureComponent {
 			return [];
 		}
 	};
-
+	
 	onPinFailure = async () => {
 		try {
 			await this.createWallet("wallet0", true);
 		} catch (e) {
-
+		
 		}
 	};
-
+	
 	createNewWallet = async ({ mnemonic = "" }) => {
 		try {
 			//Get highest wallet number
@@ -1623,35 +1466,34 @@ export default class App extends PureComponent {
 			const wallets = this.props.wallet.wallets.concat(walletName);
 			//Set Loading Message
 			await this.setState({loadingMessage: `Creating ${walletName.split('wallet').join('Wallet ')} & Generating Addresses`, loadingProgress: 0.5});
-
+			
 			//Close Receive State
 			this.updateSelectCoin({display: false});
 			this.updateSettings({display: false});
 			this.updateXButton({display: false, duration: 100});
 			await this.updateLoading({ display: true });
-
+			
 			//Set the selectedWallet accordingly and update the wallets array.
 			await this.props.updateWallet({ selectedWallet: walletName, wallets });
-
+			
 			await this.props.createWallet({ wallet: walletName, mnemonic, generateAllAddresses: mnemonic === "" });
-
+			
 			const { selectedCrypto } = this.props.wallet;
-			await electrum.stop();
-			await electrum.start({ coin: selectedCrypto, customPeers: this.props.settings.customPeers[selectedCrypto] });
+			await this.restartElectrum({ coin: selectedCrypto });
 			//Get Current Block Height
 			this.props.updateBlockHeight({ selectedCrypto });
-
+			
 			//There's no need to check address/transaction history for new, random mnemonics.
 			if (mnemonic !== "") {
 				await this.refreshWallet({ignoreLoading: false});
 			}
-
+			
 			this.resetView();
 		} catch (e) {
 			console.log(e);
 		}
 	};
-
+	
 	render() {
 		//return <ElectrumTesting />;
 		return (
@@ -1659,16 +1501,16 @@ export default class App extends PureComponent {
 				<StatusBar backgroundColor={colors.darkPurple} barStyle="light-content" animated={true} />
 				<Animated.View style={[styles.upperContent, { flex: this.state.upperContentFlex }]}>
 					<LinearGradient style={styles.linearGradient} colors={["#8e45bf", "#7931ab","#5e1993", "#59158e"]} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
-
+						
 						<TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={this.dismissKeyboard}>
-
+							
 							{this.state.displayPriceHeader &&
 							<Animated.View style={[styles.settingsContainer, { opacity: this.state.priceHeaderOpacity, zIndex: 200 }]}>
 								<TouchableOpacity style={{ paddingTop: 10, paddingRight: 10, paddingLeft: 30, paddingBottom: 30 }} onPress={this.onSettingsPress}>
-									<Ionicons name={"ios-cog"} size={30} color={colors.white}/>
+									<Ionicons name={"ios-cog"} size={30} color={colors.white} />
 								</TouchableOpacity>
 							</Animated.View>}
-
+							
 							{this.state.displayBiometrics &&
 							<Animated.View style={[styles.settings, { opacity: this.state.biometricsOpacity }]}>
 								<Biometrics
@@ -1676,12 +1518,12 @@ export default class App extends PureComponent {
 									retryAuthentication={this.state.displayBiometricAuthenticationRetry ? this.authenticateUserWithBiometrics : null}
 								/>
 							</Animated.View>}
-
+							
 							{this.state.displayPin &&
 							<Animated.View style={[styles.settings, { opacity: this.state.pinOpacity }]}>
 								<PinPad onSuccess={this.launchDefaultFuncs} onFailure={this.onPinFailure} />
 							</Animated.View>}
-
+							
 							{this.state.displayLoading &&
 							<Loading
 								loadingOpacity={this.state.loadingOpacity}
@@ -1690,17 +1532,17 @@ export default class App extends PureComponent {
 								width={width/2}
 								animationName={this.state.loadingAnimationName}
 							/>}
-
+							
 							{this.state.displayCamera &&
 							<Animated.View style={[styles.camera, { opacity: this.state.cameraOpacity }]}>
 								<Camera onClose={this.state.optionSelected === "send" ? this.onSendPress : this.resetView} onBarCodeRead={this.onBarCodeRead} />
 							</Animated.View>}
-
+							
 							{this.state.displaySettings &&
 							<Animated.View style={[styles.settings, { opacity: this.state.settingsOpacity }]}>
 								<Settings createNewWallet={this.createNewWallet} onBack={this.resetView} refreshWallet={this.refreshWallet} />
 							</Animated.View>}
-
+							
 							<Animated.View style={[styles.priceHeader, { opacity: this.state.priceHeaderOpacity }]}>
 								<TouchableOpacity onPress={this.onSelectCoinPress} style={{ position: "absolute",top: 0, paddingTop: 10, paddingBottom: 20, paddingHorizontal: 30 }}>
 									<Text style={styles.cryptoValue}>{this.props.wallet.selectedWallet.split('wallet').join('Wallet ')}</Text>
@@ -1717,25 +1559,32 @@ export default class App extends PureComponent {
 									onSelectCoinPress={this.onSelectCoinPress}
 								/>
 							</Animated.View>
-
+							
 							{this.state.displayReceiveTransaction &&
 							<Animated.View style={[styles.ReceiveTransaction, { opacity: this.state.receiveTransactionOpacity }]}>
 								<ReceiveTransaction address={this.getQrCodeAddress()} amount={0.005} size={200} />
 							</Animated.View>}
-
+							
 							{this.state.displayTextInput &&
 							<Animated.View style={[styles.textFormContainer, { opacity: this.state.textInputOpacity }]}>
-
+								
 								<SendTransaction onCameraPress={this.onCameraPress} refreshWallet={this.refreshWallet} onClose={this.resetView} />
-
+							
 							</Animated.View>}
-
+							
+							{this.state.displaySweepPrivateKey &&
+							<Animated.View style={[styles.textFormContainer, { opacity: this.state.sweepPrivateKeyOpacity }]}>
+								
+								<SweepPrivateKey privateKey={this.state.privateKey} privateKeyData={this.state.privateKeyData} refreshWallet={this.refreshWallet} onClose={this.resetView} updateXButton={this.updateXButton} />
+							
+							</Animated.View>}
+							
 							{this.state.displayCameraRow &&
 							<Animated.View style={[styles.cameraRow, { opacity: this.state.cameraRowOpacity }]}>
 								<CameraRow onSendPress={this.onSendPress} onReceivePress={this.onReceivePress} onCameraPress={this.onCameraPress} />
 							</Animated.View>}
 						</TouchableOpacity>
-
+						
 						{this.state.displaySelectCoin &&
 						<Animated.View style={[styles.selectCoin, { opacity: this.state.selectCoinOpacity }]}>
 							<SelectCoin
@@ -1747,21 +1596,21 @@ export default class App extends PureComponent {
 								createNewWallet={this.createNewWallet}
 							/>
 						</Animated.View>}
-
+					
 					</LinearGradient>
 				</Animated.View>
-
+				
 				<Animated.View style={[styles.lowerContent, { flex: this.state.lowerContentFlex }]}>
-
+					
 					<View style={{ flex: 1 }}>
-
+						
 						{this.state.displayTransactionList &&
 						<LinearGradient style={{ flex: 1 }} colors={[ colors.white, "#f1f3f4", colors.white, colors.white]} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
-							<Animated.View style={{ flex: 1, opacity: this.state.transactionListOpacity }} >
+							<Animated.View style={{ flex: 1, opacity: this.state.transactionListOpacity }}>
 								<View style={styles.transactionListHeader}>
 									{!this.state.loadingTransactions &&
 									<TouchableOpacity onPress={this.refreshWallet} style={styles.refresh}>
-										<Ionicons name={"ios-refresh"} size={18} color={colors.darkPurple}/>
+										<Ionicons name={"ios-refresh"} size={18} color={colors.darkPurple} />
 									</TouchableOpacity>}
 									{this.state.loadingTransactions && this.state.displayTransactionList &&
 									<View style={styles.refresh}>
@@ -1770,32 +1619,33 @@ export default class App extends PureComponent {
 									<TouchableOpacity onPress={this.state.transactionsAreExpanded ? this.resetView : this.expandTransactions} style={styles.centerContent}>
 										<Text style={styles.boldText}>Transactions</Text>
 									</TouchableOpacity>
-
+									
 									<TouchableOpacity onPress={this.state.transactionsAreExpanded ? this.resetView : this.expandTransactions} style={styles.expand}>
 										{this.state.transactionsAreExpanded &&
-										<EvilIcon name={"chevron-down"} size={30} color={colors.darkPurple}/>}
+										<EvilIcon name={"chevron-down"} size={30} color={colors.darkPurple} />}
 										{!this.state.transactionsAreExpanded &&
-										<EvilIcon name={"chevron-up"} size={30} color={colors.darkPurple}/>}
+										<EvilIcon name={"chevron-up"} size={30} color={colors.darkPurple} />}
 									</TouchableOpacity>
 								</View>
 								<TransactionList onTransactionPress={this.onTransactionPress} transactions={this.getTransactions()} selectedCrypto={this.props.wallet.selectedCrypto} cryptoUnit={this.props.settings.cryptoUnit} exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]} blockHeight={this.props.wallet.blockHeight[this.props.wallet.selectedCrypto]} onRefresh={this.resetView} />
 							</Animated.View>
 						</LinearGradient>}
-
+						
 						{this.state.displayTransactionDetail &&
 						<Animated.View style={[styles.transactionDetail, { opacity: this.state.transactionDetailOpacity }]}>
 							<TransactionDetail blacklistTransaction={() => this.props.blacklistTransaction({ transaction: this.props.wallet.selectedTransaction.hash, wallet: this.props.wallet.selectedWallet, selectedCrypto: this.props.wallet.selectedCrypto })} transaction={this.props.wallet.selectedTransaction} selectedCrypto={this.props.wallet.selectedCrypto} cryptoUnit={this.props.settings.cryptoUnit} exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]} currentBlockHeight={this.props.wallet.blockHeight[this.props.wallet.selectedCrypto]} />
 						</Animated.View>}
-
+					
 					</View>
-
+				
 				</Animated.View>
-
+				
 				{this.state.displayXButton &&
 				<Animated.View style={[styles.xButton, { opacity: this.state.xButtonOpacity }]}>
 					<XButton
 						style={{ borderColor: this.state.displayTransactionList ? "transparent": colors.white }}
-						onPress={this.resetView}/>
+						onPress={this.resetView}
+					/>
 				</Animated.View>}
 			</SafeAreaView>
 		);
@@ -1940,7 +1790,7 @@ const walletActions = require("./src/actions/wallet");
 const settingsActions = require("./src/actions/settings");
 const transactionActions = require("./src/actions/transaction");
 
-const mapStateToProps = ({...state}, props) => ({
+const mapStateToProps = ({...state}) => ({
 	...state
 });
 

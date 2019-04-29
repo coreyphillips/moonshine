@@ -45,9 +45,8 @@ Bitbip's Alpha is available for download here:
     * Add support for UTXO blacklisting
         * This will allow users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo will also exclude it's amount from their total balance.
     * Allow users to manually select which public Electrum servers to randomly use if not connecting to their own node
-    * Add support for p2sh & legacy addresses in settings
     * Add support for additional currencies in the settings
-    * Support individual private key sweeping functionality
+    * Support individual private key sweeping functionality - *Complete (0.1.1)*
     * UI Improvements/Redesign:
         * Settings View
         * SelectCoin View

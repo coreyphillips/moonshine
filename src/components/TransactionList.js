@@ -7,7 +7,7 @@ import {
 	RefreshControl
 } from "react-native";
 import PropTypes from "prop-types";
-import { systemWeights } from "react-native-typography"
+import { systemWeights } from "react-native-typography";
 import TransactionRow from "./TransactionRow";
 import LottieView from "lottie-react-native";
 
@@ -16,7 +16,6 @@ const {
 		colors
 	}
 } = require("../../ProjectData.json");
-const FONT_SIZE = 60;
 
 //transactions = [], selectedCrypto = "bitcoin", exchangeRate = 0, blockHeight = 0, onRefresh = () => null, onTransactionPress = () => null
 class TransactionList extends PureComponent {
@@ -52,7 +51,7 @@ class TransactionList extends PureComponent {
 						onTransactionPress={onTransactionPress}
 					/>
 				</View>
-			)
+			);
 		} catch (e) {
 			console.log(e);
 		}
@@ -70,7 +69,7 @@ class TransactionList extends PureComponent {
 						style={{ width: 150, height: 150, marginTop: 10 }}
 					/>
 				</View>
-			)
+			);
 		} catch (e) {
 			console.log(e);
 		}
@@ -112,7 +111,7 @@ class TransactionList extends PureComponent {
 					}
 				/>}
 			</View>
-		)
+		);
 	}
 }
 

@@ -27,14 +27,14 @@ class CameraRow extends PureComponent {
 				</TouchableOpacity>
 				<View style={styles.centerItem}>
 					<TouchableHighlight onPress={onCameraPress} underlayColor={colors.gray} style={styles.cameraIcon}>
-						<EvilIcon style={{ bottom: -2 }} name={"camera"} size={40} color={colors.darkPurple}/>
+						<EvilIcon style={{ bottom: -2 }} name={"camera"} size={40} color={colors.darkPurple} />
 					</TouchableHighlight>
 				</View>
 				<TouchableOpacity onPress={onReceivePress} style={styles.rightItem}>
 					<Text style={styles.text}>Receive</Text>
 				</TouchableOpacity>
 			</View>
-		)
+		);
 	}
 }
 

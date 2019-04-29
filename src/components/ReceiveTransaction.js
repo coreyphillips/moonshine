@@ -21,9 +21,8 @@ const {
 const {
 	capitalize
 } = require("../utils/helpers");
-const queryString = require('query-string');
 
-formatUri = ({ coin = "bitcoin", address = "", amount = "", label = "" } = {}) => {
+formatUri = ({ coin = "bitcoin", address = "" } = {}) => {
 	try {
 		//return `${coin}:${address}?amount=${amount.toString()}&label=${label}`;
 		return `${coin}:${address}`;
@@ -39,7 +38,7 @@ onSharePress = (address = "", selectedCoin = "Bitcoin") => {
 		}, {
 			// Android only:
 			dialogTitle: "My Bitcoin Address."
-		})
+		});
 	} catch (e) {
 		console.log(e);
 	}
@@ -69,12 +68,12 @@ class ReceiveTransaction extends PureComponent {
 							toValue: 0,
 							duration
 						}
-					).start()
+					).start();
 				}, duration/4);
 			});
 		} catch (e) {
 			console.log(e);
-			alert("Unable to copy address. Please try again or check your phone's permissions.")
+			alert("Unable to copy address. Please try again or check your phone's permissions.");
 		}
 	};
 
@@ -88,7 +87,7 @@ class ReceiveTransaction extends PureComponent {
 
 	render() {
 
-		if (!this.props.address || !this.props.amount) return <View/>;
+		if (!this.props.address || !this.props.amount) return <View />;
 
 		return (
 			<View style={styles.container}>
@@ -113,11 +112,11 @@ class ReceiveTransaction extends PureComponent {
 				</View>
 				<View style={styles.row}>
 					<Button style={styles.button} text="Share" onPress={() => onSharePress(this.props.address, this.props.coin)} disabled={this.props.disabled} />
-					<View style={{marginHorizontal: 5}}/>
+					<View style={{marginHorizontal: 5}} />
 					<Button style={styles.button} text="Copy" onPress={() => this.onCopyPress(this.props.address)} disabled={this.props.disabled} />
 				</View>
 			</View>
-		)
+		);
 	}
 }
 

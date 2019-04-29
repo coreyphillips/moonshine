@@ -87,9 +87,9 @@ class TransactionDetail extends PureComponent <Props> {
 						<Text style={[styles.text, valueStyle]}>{value}</Text>
 					</TouchableOpacity>
 				</View>
-			)
+			);
 		} catch (e) {
-			console.log(e)
+			console.log(e);
 		}
 	};
 
@@ -202,7 +202,7 @@ class TransactionDetail extends PureComponent <Props> {
 	*/
 
 	render() {
-		if (!this.props.transaction) return <View/>;
+		if (!this.props.transaction) return <View />;
 		const { block, type, hash, timestamp, fee, address } = this.props.transaction;
 
 		const confirmations = getConfirmations();
@@ -261,7 +261,7 @@ class TransactionDetail extends PureComponent <Props> {
 					</Animated.View>
 				</ScrollView>
 			</View>
-		)
+		);
 	}
 }
 

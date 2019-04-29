@@ -9,6 +9,7 @@ import {
 	Image,
 	Alert
 } from "react-native";
+import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography/dist/index";
 import bitcoinUnits from "bitcoin-units";
 
@@ -61,7 +62,7 @@ class CoinButton extends PureComponent {
 
 				</View>
 			</TouchableOpacity>
-		)
+		);
 	}
 }
 
@@ -151,7 +152,13 @@ class WalletSliderEntry extends PureComponent {
 WalletSliderEntry.defaultProps = {
 	onCoinPress: () => null,
 	coins: availableCoins,
-	wallet: "wallet0"
+	wallet: "wallet0",
+	data: {}
+};
+
+WalletSliderEntry.propTypes = {
+	onCoinPress: PropTypes.func.isRequired,
+	coins: PropTypes.array.isRequired
 };
 
 const styles = StyleSheet.create({
@@ -233,7 +240,7 @@ const walletActions = require("../actions/wallet");
 const transactionActions = require("../actions/transaction");
 const settingsActions = require("../actions/settings");
 
-const mapStateToProps = ({...state}, props) => ({
+const mapStateToProps = ({...state}) => ({
 	...state
 });
 

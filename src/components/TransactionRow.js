@@ -25,7 +25,7 @@ const {
 
 class TransactionRow extends PureComponent {
 	render() {
-		let { id, coin, address, amount, label, date, confirmations, transactionBlockHeight, exchangeRate, currentBlockHeight, cryptoUnit, type, onTransactionPress, messages } = this.props;
+		let { id, coin, address, amount, label, date, transactionBlockHeight, exchangeRate, currentBlockHeight, cryptoUnit, type, onTransactionPress, messages } = this.props;
 		getCryptoAmountLabel = () => {
 			try {
 				amount = Number(amount);
@@ -81,7 +81,7 @@ class TransactionRow extends PureComponent {
 			}
 		};
 
-		if (!address || !amount) return <View/>;
+		if (!address || !amount) return <View />;
 
 		if (!label) label = address;
 		if (label.length > 18) label = `${label.substr(0, 18)}...`;
@@ -111,7 +111,7 @@ class TransactionRow extends PureComponent {
 					</View>
 				</View>}
 			</TouchableOpacity>
-		)
+		);
 	}
 }
 
@@ -139,7 +139,6 @@ TransactionRow.propTypes = {
 	amount: PropTypes.number.isRequired,
 	label: PropTypes.string,
 	date: PropTypes.number.isRequired,
-	confirmations: PropTypes.number.isRequired,
 	transactionBlockHeight: PropTypes.number.isRequired,
 	exchangeRate: PropTypes.string.isRequired,
 	currentBlockHeight: PropTypes.number.isRequired,

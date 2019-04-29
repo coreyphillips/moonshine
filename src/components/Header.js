@@ -76,7 +76,7 @@ class Header extends PureComponent {
 				<Text style={[styles.cryptoValue, { marginTop: 10, fontSize: fontSize/2.5 }]}>Currently Offline</Text>
 				}
 			</TouchableOpacity>
-		)
+		);
 	}
 }
 

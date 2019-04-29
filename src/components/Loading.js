@@ -28,25 +28,18 @@ const getAnimation = (name = "book") => {
 		switch (name) {
 			case "book":
 				return require(`../assets/lottie/loading_book.json`);
-				break;
 			case "loader":
 				return require(`../assets/lottie/snap_loader_white.json`);
-				break;
 			case "bitcoinMoon":
 				return require(`../assets/lottie/bitcoin_to_the_moon.json`);
-				break;
 			case "rocket":
 				return require(`../assets/lottie/bms-rocket.json`);
-				break;
 			case "cloudBook":
 				return require(`../assets/lottie/downloading_book.json`);
-				break;
 			case "threeCircleLoader":
 				return require(`../assets/lottie/strategy_shape`);
-				break;
 			default:
 				return getCoinImage(name); //Assume the requested image is a coin
-				break;
 		}
 	} catch (e) {
 		return require(`../assets/lottie/snap_loader_white.json`);
@@ -64,7 +57,7 @@ class Loading extends PureComponent {
 					style={{width: 100, height: 100, marginBottom: 40}}
 					source={getAnimation(animationName)}
 				/>
-			)
+			);
 		}
 		return (
 			<LottieView
@@ -73,7 +66,7 @@ class Loading extends PureComponent {
 				loop={true}
 				style={{ width: 150, height: 150, marginBottom: 10 }}
 			/>
-		)
+		);
 	}
 
 	render() {
@@ -100,7 +93,7 @@ class Loading extends PureComponent {
 
 				</Animated.View>
 			</Animated.View>
-		)
+		);
 	}
 }
 

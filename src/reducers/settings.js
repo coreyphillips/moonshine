@@ -9,8 +9,12 @@ const {
 	availableCoins
 } = require("../utils/networks");
 
+let peers = {};
 let customPeers = {};
-availableCoins.map(coin => ( customPeers[coin] = [] ));
+availableCoins.map(coin => {
+	peers[coin] = [];
+	customPeers[coin] = [];
+});
 
 module.exports = (state = {
 	loading: false,
@@ -24,7 +28,8 @@ module.exports = (state = {
 	pin: false,
 	pinAttemptsRemaining: 5,
 	cryptoUnit: "satoshi", //BTC, mBTC, μBTC or satoshi
-	customPeers, //Takes { host: "", port: "", protocol: "ssl" } Default ports for BTC are: "s": "50002" && "t": "50001"
+	peers, //A list of peers acquired from default electrum servers using the getPeers method. Takes { host: "", port: "", protocol: "ssl" } Default ports for BTC are: "s": "50002" && "t": "50001"
+	customPeers, //A list of peers added by the user to connect to by default in lieu of the default peer list. Takes { host: "", port: "", protocol: "ssl" } Default ports for BTC are: "s": "50002" && "t": "50001"
 	currentPeer: {
 		host: "",
 		port: "", //Default ports for BTC are: "s": "50002" && "t": "50001"
@@ -43,6 +48,7 @@ module.exports = (state = {
 				pin: false,
 				pinAttemptsRemaining: 5,
 				cryptoUnit: "satoshi", //BTC, mBTC, μBTC or satoshi
+				peers,
 				customPeers,
 				currentPeer: {
 					host: "",
@@ -54,6 +60,15 @@ module.exports = (state = {
 			return {
 				...state,
 				...action.payload
+			};
+		
+		case actions.UPDATE_PEERS_LIST:
+			return {
+				...state,
+				peers: {
+					...state.peers,
+					[action.payload.coin]: action.payload.peers
+				}
 			};
 
 		case actions.CLEAR_LOADING_SPINNER:

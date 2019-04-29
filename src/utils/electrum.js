@@ -1,6 +1,7 @@
 import nodejs from "nodejs-mobile-react-native";
 import "../../shim";
 
+this.electrumKeepAlive = () => null;
 this.getAddressBalance = {};
 this.getAddressScriptHashBalance = {};
 this.getAddressScriptHashesBalance = {};
@@ -11,6 +12,8 @@ this.getAddressScriptHashesMempool = {};
 this.listUnspentAddressScriptHash = {};
 this.listUnspentAddressScriptHashes = {};
 this.getMempool = {};
+this.pingServer = {};
+this.getBanner = {};
 this.listUnspentAddress = {};
 this.getFeeEstimate = {};
 this.getAddressHistory = {};
@@ -22,6 +25,7 @@ this.getPeers = {};
 this.getNewBlockHeightSubscribe = {};
 this.getTransactionMerkle = {};
 this.getTransaction = {};
+this.getTransactions = {};
 this.getAddressUtxo = {};
 this.broadcastTransaction = {};
 this.getBlockChunk = {};
@@ -31,42 +35,55 @@ this.getAddressProof = {};
 this.getVersion = {};
 this.getNewBlockHeadersSubscribe = {};
 this.connectToPeer = {};
-this.createAddresses = {};
 
 const bitcoin = require("rn-bitcoinjs-lib");
+const {
+	networks
+} = require("./networks");
 
-const start = async ({ id = Math.random(), coin = "", customPeers = []} = {}) => {
+const getFuncName = () => {
+	return getFuncName.caller.name;
+};
+
+//peers = A list of peers acquired from default electrum servers using the getPeers method.
+//customPeers = A list of peers added by the user to connect to by default in lieu of the default peer list.
+const start = async ({ id = Math.random(), coin = "", peers = [], customPeers = []} = {}) => {
+	const method = "connectToPeer";
 	//Spin up the nodejs thread
 	//await nodejs.start("main.js");
-
+	
 	return new Promise(async (resolve) => {
 		try {
+			if (!coin) resolve({error: true, data: {}});
 			//Clear/Remove any previous keep-alive message.
-			clearInterval(this.electrumKeepAlive);
-
+			try {
+				clearInterval(this.electrumKeepAlive);
+			} catch (e) {}
+			
 			//Setup the listener for electrum messages
 			this.connectToPeer[id] = (async (msg) => {
 				try {
 					msg = JSON.parse(msg);
-					console.log(msg);
-					if (msg.method === "connectToPeer") {
+					if (msg.method === method && msg.id === id) {
 						nodejs.channel.removeListener("message", this.connectToPeer[id]);
 						if (msg.error === false && msg.data !== "" ) {
 							try {
 								//Start Electrum's keep-alive function
 								//It’s sent every minute as a keep-alive message.
-								const versionResponse = await getVersion({id: Math.random(), coin});
 								this.electrumKeepAlive = setInterval(async () => {
-									getVersion({id: Math.random(), coin});
+									try {
+										pingServer({id: Math.random()});
+									} catch (e) {}
 								}, 60000);
+								resolve(msg);
 							} catch (e) {
-								resolve({error: true, data: e})
+								resolve({error: true, data: e});
 							}
 						}
 						resolve(msg);
 					}
 				} catch (e) {
-					resolve({error: true, data: e})
+					resolve({error: true, data: e});
 				}
 			});
 			//Add the listener for electrum messages
@@ -75,25 +92,54 @@ const start = async ({ id = Math.random(), coin = "", customPeers = []} = {}) =>
 				this.connectToPeer[id],
 				this
 			);
-			nodejs.channel.send(JSON.stringify({ id, method: "connectToPeer", coin, customPeers }));
+			nodejs.channel.send(JSON.stringify({ id, method, coin, peers, customPeers }));
 		} catch (e) {
 			console.log(e);
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e });
 		}
 	});
 };
 
-const stop = () => {
-	try {
-		//Clear/Remove Electrum's keep-alive message.
-		clearInterval(this.electrumKeepAlive);
-		//Remove any selectedCoin
-		this.coin = "";
-		//Disconnect from peer
-		disconnectFromPeer({ id: Math.random() });
-	} catch (e) {
-		console.log(e);
-	}
+const stop = async ({ coin = "" } = {}) => {
+	return new Promise(async (resolve) => {
+		try {
+			//Clear/Remove Electrum's keep-alive message.
+			clearInterval(this.electrumKeepAlive);
+			//Disconnect from peer
+			const response = await disconnectFromPeer({ coin });
+			resolve(response);
+		} catch (e) {
+			console.log(e);
+			resolve({ error: true, data: e });
+		}
+	});
+	
+};
+
+const disconnectFromPeer = ({ id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
+	return new Promise(async (resolve) => {
+		try {
+			//Add a new listener that self-removes once complete.
+			this.disconnectFromPeer[id] = ((msg) => {
+				msg = JSON.parse(msg);
+				if (msg.method === method && msg.id === id) {
+					nodejs.channel.removeListener("message", this.disconnectFromPeer[id]);
+					resolve(msg);
+				}
+			});
+			//Ensure the listener is setup and established.
+			await nodejs.channel.addListener(
+				"message",
+				this.disconnectFromPeer[id],
+				this
+			);
+			
+			nodejs.channel.send(JSON.stringify({ method, coin, id }));
+		} catch (e) {
+			resolve({ id, error: true, method, data: e });
+		}
+	});
 };
 
 const addElectrumListener = () => {
@@ -104,9 +150,10 @@ const addElectrumListener = () => {
 				msg = JSON.parse(msg);
 				switch (msg.method) {
 					case "getAddressBalance":
-					//Execute anything you need for the given function...
-					default:
+						//Execute anything you need for the given function...
 						break;
+					default:
+						return;
 				}
 			} catch (e) {
 				JSON.stringify(e);
@@ -133,13 +180,14 @@ const removeElectrumListener = () => {
 	}
 };
 
-const getAddressBalance = ({ address = "", id = Math.random() } = {}) => {
+const getAddressBalance = ({ address = "", id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getAddressBalance[id] = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getAddressBalance" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getAddressBalance[id]);
 					resolve(msg);
 				}
@@ -150,21 +198,22 @@ const getAddressBalance = ({ address = "", id = Math.random() } = {}) => {
 				this.getAddressBalance[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getAddressBalance", address, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e });
 		}
 	});
 };
 
-const getAddressScriptHashBalance = ({ address = "", id = Math.random(), network }) => {
+const getAddressScriptHashBalance = ({ address = "", id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getAddressScriptHashBalance[id] = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getAddressScriptHashBalance" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getAddressScriptHashBalance[id]);
 					resolve(msg);
 				}
@@ -175,26 +224,27 @@ const getAddressScriptHashBalance = ({ address = "", id = Math.random(), network
 				this.getAddressScriptHashBalance[id],
 				this
 			);
-
-			const script = bitcoin.address.toOutputScript(address, network);
+			
+			const script = bitcoin.address.toOutputScript(address, networks[coin]);
 			let hash = bitcoin.crypto.sha256(script);
 			const reversedHash = new Buffer(hash.reverse());
 			const scriptHash = reversedHash.toString("hex");
-
-			nodejs.channel.send(JSON.stringify({ method: "getAddressScriptHashBalance", scriptHash, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, scriptHash, coin, id }));
 		} catch (e) {
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e });
 		}
 	});
 };
 
-const getAddressScriptHashesBalance = ({ addresses = [], id = Math.random(), network }) => {
+const getAddressScriptHashesBalance = ({ addresses = [], id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getAddressScriptHashesBalance[id] = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getAddressScriptHashesBalance" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getAddressScriptHashesBalance[id]);
 					resolve(msg);
 				}
@@ -205,34 +255,35 @@ const getAddressScriptHashesBalance = ({ addresses = [], id = Math.random(), net
 				this.getAddressScriptHashesBalance[id],
 				this
 			);
-
+			
 			let scriptHashes = [];
-			await Promise.all(addresses.map((address) => {
+			await Promise.all(addresses.map(({ address, path }) => {
 				try {
-					const script = bitcoin.address.toOutputScript(address, network);
+					const script = bitcoin.address.toOutputScript(address, networks[coin]);
 					let hash = bitcoin.crypto.sha256(script);
 					const reversedHash = new Buffer(hash.reverse());
 					const scriptHash = reversedHash.toString("hex");
-					scriptHashes.push({ scriptHash, address });
+					scriptHashes.push({ scriptHash, address, path });
 				} catch (e) {
 					console.log(e);
 				}
 			}));
-
-			nodejs.channel.send(JSON.stringify({ method: "getAddressScriptHashesBalance", scriptHashes, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, scriptHashes, coin, id }));
 		} catch (e) {
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e });
 		}
 	});
 };
 
-const getAddressScriptHashHistory = ({ address = "", id = Math.random(), network }) => {
+const getAddressScriptHashHistory = ({ address = "", id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getAddressScriptHashHistory[id] = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getAddressScriptHashHistory" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getAddressScriptHashHistory[id]);
 					resolve(msg);
 				}
@@ -243,26 +294,27 @@ const getAddressScriptHashHistory = ({ address = "", id = Math.random(), network
 				this.getAddressScriptHashHistory[id],
 				this
 			);
-
-			const script = bitcoin.address.toOutputScript(address, network);
+			
+			const script = bitcoin.address.toOutputScript(address, networks[coin]);
 			let hash = bitcoin.crypto.sha256(script);
 			const reversedHash = new Buffer(hash.reverse());
 			const scriptHash = reversedHash.toString("hex");
-
-			nodejs.channel.send(JSON.stringify({ method: "getAddressScriptHashHistory", scriptHash, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, scriptHash, coin, id }));
 		} catch (e) {
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e });
 		}
 	});
 };
 
-const getAddressScriptHashesHistory = ({ addresses = [], id = Math.random(), network }) => {
+const getAddressScriptHashesHistory = ({ addresses = [], id = Math.random(), coin = ""} = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getAddressScriptHashesHistory[id] = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getAddressScriptHashesHistory" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getAddressScriptHashesHistory[id]);
 					resolve(msg);
 				}
@@ -273,11 +325,11 @@ const getAddressScriptHashesHistory = ({ addresses = [], id = Math.random(), net
 				this.getAddressScriptHashesHistory[id],
 				this
 			);
-
+			
 			let scriptHashes = [];
 			await Promise.all(addresses.map(({ address, path }) => {
 				try {
-					const script = bitcoin.address.toOutputScript(address, network);
+					const script = bitcoin.address.toOutputScript(address, networks[coin]);
 					let hash = bitcoin.crypto.sha256(script);
 					const reversedHash = new Buffer(hash.reverse());
 					const scriptHash = reversedHash.toString("hex");
@@ -286,21 +338,22 @@ const getAddressScriptHashesHistory = ({ addresses = [], id = Math.random(), net
 					console.log(e);
 				}
 			}));
-
-			nodejs.channel.send(JSON.stringify({ method: "getAddressScriptHashesHistory", scriptHashes, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, scriptHashes, id, coin }));
 		} catch (e) {
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e, coin });
 		}
 	});
 };
 
-const listUnspentAddressScriptHash = ({ address = "", id = Math.random(), network }) => {
+const listUnspentAddressScriptHash = ({ address = "", id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.listUnspentAddressScriptHash[id] = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "listUnspentAddressScriptHash" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.listUnspentAddressScriptHash[id]);
 					resolve(msg);
 				}
@@ -311,26 +364,27 @@ const listUnspentAddressScriptHash = ({ address = "", id = Math.random(), networ
 				this.listUnspentAddressScriptHash[id],
 				this
 			);
-
-			const script = bitcoin.address.toOutputScript(address, network);
+			
+			const script = bitcoin.address.toOutputScript(address, networks[coin]);
 			let hash = bitcoin.crypto.sha256(script);
 			const reversedHash = new Buffer(hash.reverse());
 			const scriptHash = reversedHash.toString("hex");
-
-			nodejs.channel.send(JSON.stringify({ method: "listUnspentAddressScriptHash", scriptHash, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, scriptHash, coin, id }));
 		} catch (e) {
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e });
 		}
 	});
 };
 
-const listUnspentAddressScriptHashes = ({ addresses = [], id = Math.random(), network } = {}) => {
+const listUnspentAddressScriptHashes = ({ addresses = [], id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.listUnspentAddressScriptHashes[id] = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "listUnspentAddressScriptHashes" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.listUnspentAddressScriptHashes[id]);
 					resolve(msg);
 				}
@@ -341,33 +395,34 @@ const listUnspentAddressScriptHashes = ({ addresses = [], id = Math.random(), ne
 				this.listUnspentAddressScriptHashes[id],
 				this
 			);
-
+			
 			const scriptHashes = [];
 			await Promise.all(addresses.map(({ address = "", path = "" } = {}) => {
 				try {
 					if (!address || !path) return;
-					const script = bitcoin.address.toOutputScript(address, network);
+					const script = bitcoin.address.toOutputScript(address, networks[coin]);
 					let hash = bitcoin.crypto.sha256(script);
 					const reversedHash = new Buffer(hash.reverse());
 					const scriptHash = reversedHash.toString("hex");
 					scriptHashes.push({ scriptHash, address, path });
 				} catch (e) {}
 			}));
-
-			nodejs.channel.send(JSON.stringify({ method: "listUnspentAddressScriptHashes", scriptHashes, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, scriptHashes, coin, id }));
 		} catch (e) {
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e });
 		}
 	});
 };
 
-const getAddressScriptHashMempool = ({ address = "", id = Math.random(), network }) => {
+const getAddressScriptHashMempool = ({ address = "", id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getAddressScriptHashMempool[id] = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getAddressScriptHashMempool" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getAddressScriptHashMempool[id]);
 					resolve(msg);
 				}
@@ -378,26 +433,27 @@ const getAddressScriptHashMempool = ({ address = "", id = Math.random(), network
 				this.getAddressScriptHashMempool[id],
 				this
 			);
-
-			const script = bitcoin.address.toOutputScript(address, network);
+			
+			const script = bitcoin.address.toOutputScript(address, networks[coin]);
 			let hash = bitcoin.crypto.sha256(script);
 			const reversedHash = new Buffer(hash.reverse());
 			const scriptHash = reversedHash.toString("hex");
-
-			nodejs.channel.send(JSON.stringify({ method: "getAddressScriptHashMempool", scriptHash, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, scriptHash, coin, id }));
 		} catch (e) {
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e });
 		}
 	});
 };
 
-const getAddressScriptHashesMempool = ({ addresses = [], id = Math.random(), network }) => {
+const getAddressScriptHashesMempool = ({ addresses = [], id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getAddressScriptHashesMempool[id] = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getAddressScriptHashesMempool" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getAddressScriptHashesMempool[id]);
 					resolve(msg);
 				}
@@ -408,32 +464,33 @@ const getAddressScriptHashesMempool = ({ addresses = [], id = Math.random(), net
 				this.getAddressScriptHashesMempool[id],
 				this
 			);
-
+			
 			const scriptHashes = [];
 			await Promise.all(addresses.map(({ address, path }) => {
 				try {
-					const script = bitcoin.address.toOutputScript(address, network);
+					const script = bitcoin.address.toOutputScript(address, networks[coin]);
 					let hash = bitcoin.crypto.sha256(script);
 					const reversedHash = new Buffer(hash.reverse());
 					const scriptHash = reversedHash.toString("hex");
 					scriptHashes.push({ scriptHash, address, path });
-				} catch (e) {console.log(e)}
+				} catch (e) {}
 			}));
-
-			nodejs.channel.send(JSON.stringify({ method: "getAddressScriptHashesMempool", scriptHashes, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, scriptHashes, coin, id }));
 		} catch (e) {
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e });
 		}
 	});
 };
 
-const getMempool = ({ address = "", id = Math.random() }) => {
+const getMempool = ({ address = "", id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getMempool = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getMempool" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getMempool);
 					resolve(msg);
 				}
@@ -444,21 +501,22 @@ const getMempool = ({ address = "", id = Math.random() }) => {
 				this.getMempool,
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getMempool", address, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e });
 		}
 	});
 };
 
-const listUnspentAddress = ({ address = "", id = Math.random() }) => {
+const listUnspentAddress = ({ address = "", id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.listUnspentAddress[id] = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "listUnspentAddress" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.listUnspentAddress[id]);
 					resolve(msg);
 				}
@@ -469,21 +527,22 @@ const listUnspentAddress = ({ address = "", id = Math.random() }) => {
 				this.listUnspentAddress[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "listUnspentAddress", address, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e });
 		}
 	});
 };
 
-const getFeeEstimate = ({ blocksWillingToWait = 8, id = Math.random() }) => {
+const getFeeEstimate = ({ blocksWillingToWait = 8, id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getFeeEstimate = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getFeeEstimate") {
+				if (msg.method === method) {
 					nodejs.channel.removeListener("message", this.getFeeEstimate);
 					resolve(msg);
 				}
@@ -494,21 +553,22 @@ const getFeeEstimate = ({ blocksWillingToWait = 8, id = Math.random() }) => {
 				this.getFeeEstimate,
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ id, method: "getFeeEstimate", blocksWillingToWait }));
+			
+			nodejs.channel.send(JSON.stringify({ id, method, blocksWillingToWait, coin }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const getAddressHistory = ({ address = "", id = Math.random() }) => {
+const getAddressHistory = ({ address = "", id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getAddressHistory[id] = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getAddressHistory" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getAddressHistory[id]);
 					resolve(msg);
 				}
@@ -519,21 +579,22 @@ const getAddressHistory = ({ address = "", id = Math.random() }) => {
 				this.getAddressHistory[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getAddressHistory", address, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const getTransactionHex = ({ txId = "", id = Math.random() }) => {
+const getTransactionHex = ({ txId = "", id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getTransactionHex[id] = ((msg) => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getTransactionHex" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getTransactionHex[id]);
 					resolve(msg);
 				}
@@ -544,21 +605,22 @@ const getTransactionHex = ({ txId = "", id = Math.random() }) => {
 				this.getTransactionHex[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getTransactionHex", txId, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, txId, coin, id }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const getDonationAddress = ({ id = Math.random() }) => {
+const getDonationAddress = ({ id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getDonationAddress[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getDonationAddress" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getDonationAddress[id]);
 					resolve(msg);
 				}
@@ -569,46 +631,22 @@ const getDonationAddress = ({ id = Math.random() }) => {
 				this.getDonationAddress[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getDonationAddress", id }));
+			
+			nodejs.channel.send(JSON.stringify({ method: "getDonationAddress", coin, id }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const disconnectFromPeer = ({ id = Math.random() }) => {
-	return new Promise(async (resolve) => {
-		try {
-			//Add a new listener that self-removes once complete.
-			this.disconnectFromPeer[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === "disconnectFromPeer" && msg.id === id) {
-					nodejs.channel.removeListener("message", this.disconnectFromPeer[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.disconnectFromPeer[id],
-				this
-			);
-
-			nodejs.channel.send(JSON.stringify({ method: "disconnectFromPeer", id }));
-		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
-		}
-	});
-};
-
-const getPeers = ({ id = Math.random() }) => {
+const getPeers = ({ id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getPeers[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getPeers" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getPeers[id]);
 					resolve(msg);
 				}
@@ -619,21 +657,22 @@ const getPeers = ({ id = Math.random() }) => {
 				this.getPeers[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getPeers", id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, coin, id }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const getAvailablePeers = ({ id = Math.random() }) => {
+const getAvailablePeers = ({ id = Math.random(), coin } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getAvailablePeers[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getAvailablePeers" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getAvailablePeers[id]);
 					resolve(msg);
 				}
@@ -644,21 +683,22 @@ const getAvailablePeers = ({ id = Math.random() }) => {
 				this.getAvailablePeers[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getAvailablePeers", id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, coin, id }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const getVersion = ({ id = Math.random(), coin = "" }) => {
+const getVersion = ({ id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getVersion[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getVersion" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getVersion[id]);
 					resolve(msg);
 				}
@@ -669,20 +709,21 @@ const getVersion = ({ id = Math.random(), coin = "" }) => {
 				this.getVersion[id],
 				this
 			);
-			nodejs.channel.send(JSON.stringify({ method: "getVersion", id, coin }));
+			nodejs.channel.send(JSON.stringify({ method, id, coin }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const getNewBlockHeightSubscribe = ({ id = Math.random() }) => {
+const getNewBlockHeightSubscribe = ({ id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getNewBlockHeightSubscribe[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getNewBlockHeightSubscribe" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					resolve({ ...msg, message: "Successfully subscribed to receive new block heights." });
 					nodejs.channel.removeListener("message", this.getNewBlockHeightSubscribe[id]);
 				}
@@ -693,25 +734,26 @@ const getNewBlockHeightSubscribe = ({ id = Math.random() }) => {
 				this.getNewBlockHeightSubscribe[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getNewBlockHeightSubscribe", id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, coin, id }));
 		} catch (e) {
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e });
 		}
 	});
 };
 
 //Returns current block height
-const getNewBlockHeadersSubscribe = ({ id = Math.random() }) => {
+const getNewBlockHeadersSubscribe = ({ id = Math.random(), coin = "", updateBlockHeight = () => null } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getNewBlockHeadersSubscribe[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getNewBlockHeadersSubscribe" && msg.id === id) {
-					//resolve({ ...msg, message: "Successfully subscribed to receive new block heights." });
+				if (msg.method === method) {
+					//nodejs.channel.removeListener("message", this.getNewBlockHeadersSubscribe[id]);
+					updateBlockHeight({ selectedCrypto: coin, blockHeight: msg.block_height });
 					resolve(msg);
-					nodejs.channel.removeListener("message", this.getNewBlockHeadersSubscribe[id]);
 				}
 			});
 			//Ensure the listener is setup and established.
@@ -720,21 +762,21 @@ const getNewBlockHeadersSubscribe = ({ id = Math.random() }) => {
 				this.getNewBlockHeadersSubscribe[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getNewBlockHeadersSubscribe", id }));
+			nodejs.channel.send(JSON.stringify({ method, coin, id }));
 		} catch (e) {
-			resolve({ error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ error: true, method, data: e });
 		}
 	});
 };
 
-const getTransactionMerkle = ({ id = Math.random(), txHash = "", height = "" }) => {
+const getTransactionMerkle = ({ id = Math.random(), txHash = "", height = "", coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getTransactionMerkle[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getTransactionMerkle" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getTransactionMerkle[id]);
 					resolve(msg);
 				}
@@ -745,21 +787,22 @@ const getTransactionMerkle = ({ id = Math.random(), txHash = "", height = "" }) 
 				this.getTransactionMerkle[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getTransactionMerkle", id, txHash, height }));
+			
+			nodejs.channel.send(JSON.stringify({ method, id, txHash, height, coin }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const getTransaction = ({ id = Math.random(), txHash = "" } = {}) => {
+const getTransaction = ({ id = Math.random(), txHash = "", coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getTransaction[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getTransaction" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getTransaction[id]);
 					resolve(msg);
 				}
@@ -770,22 +813,48 @@ const getTransaction = ({ id = Math.random(), txHash = "" } = {}) => {
 				this.getTransaction[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getTransaction", id, txHash }));
+			
+			nodejs.channel.send(JSON.stringify({ method, id, txHash, coin }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, method, error: true, data: e });
+		}
+	});
+};
+
+const getTransactions = ({ id = Math.random(), txHashes = [], coin = "" } = {}) => {
+	const method = getFuncName();
+	return new Promise(async (resolve) => {
+		try {
+			//Add a new listener that self-removes once complete.
+			this.getTransactions[id] = (msg => {
+				msg = JSON.parse(msg);
+				if (msg.method === method && msg.id === id) {
+					nodejs.channel.removeListener("message", this.getTransactions[id]);
+					resolve(msg);
+				}
+			});
+			//Ensure the listener is setup and established.
+			await nodejs.channel.addListener(
+				"message",
+				this.getTransactions[id],
+				this
+			);
+			nodejs.channel.send(JSON.stringify({ method, id, txHashes, coin }));
+		} catch (e) {
+			resolve({ id, method, error: true, data: e });
 		}
 	});
 };
 
 
-const getAddressUtxo = ({ id = Math.random(), txHash = "", index = "" }) => {
+const getAddressUtxo = ({ id = Math.random(), txHash = "", index = "", coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getAddressUtxo[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getAddressUtxo" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getAddressUtxo[id]);
 					resolve(msg);
 				}
@@ -796,21 +865,22 @@ const getAddressUtxo = ({ id = Math.random(), txHash = "", index = "" }) => {
 				this.getAddressUtxo[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getAddressUtxo", id, txHash, index }));
+			
+			nodejs.channel.send(JSON.stringify({ method, id, txHash, index, coin }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const broadcastTransaction = ({ id = Math.random(), rawTx = "" }) => {
+const broadcastTransaction = ({ id = Math.random(), rawTx = "", coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.broadcastTransaction[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "broadcastTransaction" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.broadcastTransaction[id]);
 					resolve(msg);
 				}
@@ -821,21 +891,22 @@ const broadcastTransaction = ({ id = Math.random(), rawTx = "" }) => {
 				this.broadcastTransaction[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "broadcastTransaction", id, rawTx }));
+			
+			nodejs.channel.send(JSON.stringify({ method, id, rawTx, coin }));
 		} catch (e) {
-			resolve({ id, error: true, data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const getBlockChunk = ({ id = Math.random(), index = "" }) => {
+const getBlockChunk = ({ id = Math.random(), index = "", coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getBlockChunk[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getBlockChunk" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getBlockChunk[id]);
 					resolve(msg);
 				}
@@ -846,21 +917,22 @@ const getBlockChunk = ({ id = Math.random(), index = "" }) => {
 				this.getBlockChunk[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getBlockChunk", id, index }));
+			
+			nodejs.channel.send(JSON.stringify({ method, id, index, coin }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const getBlockHeader = ({ id = Math.random(), height = "" }) => {
+const getBlockHeader = ({ id = Math.random(), height = "", coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getBlockHeader[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getBlockHeader" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getBlockHeader[id]);
 					resolve(msg);
 				}
@@ -871,21 +943,22 @@ const getBlockHeader = ({ id = Math.random(), height = "" }) => {
 				this.getBlockHeader[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getBlockHeader", id, height }));
+			
+			nodejs.channel.send(JSON.stringify({ method, id, height, coin }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const getHeader = ({ id = Math.random(), height = "" }) => {
+const getHeader = ({ id = Math.random(), height = "", coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getHeader[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getHeader" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getHeader[id]);
 					resolve(msg);
 				}
@@ -896,21 +969,22 @@ const getHeader = ({ id = Math.random(), height = "" }) => {
 				this.getHeader[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getHeader", id, height }));
+			
+			nodejs.channel.send(JSON.stringify({ method, id, height, coin }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const getBanner = ({ id = Math.random() }) => {
+const getBanner = ({ id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getBanner[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getBanner" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getBanner[id]);
 					resolve(msg);
 				}
@@ -921,21 +995,48 @@ const getBanner = ({ id = Math.random() }) => {
 				this.getBanner[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getBanner", id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, id, coin }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
 
-const getAddressProof = ({ address = "", id = Math.random() }) => {
+const pingServer = ({ id = Math.random() } = {}) => {
+	const method = getFuncName();
+	return new Promise(async (resolve) => {
+		try {
+			//Add a new listener that self-removes once complete.
+			this.pingServer[id] = (msg => {
+				msg = JSON.parse(msg);
+				if (msg.method === method && msg.id === id) {
+					nodejs.channel.removeListener("message", this.pingServer[id]);
+					resolve(msg);
+				}
+			});
+			//Ensure the listener is setup and established.
+			await nodejs.channel.addListener(
+				"message",
+				this.pingServer[id],
+				this
+			);
+			
+			nodejs.channel.send(JSON.stringify({ method, id }));
+		} catch (e) {
+			resolve({ id, error: true, method, data: e });
+		}
+	});
+};
+
+const getAddressProof = ({ address = "", id = Math.random(), coin = "" } = {}) => {
+	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			//Add a new listener that self-removes once complete.
 			this.getAddressProof[id] = (msg => {
 				msg = JSON.parse(msg);
-				if (msg.method === "getAddressProof" && msg.id === id) {
+				if (msg.method === method && msg.id === id) {
 					nodejs.channel.removeListener("message", this.getAddressProof[id]);
 					resolve(msg);
 				}
@@ -946,35 +1047,10 @@ const getAddressProof = ({ address = "", id = Math.random() }) => {
 				this.getAddressProof[id],
 				this
 			);
-
-			nodejs.channel.send(JSON.stringify({ method: "getAddressProof", address, id }));
+			
+			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
-		}
-	});
-};
-
-const createAddresses = ({ id = Math.random(), root = "" , network, networkValue = 0, addressAmount = 0, addressIndex = 0, changeAddressAmount = 0, changeAddressIndex = 0 } = {}) => {
-	return new Promise(async (resolve) => {
-		try {
-			//Add a new listener that self-removes once complete.
-			this.createAddresses[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === "createAddresses" && msg.id === id) {
-					nodejs.channel.removeListener("message", this.createAddresses[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.createAddresses[id],
-				this
-			);
-
-			nodejs.channel.send(JSON.stringify({ method: "createAddresses", network, networkValue, id, addressAmount, addressIndex, changeAddressAmount, changeAddressIndex, root }));
-		} catch (e) {
-			resolve({ id, error: true, errorTitle: "", errorMsg: "", data: e });
+			resolve({ id, error: true, method, data: e });
 		}
 	});
 };
@@ -982,7 +1058,6 @@ const createAddresses = ({ id = Math.random(), root = "" , network, networkValue
 module.exports = {
 	addElectrumListener,
 	removeElectrumListener,
-	createAddresses,
 	getAddressBalance,
 	getAddressScriptHashHistory,
 	getAddressScriptHashesHistory,
@@ -1006,11 +1081,13 @@ module.exports = {
 	getTransactionMerkle,
 	getAddressUtxo,
 	getTransaction,
+	getTransactions,
 	broadcastTransaction,
 	getBlockChunk,
 	getHeader,
 	getBlockHeader,
 	getBanner,
+	pingServer,
 	getAddressProof,
 	getVersion,
 	start,

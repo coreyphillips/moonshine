@@ -175,7 +175,7 @@ module.exports = (state = {
 
 			let oldBlacklistedTransactions = {};
 			try {
-				oldBlacklistedTransactions = state[action.payload.wallet].blacklistedTransactions
+				oldBlacklistedTransactions = state[action.payload.wallet].blacklistedTransactions;
 			} catch (e) {}
 
 			return {

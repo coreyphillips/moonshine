@@ -15,13 +15,12 @@ const {
 		colors
 	}
 } = require("../../ProjectData.json");
-import TouchID from "react-native-touch-id";
 
 retryAuthentication = (retryAuthentication = null) => {
 	if (retryAuthentication === null) return;
 	return (
 		<Text style={styles.smallText}>Retry</Text>
-	)
+	);
 };
 
 getIcon = (biometricTypeSupported = "", retryAuthentication = null) => {
@@ -29,24 +28,24 @@ getIcon = (biometricTypeSupported = "", retryAuthentication = null) => {
 		if (biometricTypeSupported === "FaceID") {
 			return (
 				<TouchableOpacity activeOpacity={1} onPress={retryAuthentication} style={styles.container}>
-					<MaterialCommunityIcons name={"face"} size={65} color={colors.white}/>
+					<MaterialCommunityIcons name={"face"} size={65} color={colors.white} />
 					<Text style={styles.text}>
 						FaceID Enabled
 					</Text>
 					{this.retryAuthentication(retryAuthentication)}
 				</TouchableOpacity>
-			)
+			);
 		}
 		if (biometricTypeSupported === "TouchID") {
 			return (
 				<TouchableOpacity activeOpacity={1} onPress={retryAuthentication} style={styles.container}>
-					<Ionicons name={"ios-finger-print"} size={65} color={colors.white}/>
+					<Ionicons name={"ios-finger-print"} size={65} color={colors.white} />
 					<Text style={styles.text}>
 						TouchID Enabled
 					</Text>
 					{this.retryAuthentication(retryAuthentication)}
 				</TouchableOpacity>
-			)
+			);
 		}
 		return(
 			<TouchableOpacity activeOpacity={1} onPress={retryAuthentication} style={styles.container}>
@@ -56,7 +55,7 @@ getIcon = (biometricTypeSupported = "", retryAuthentication = null) => {
 				</Text>
 				{this.retryAuthentication(retryAuthentication)}
 			</TouchableOpacity>
-		)
+		);
 	} catch (e) {
 		return(
 			<View style={styles.container}>
@@ -65,7 +64,7 @@ getIcon = (biometricTypeSupported = "", retryAuthentication = null) => {
 					It appears that your device does not support Biometric security.
 				</Text>
 			</View>
-		)
+		);
 	}
 };
 
@@ -76,7 +75,7 @@ class Biometrics extends PureComponent {
 			<View style={[styles.container, { ...style }]}>
 				{getIcon(biometricTypeSupported, retryAuthentication)}
 			</View>
-		)
+		);
 	}
 }
 

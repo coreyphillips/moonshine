@@ -21,7 +21,7 @@ class XButton extends PureComponent {
 
 		let size = 30;
 		try {
-			size = props.size*1.4
+			size = props.size*1.4;
 		} catch (e) {size = 20*1.4;}
 
 		this.state = {

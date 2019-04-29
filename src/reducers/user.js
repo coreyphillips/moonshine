@@ -14,7 +14,7 @@ module.exports = (state = {
 	isOnline: true
 }, action) => {
 	switch (action.type) {
-
+		
 		case actions.WIPE_DEVICE:
 			return {
 				loading: false,
@@ -24,25 +24,13 @@ module.exports = (state = {
 				isHydrated: false,
 				isOnline: true
 			};
-
+		
 		case actions.UPDATE_USER:
 			return {
 				...state,
 				...action.payload
 			};
-
-		//This allows the app to finish retrieving the persisted state
-		case "persist/REHYDRATE":
-			try {
-				if (action.payload._persist.rehydrated === true) {
-					return {
-						...state,
-						isHydrated: true
-					};
-				}
-			} catch (e) {}
-			return state;
-
+		
 		case actions.CLEAR_LOADING_SPINNER:
 			return {
 				...state,
@@ -51,7 +39,7 @@ module.exports = (state = {
 				errorMsg: "",
 				loading: false
 			};
-
+		
 		case actions.RESET:
 			return {
 				loading: false,
@@ -60,7 +48,7 @@ module.exports = (state = {
 				errorMsg: "",
 				isHydrated: false
 			};
-
+		
 		default:
 			return state;
 	}

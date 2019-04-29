@@ -65,7 +65,7 @@ class ElectrumInput extends PureComponent {
 						autoCapitalize="none"
 						selectionColor={colors.lightPurple}
 						keyboardType="decimal-pad"
-						onChangeText={(port) =>  {if (!isNaN(port) || port === "") this.props.onChangeText({coin: this.props.coin, value: { port, host: this.props.host } })} }
+						onChangeText={(port) =>  {if (!isNaN(port) || port === "") this.props.onChangeText({coin: this.props.coin, value: { port, host: this.props.host } });}}
 						value={this.props.port}
 						multiline={false}
 						placeholder={this.props.portPlaceholder}
@@ -88,7 +88,7 @@ class ElectrumInput extends PureComponent {
 					/>
 				</View>
 			</View>
-		)
+		);
 	}
 }
 
@@ -117,8 +117,8 @@ class ElectrumOptions extends PureComponent {
 			const coin = availableCoins[i];
 			let host = "";
 			let port = "";
-			try { host = props.settings.customPeers[coin][0].host } catch (e) {}
-			try { port = props.settings.customPeers[coin][0].port } catch (e) {}
+			try { host = props.settings.customPeers[coin][0].host; } catch (e) {}
+			try { port = props.settings.customPeers[coin][0].port; } catch (e) {}
 			coins[coin] = { host, port };
 		}
 		this.state = {
@@ -153,12 +153,12 @@ class ElectrumOptions extends PureComponent {
 				return;
 			}
 
-			await electrum.stop();
+			await electrum.stop({ coin });
 			const result = await electrum.start({ coin, customPeers: [{ host, port }]});
 			if (result.error === false) {
-				alert(`Success!!\nSuccessfully connect to:\n${host}:${port}`)
+				alert(`Success!!\nSuccessfully connect to:\n${host}:${port}`);
 			} else {
-				alert(`Failure\nUnable to connect to:\n${host}:${port}`)
+				alert(`Failure\nUnable to connect to:\n${host}:${port}`);
 			}
 			await this.setState({ loading: "" });
 		} catch (e) {
@@ -196,13 +196,13 @@ class ElectrumOptions extends PureComponent {
 				}
 
 				//Attempt to connect to the customPeer before saving.
-				await electrum.stop();
+				await electrum.stop({ coin });
 				const result = await electrum.start({ coin, customPeers: [{ host, port }]});
 				if (result.error === false) {
 					const currentPeers = this.props.settings.customPeers;
 					await this.props.updateSettings({ customPeers: {...currentPeers, [coin]: [{ host, port }] } });
 				} else {
-					alert(`Failure\nUnable to connect to:\n${host}:${port}`)
+					alert(`Failure\nUnable to connect to:\n${host}:${port}`);
 				}
 
 				this.setState({ saving: "" });
@@ -240,7 +240,7 @@ class ElectrumOptions extends PureComponent {
 										customPeers={this.props.settings.customPeers}
 										portPlaceholder="50002"
 									/>
-								)
+								);
 							}}
 						/>
 
@@ -249,7 +249,7 @@ class ElectrumOptions extends PureComponent {
 
 				</ScrollView>
 				<Animated.View style={styles.xButton}>
-					<XButton style={{ borderColor: "transparent" }} onPress={this.props.onBack}/>
+					<XButton style={{ borderColor: "transparent" }} onPress={this.props.onBack} />
 				</Animated.View>
 			</TouchableOpacity>
 		);
@@ -330,7 +330,7 @@ const walletActions = require("../actions/wallet");
 const transactionActions = require("../actions/transaction");
 const settingsActions = require("../actions/settings");
 
-const mapStateToProps = ({...state}, props) => ({
+const mapStateToProps = ({...state}) => ({
 	...state
 });
 

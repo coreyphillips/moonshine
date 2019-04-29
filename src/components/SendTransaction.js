@@ -116,7 +116,7 @@ class SendTransaction extends PureComponent<Props> {
 		}
 	}
 
-	componentWillUpdate() {
+	componentDidUpdate() {
 		Platform.OS === "ios" ? LayoutAnimation.easeInEaseOut() : null;
 	}
 
@@ -211,7 +211,7 @@ class SendTransaction extends PureComponent<Props> {
 			if (isNaN(crypto)) crypto = 0;
 			if (isNaN(fiat)) fiat = 0;
 
-			return { crypto, fiat }
+			return { crypto, fiat };
 		} catch (e) {
 			console.log(e);
 		}
@@ -337,7 +337,7 @@ class SendTransaction extends PureComponent<Props> {
 			} else {
 				let fiatAmount = formatNumber(this.props.transaction.fiatAmount).toString();
 				if (fiatAmount === "0.00") fiatAmount = "";
-				return fiatAmount
+				return fiatAmount;
 			}
 
 		} catch (e) {
@@ -403,7 +403,7 @@ class SendTransaction extends PureComponent<Props> {
 			const { cryptoUnit } = this.props.settings;
 			const { selectedCrypto } = this.props.wallet;
 			const cryptoAcronym = getCoinData({selectedCrypto, cryptoUnit}).acronym;
-			const cryptoUnitLabel = cryptoUnit === "satoshi" ? "sats" : cryptoUnit;
+			//const cryptoUnitLabel = cryptoUnit === "satoshi" ? "sats" : cryptoUnit;
 			let cryptoValue = Number(this.props.transaction.amount);
 			//This prevents the view from displaying 0 BTC
 			if (cryptoValue < 50000 && cryptoUnit === "BTC") {
@@ -411,7 +411,6 @@ class SendTransaction extends PureComponent<Props> {
 			} else {
 				return `${bitcoinUnits(cryptoValue, "satoshi").to(cryptoUnit).value()} ${cryptoAcronym}`;
 			}
-			return `${bitcoinUnits(cryptoValue, "satoshi").to(cryptoUnit).value()} ${cryptoAcronym}`;
 		} catch (e) {}
 	};
 
@@ -476,12 +475,12 @@ class SendTransaction extends PureComponent<Props> {
 							toValue: 0,
 							duration
 						}
-					).start()
+					).start();
 				}, duration/4);
 			});
 		} catch (e) {
 			console.log(e);
-			alert("Unable to copy rawTx. Please try again or check your phone's permissions.")
+			alert("Unable to copy rawTx. Please try again or check your phone's permissions.");
 		}
 	};
 
@@ -574,7 +573,7 @@ class SendTransaction extends PureComponent<Props> {
 			await this.setState({ loadingMessage: "Sending Transaction...", loadingProgress: 0.8 });
 			await pauseExecution();
 			const sendTransactionResult = await this.props.sendTransaction({ txHex: transaction.data, selectedCrypto });
-
+			
 			if (sendTransactionResult.error) {
 				await this.setState({
 					loadingMessage: "There appears to have been an error sending your transaction. Please try again.",
@@ -590,25 +589,25 @@ class SendTransaction extends PureComponent<Props> {
 					const { address, amount, fee, transactionSize } = currentTransactionDetails;
 					const confirmedBalance = this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto];
 					const sentAmount = Number(amount) + (Number(fee) * Number(transactionSize));
+					const receivedAmount = confirmedBalance - sentAmount;
 					const successfulTransaction = [{
 						address,
-						amount,
+						amount: sentAmount,
 						block: 0,
 						data: "",
 						fee,
 						hash: sendTransactionResult.data,
 						inputAmount: confirmedBalance,
 						messages: [],
-						outputAmount: confirmedBalance - fee,
-						receivedAmount: confirmedBalance - sentAmount,
+						outputAmount: confirmedBalance - (fee*transactionSize),
+						receivedAmount,
 						sentAmount,
 						timestamp: moment().unix(),
 						type: "sent"
 					}];
 					//Add Transaction to transaction stack
 					await this.props.addTransaction({ wallet: selectedWallet, selectedCrypto, transaction: successfulTransaction });
-
-					//TODO: Ensure this is working as expected and not mixing up our redux state.
+					
 					//Temporarily update the balance for the user to prevent a delay while electrum syncs the balance from the new transaction
 					try {
 						const newBalance = Number(this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto]) - sentAmount;
@@ -620,7 +619,7 @@ class SendTransaction extends PureComponent<Props> {
 									[selectedCrypto]: newBalance
 								}
 							}
-						})
+						});
 					} catch (e) {}
 
 				} catch (e) {}
@@ -744,10 +743,10 @@ class SendTransaction extends PureComponent<Props> {
 						>
 						</TextInput>
 						<TouchableOpacity style={styles.leftIconContainer} onPress={this.getClipboardContent}>
-							<FeatherIcon style={styles.featherIcon} name={"clipboard"} size={25} color={colors.purple}/>
+							<FeatherIcon style={styles.featherIcon} name={"clipboard"} size={25} color={colors.purple} />
 						</TouchableOpacity>
 						<TouchableOpacity style={[styles.rightIconContainer, { backgroundColor: colors.white }]} onPress={this.state.onCameraPress}>
-							<EvilIcon style={styles.cameraIcon} name={"camera"} size={40} color={colors.purple}/>
+							<EvilIcon style={styles.cameraIcon} name={"camera"} size={40} color={colors.purple} />
 						</TouchableOpacity>
 					</View>
 
@@ -770,7 +769,7 @@ class SendTransaction extends PureComponent<Props> {
 						<TouchableOpacity style={styles.leftIconContainer} onPress={this.onDisplayInCryptoToggle}>
 							<View style={{ flexDirection: "row" }}>
 								<View style={styles.rotatedIcon}>
-									<FontAwesome name={"exchange"} size={15} color={colors.purple}/>
+									<FontAwesome name={"exchange"} size={15} color={colors.purple} />
 								</View>
 								<Text style={styles.amountText}>{this.state.displayInCrypto ? `${getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit }).acronym}` : "USD"}</Text>
 							</View>
@@ -887,10 +886,10 @@ class SendTransaction extends PureComponent<Props> {
 													}
 													rawTx = rawTx.data;
 													await this.setState({ generatingTxHex: false });
-													console.log(rawTx);
 													this.copyRawTx(rawTx);
 													this.setState({ rawTx });
-												}} />
+												}}
+											/>
 										</View>
 										<View>
 											<Button title="Send" onPress={this.sendTransaction} />
@@ -914,7 +913,7 @@ class SendTransaction extends PureComponent<Props> {
 						/>}
 						{this.state.displayXButton &&
 						<Animated.View style={styles.xButton}>
-							<XButton onPress={this.onXButtonPress}/>
+							<XButton onPress={this.onXButtonPress} />
 						</Animated.View>}
 					</View>
 				</Modal>
@@ -1066,7 +1065,7 @@ const walletActions = require("../actions/wallet");
 const transactionActions = require("../actions/transaction");
 const settingsActions = require("../actions/settings");
 
-const mapStateToProps = ({...state}, props) => ({
+const mapStateToProps = ({...state}) => ({
 	...state
 });
 

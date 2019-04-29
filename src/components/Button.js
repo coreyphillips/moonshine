@@ -22,7 +22,7 @@ class Button extends PureComponent {
 		return this.props.disabled || this.props.loading;
 	};
 	render() {
-		const { title, text, text2, disabled, activeOpacity, loading, style, titleStyle, textStyle } = this.props;
+		const { title, text, text2, activeOpacity, loading, style, titleStyle, textStyle } = this.props;
 		return (
 			<TouchableOpacity style={[styles.container, { ...style }]} onPress={this._handleOnPress} activeOpacity={activeOpacity} disabled={this._isDisabled()}>
 				{loading &&
@@ -38,7 +38,7 @@ class Button extends PureComponent {
 				<Text style={[styles.text, {...textStyle}]}>{text2}</Text>
 				}
 			</TouchableOpacity>
-		)
+		);
 	}
 }
 
@@ -87,7 +87,7 @@ const styles = StyleSheet.create({
 		textAlign: "center"
 	},
 	text: {
-		...systemWeights.regular,
+		...systemWeights.light,
 		color: colors.white,
 		fontSize: 18,
 		textAlign: "center"

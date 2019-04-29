@@ -20,8 +20,8 @@ class SelectCoin extends PureComponent {
 		return (
 			<View style={styles.container}>
 				{walletsLen < 6 &&
-				<TouchableOpacity onPress={this.props.createNewWallet} style={{ position: "absolute", top: 0, right: 0, padding: 20, zIndex: 300 }}>
-					<EvilIcon name={"plus"} size={40} color={colors.white}/>
+				<TouchableOpacity onPress={this.props.createNewWallet} style={styles.plusIcon}>
+					<EvilIcon name={"plus"} size={40} color={colors.white} />
 				</TouchableOpacity>}
 				<WalletCarousel itemToRender="wallet" onCoinPress={this.props.onCoinPress} onClose={this.props.onClose} />
 			</View>
@@ -48,6 +48,13 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		backgroundColor: "transparent"
+	},
+	plusIcon: {
+		position: "absolute",
+		top: 0,
+		right: 0,
+		padding: 20,
+		zIndex: 300
 	}
 });
 
@@ -58,7 +65,7 @@ const walletActions = require("../actions/wallet");
 const transactionActions = require("../actions/transaction");
 const settingsActions = require("../actions/settings");
 
-const mapStateToProps = ({...state}, props) => ({
+const mapStateToProps = ({...state}) => ({
 	...state
 });
 

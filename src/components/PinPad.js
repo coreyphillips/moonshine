@@ -47,7 +47,7 @@ class Pin extends PureComponent {
 			pinSetup,
 			pinSetupStep: 1,
 			invalidPin: false
-		}
+		};
 	}
 
 	async componentDidMount() {
@@ -110,7 +110,7 @@ class Pin extends PureComponent {
 				this.props.onSuccess();
 			}
 		} catch (e) {
-			console.log(e)
+			console.log(e);
 		}
 	};
 
@@ -170,7 +170,7 @@ class Pin extends PureComponent {
 	getDots = () => {
 		try {
 			if (this.state.value.length > 4) {
-				return ` ● ● ● ●  +${this.state.value.length - 4}`
+				return ` ● ● ● ●  +${this.state.value.length - 4}`;
 			} else {
 				const marks = this.state.value.replace(/./g, ' ● ');
 				const dots = makeDots(4-this.state.value.length);
@@ -196,7 +196,7 @@ class Pin extends PureComponent {
 								Please Enter Your Pin
 							</Text>
 						</View>
-					)
+					);
 				} else {
 					return (
 						<View style={{ alignItems: "center", justifyContent: "center" }}>
@@ -204,19 +204,19 @@ class Pin extends PureComponent {
 								Please Re-Enter Your Pin
 							</Text>
 						</View>
-					)
+					);
 				}
 			}
 			return (
 				<View style={{ alignItems: "center", justifyContent: "center" }}>
-					<Text style={styles.header} >
+					<Text style={styles.header}>
 						Enter pin:
 					</Text>
 					<Text style={styles.text}>
 						{`Attempts Remaining: ${this.props.settings.pinAttemptsRemaining}`}
 					</Text>
 				</View>
-			)
+			);
 		} catch (e) {}
 	};
 
@@ -224,49 +224,49 @@ class Pin extends PureComponent {
 		return (
 			<View style={[styles.container, { ...this.props.style }]}>
 
-				<View style={[styles.row, { paddingHorizontal: 20 }]} >
+				<View style={[styles.row, { paddingHorizontal: 20 }]}>
 					{this.getHeaderText()}
 				</View>
 
-				<View style={[styles.row, { paddingHorizontal: 20 }]} >
-					<Text style={styles.dots} >{this.getDots()}</Text>
+				<View style={[styles.row, { paddingHorizontal: 20 }]}>
+					<Text style={styles.dots}>{this.getDots()}</Text>
 				</View>
 
-				<View style={styles.row} >
+				<View style={styles.row}>
 					{this.renderButton(this.state.digits[0])}
 					{this.renderButton(this.state.digits[1])}
 					{this.renderButton(this.state.digits[2])}
 				</View>
 
-				<View style={styles.row} >
+				<View style={styles.row}>
 					{this.renderButton(this.state.digits[3])}
 					{this.renderButton(this.state.digits[4])}
 					{this.renderButton(this.state.digits[5])}
 				</View>
 
-				<View style={styles.row} >
+				<View style={styles.row}>
 					{this.renderButton(this.state.digits[6])}
 					{this.renderButton(this.state.digits[7])}
 					{this.renderButton(this.state.digits[8])}
 				</View>
 
-				<View style={styles.row} >
+				<View style={styles.row}>
 					<TouchableOpacity onPress={()=> this.handleClear()} activeOpacity={ACTIVE_OPACITY} style={[styles.buttonContainer, { borderWidth: 0 }]}>
 						<Text style={styles.button}>C</Text>
 					</TouchableOpacity>
 					{this.renderButton(this.state.digits[9])}
 					<TouchableOpacity onPress={this.handleRemove} activeOpacity={ACTIVE_OPACITY} style={[styles.buttonContainer, { borderWidth: 0 }]}>
-						<Feather name={"arrow-left"} size={30} color={colors.white}/>
+						<Feather name={"arrow-left"} size={30} color={colors.white} />
 					</TouchableOpacity>
 				</View>
 
-				<View style={[styles.row, { marginTop: 20 }]} >
+				<View style={[styles.row, { marginTop: 20 }]}>
 					<TouchableOpacity onPress={this.handleSubmit} activeOpacity={ACTIVE_OPACITY} style={styles.submitButton}>
 						<Text style={styles.text}>Submit</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
-		)
+		);
 	}
 }
 
@@ -286,7 +286,7 @@ const connect = require("react-redux").connect;
 const bindActionCreators = require("redux").bindActionCreators;
 const settingsActions = require("../actions/settings");
 
-const mapStateToProps = ({...state}, props) => ({
+const mapStateToProps = ({...state}) => ({
 	...state
 });
 

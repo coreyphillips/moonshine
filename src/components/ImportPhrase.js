@@ -108,18 +108,18 @@ class ImportPhrase extends PureComponent {
 			<View style={styles.container}>
 
 				<View style={styles.textInputContainer}>
-				<TextInput
-					placeholder="Please enter your mnemonic phrase here with each word seperated by a space... Ex: (project globe magnet)"
-					style={styles.textInput}
-					selectionColor={colors.lightPurple}
-					autoCapitalize="none"
-					onChangeText={(mnemonic) => this.updateMnemonic(mnemonic)}
-					value={this.state.mnemonic}
-					multiline={true}
-				/>
+					<TextInput
+						placeholder="Please enter your mnemonic phrase here with each word seperated by a space... Ex: (project globe magnet)"
+						style={styles.textInput}
+						selectionColor={colors.lightPurple}
+						autoCapitalize="none"
+						onChangeText={(mnemonic) => this.updateMnemonic(mnemonic)}
+						value={this.state.mnemonic}
+						multiline={true}
+					/>
 					<View style={styles.centerItem}>
 						<TouchableOpacity onPress={() => this.updateCamera({ display: true })} style={styles.cameraIcon}>
-							<EvilIcon style={{ bottom: -2 }} name={"camera"} size={40} color={colors.darkPurple}/>
+							<EvilIcon style={{ bottom: -2 }} name={"camera"} size={40} color={colors.darkPurple} />
 						</TouchableOpacity>
 					</View>
 
@@ -137,7 +137,7 @@ class ImportPhrase extends PureComponent {
 
 				{!this.state.displayCamera &&
 				<Animated.View style={styles.xButton}>
-					<XButton style={{ borderColor: "transparent" }} onPress={this.props.onBack}/>
+					<XButton style={{ borderColor: "transparent" }} onPress={this.props.onBack} />
 				</Animated.View>}
 			</View>
 		);
@@ -214,7 +214,7 @@ const walletActions = require("../actions/wallet");
 const transactionActions = require("../actions/transaction");
 const settingsActions = require("../actions/settings");
 
-const mapStateToProps = ({...state}, props) => ({
+const mapStateToProps = ({...state}) => ({
 	...state
 });
 

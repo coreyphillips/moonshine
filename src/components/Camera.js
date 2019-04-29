@@ -22,7 +22,7 @@ class Camera extends PureComponent {
 
 		const notAuthorizedView = (
 			<View style={styles.notAuthorizedView}>
-				<EvilIcon name={"exclamation"} size={60} color={colors.white}/>
+				<EvilIcon name={"exclamation"} size={60} color={colors.white} />
 				<Text style={[styles.boldText, { marginVertical: 10 }]}>It appears I do not have permission to access your camera.</Text>
 				<Text style={styles.text}>To utilize this feature in the future you will need to enable camera permissions for this app from your phones settings.</Text>
 			</View>
@@ -35,7 +35,7 @@ class Camera extends PureComponent {
 					ref={ref => {
 						this.camera = ref;
 					}}
-					style = {styles.container}
+					style={styles.container}
 					onBarCodeRead={this.props.onBarCodeRead}
 					onMountError={() => {
 						alert("There was an error encountered when loading the camera. Please ensure the app has permission to use this feature in your phone settings.");
@@ -48,10 +48,10 @@ class Camera extends PureComponent {
 					permissionDialogMessage={'We need your permission to use your camera phone'}
 				/>
 				<View style={styles.xButton}>
-					<XButton onPress={this.props.onClose}/>
+					<XButton onPress={this.props.onClose} />
 				</View>
 			</View>
-		)
+		);
 	}
 }
 

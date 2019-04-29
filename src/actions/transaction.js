@@ -7,7 +7,8 @@ const {
 	walletHelpers
 } = require("../utils/walletApi");
 const moment = require("moment");
-let coinSelect = require("coinselect");
+//const coinSelect = require("coinselect");
+//import * as electrum from "../utils/electrum";
 
 export const updateTransaction = (payload) => ({
 	type: actions.UPDATE_TRANSACTION,
@@ -35,7 +36,7 @@ export const getRecommendedFee = () => (dispatch: any) => {
 			console.log(e);
 			failure();
 		}
-
+		
 		dispatch({
 			type: actions.UPDATE_TRANSACTION,
 			payload: { recommendedFee, feeTimestamp: moment().format() }

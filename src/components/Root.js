@@ -2,7 +2,6 @@
 
 import React from "react";
 import {
-	View,
 	SafeAreaView,
 	StyleSheet
 } from "react-native";
@@ -24,7 +23,7 @@ const Provider = require("react-redux").Provider;
 const { persistStore, persistReducer } = require("redux-persist");
 const createStoreWithMiddleware = applyMiddleware(thunk, logger)(createStore);
 
-import storage from 'redux-persist/lib/storage' // defaults to localStorage for web and AsyncStorage for react-native
+import storage from 'redux-persist/lib/storage'; // defaults to localStorage for web and AsyncStorage for react-native
 
 const persistConfig = {
 	key: 'root',

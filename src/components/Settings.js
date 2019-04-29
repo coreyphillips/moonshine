@@ -73,14 +73,11 @@ class Settings extends PureComponent<Props> {
 		});
 	}
 
-	componentWillUnmount() {
-	}
-
-	componentWillUpdate() {
+	componentDidUpdate() {
 		Platform.OS === "ios" ? LayoutAnimation.easeInEaseOut() : null;
 	}
 
-	HeaderRow({ header = "", title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", col2ImageColor = colors.purple, gradientColors = ["#ffffff", "#ffffff"], onPress = () => null, headerStyle = {}, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) {
+	HeaderRow({ header = "", title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", gradientColors = ["#ffffff", "#ffffff"], onPress = () => null, headerStyle = {}, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) {
 		try {
 			return (
 				<TouchableOpacity onPress={() => onPress(value)} activeOpacity={1} style={styles.rowContainer}>
@@ -104,7 +101,7 @@ class Settings extends PureComponent<Props> {
 								</View>}
 								{!col1Loading && col1Image !== "" &&
 								<View style={[styles.col1, col1Image]}>
-									<MaterialCommunityIcons name={col1Image} size={50} color={col1ImageColor}/>
+									<MaterialCommunityIcons name={col1Image} size={50} color={col1ImageColor} />
 								</View>
 								}
 
@@ -119,7 +116,7 @@ class Settings extends PureComponent<Props> {
 
 								{!col2Loading && col2Image !== "" &&
 								<View style={[styles.col2, col2Style]}>
-									<MaterialCommunityIcons name={col2Image} size={50} color={colors.purple}/>
+									<MaterialCommunityIcons name={col2Image} size={50} color={colors.purple} />
 								</View>
 								}
 							</View>
@@ -127,13 +124,13 @@ class Settings extends PureComponent<Props> {
 
 					</LinearGradient>
 				</TouchableOpacity>
-			)
+			);
 		} catch (e) {
-			console.log(e)
+			console.log(e);
 		}
-	};
+	}
 
-	Row({ title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", col2ImageColor = colors.purple, gradientColors = ["#ffffff", "#ffffff"], onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) {
+	Row({ title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", gradientColors = ["#ffffff", "#ffffff"], onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) {
 		try {
 			return (
 				<TouchableOpacity onPress={() => onPress(value)} activeOpacity={1} style={styles.rowContainer}>
@@ -148,7 +145,7 @@ class Settings extends PureComponent<Props> {
 						</View>}
 						{!col1Loading && col1Image !== "" &&
 						<View style={[styles.col1, col1Image]}>
-							<MaterialCommunityIcons name={col1Image} size={50} color={col1ImageColor}/>
+							<MaterialCommunityIcons name={col1Image} size={50} color={col1ImageColor} />
 						</View>
 						}
 
@@ -163,19 +160,19 @@ class Settings extends PureComponent<Props> {
 
 						{!col2Loading && col2Image !== "" &&
 						<View style={[styles.col2, col2Style]}>
-							<MaterialCommunityIcons name={col2Image} size={50} color={colors.purple}/>
+							<MaterialCommunityIcons name={col2Image} size={50} color={colors.purple} />
 						</View>
 						}
 
 					</LinearGradient>
 				</TouchableOpacity>
-			)
+			);
 		} catch (e) {
-			console.log(e)
+			console.log(e);
 		}
-	};
+	}
 
-	SwitchRow({ title = "", value = "", onPress = () => null, setting = "", col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) {
+	SwitchRow({ title = "", value = "", onPress = () => null, setting = "", col1Style = {}, col2Style = {}, titleStyle = {} } = {}) {
 		try {
 			return (
 				<TouchableOpacity onPress={() => onPress(setting)} activeOpacity={1} style={styles.rowContainer}>
@@ -188,11 +185,11 @@ class Settings extends PureComponent<Props> {
 						</TouchableOpacity>
 					</View>
 				</TouchableOpacity>
-			)
+			);
 		} catch (e) {
-			console.log(e)
+			console.log(e);
 		}
-	};
+	}
 
 	updateSettings = async ({ display = true, duration = 400 } = {}) => {
 		return new Promise(async (resolve) => {
@@ -378,7 +375,7 @@ class Settings extends PureComponent<Props> {
 			if (this.props.wallet[selectedWallet].hasBackedUpWallet) {
 				return `Wallet last backed up on\n${moment(this.props.wallet[selectedWallet].walletBackupTimestamp).format('l @ h:mm a')}.`;
 			} else {
-				return "Wallet has not\nbeen backed up."
+				return "Wallet has not\nbeen backed up.";
 			}
 		} catch (e) {
 			console.log(e);
@@ -443,11 +440,11 @@ class Settings extends PureComponent<Props> {
 
 	reconnectToPeer = async () => {
 		try {
-			console.log("Disconnecting");
 			const selectedCrypto = this.props.wallet.selectedCrypto;
-			await electrum.stop();
+			await electrum.stop({ coin: selectedCrypto });
 			await electrum.start({
 				coin: selectedCrypto,
+				peers: this.props.settings.peers[selectedCrypto],
 				customPeers: this.props.settings.customPeers[selectedCrypto]
 			});
 		} catch (e) {
@@ -461,17 +458,10 @@ class Settings extends PureComponent<Props> {
 		try {
 			await this.setState({ rescanningWallet: true });
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			let addresses = [];
-			try {
-				addresses = this.props.wallet[selectedWallet].addresses[selectedCrypto];
-			} catch (e) {}
-			let changeAddresses = [];
-			try {
-				changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto];
-			} catch (e) {}
-			await electrum.stop();
+			await electrum.stop({ coin: selectedCrypto });
 			await electrum.start({
 				coin: selectedCrypto,
+				peers: this.props.settings.peers[selectedCrypto],
 				customPeers: this.props.settings.customPeers[selectedCrypto]
 			});
 
@@ -539,9 +529,9 @@ class Settings extends PureComponent<Props> {
 		const backupPhrase = this.state.backupPhrase.split(" ");
 		let phrase = "";
 		for (let i = 0; i < backupPhrase.length; i++) {
-			try { if (backupPhrase[i]) phrase = phrase.concat(`${i + 1}.   ${backupPhrase[i]}\n`) } catch (e) {}
+			try { if (backupPhrase[i]) phrase = phrase.concat(`${i + 1}.   ${backupPhrase[i]}\n`); } catch (e) {}
 		}
-		 return phrase;
+		return phrase;
 	};
 
 	render() {
@@ -681,7 +671,7 @@ class Settings extends PureComponent<Props> {
 
 				{!this.state.displayImportPhrase &&
 				<Animated.View style={styles.xButton}>
-					<XButton style={{ borderColor: "transparent" }} onPress={this.onBack}/>
+					<XButton style={{ borderColor: "transparent" }} onPress={this.onBack} />
 				</Animated.View>}
 
 			</View>
@@ -785,7 +775,7 @@ const walletActions = require("../actions/wallet");
 const transactionActions = require("../actions/transaction");
 const settingsActions = require("../actions/settings");
 
-const mapStateToProps = ({...state}, props) => ({
+const mapStateToProps = ({...state}) => ({
 	...state
 });
 
