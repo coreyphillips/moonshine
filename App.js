@@ -58,7 +58,8 @@ const {
 	capitalize,
 	getInfoFromAddressPath,
 	getExchangeRate,
-	validatePrivateKey
+	validatePrivateKey,
+	getTransactionSize
 } = require("./src/utils/helpers");
 const { width } = Dimensions.get("window");
 const bip39 = require("bip39");
@@ -110,7 +111,7 @@ export default class App extends PureComponent {
 		displayPin: false,
 		pinOpacity: new Animated.Value(0),
 		
-		displayTransactionList: true,
+		displayTransactionList: false,
 		transactionListOpacity: new Animated.Value(0),
 		
 		appState: AppState.currentState,
@@ -160,14 +161,14 @@ export default class App extends PureComponent {
 				return;
 			}
 			
-			this.updateSelectCoin({display: false, duration: 200});
+			this.updateItem({ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false, duration: 200 });
 			
 			const network = getNetworkType(coin);
 			await this.props.updateWallet({ selectedCrypto: coin, network, selectedWallet: wallet });
 			
 			if (this.props.wallet[wallet].addresses[coin].length > 0) {
 				//This condition occurs when the user selects a coin that already has generated addresses from the "SelectCoin" view.
-				this.updateLoading({ display: false });
+				this.updateItem({ stateId: "displayLoading", opacityId: "loadingOpacity", display: false });
 				this.resetView();
 			} else {
 				//This condition occurs when the user selects a coin that does not have any addresses from the "SelectCoin" view.
@@ -176,7 +177,7 @@ export default class App extends PureComponent {
 				} else {
 					this.setState({ loadingMessage: `Switching to ${capitalize(coin)} for ${this.props.wallet.selectedWallet.split('wallet').join('Wallet ')}`, loadingProgress: 0.3, loadingAnimationName: coin });
 				}
-				this.updateLoading({ display: true });
+				this.updateItem({ stateId: "displayLoading", opacityId: "loadingOpacity", display: true });
 				InteractionManager.runAfterInteractions(async () => {
 					await this.refreshWallet({ reconnectToElectrum: !sameCoin });
 					this.resetView();
@@ -195,9 +196,12 @@ export default class App extends PureComponent {
 	};
 	
 	launchDefaultFuncs = async ({ displayLoading = true, resetView = true } = {}) => {
-		this.updateBiometrics({display: false});
-		this.updatePin({display: false});
-		if (displayLoading) this.updateLoading({display: true});
+		const items = [
+			{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false },
+			{ stateId: "displayPin", opacityId: "pinOpacity", display: false }
+		];
+		if (displayLoading) items.push({ stateId: "displayLoading", opacityId: "loadingOpacity", display: true });
+		this.updateItems(items);
 		
 		//Push user to the default view while the rest of the wallet data loads.
 		//this.resetView();
@@ -274,7 +278,6 @@ export default class App extends PureComponent {
 			this.setExchangeRate({ selectedCrypto }); //Set the exchange rate for the selected currency
 			//Update status of the user-facing loading message and progress bar
 			if (!ignoreLoading) this.setState({ loadingMessage: "Connecting to Electrum Server...", loadingProgress: 0.4 });
-			
 			if (reconnectToElectrum) {
 				//Spin up electrum, connect to a peer & start Electrum's keep-alive function;
 				//Returns: { customPeers: [], data: { host: "" port: 443 }, error: false, method: "connectToPeer" }
@@ -353,6 +356,15 @@ export default class App extends PureComponent {
 			//Get & Set Current Block Height
 			await this.props.updateBlockHeight({ selectedCrypto });
 			const currentBlockHeight = this.props.wallet.blockHeight[selectedCrypto];
+			
+			let utxoLength = 1;
+			try {
+				utxoLength = utxos.length;
+			} catch (e) {}
+			
+			//Update the recommended fee for the selected coin.
+			const transactionSize = getTransactionSize(utxoLength, 2);
+			this.props.getRecommendedFee({coin: this.props.wallet.selectedCrypto, transactionSize});
 			
 			//Update status of the user-facing loading message and progress bar
 			if (ignoreLoading === false) this.setState({ loadingMessage: "Generating Addresses,\nUpdating Transactions.\nThis may take a while...", loadingProgress: 0.65 });
@@ -520,9 +532,12 @@ export default class App extends PureComponent {
 		try {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
 			
-			this.updateBiometrics({display: false});
-			this.updatePin({display: false});
-			await this.updateLoading({display: true});
+			const items = [
+				{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false },
+				{ stateId: "displayPin", opacityId: "pinOpacity", display: false },
+				{ stateId: "displayLoading", opacityId: "loadingOpacity", display: true }
+			];
+			await this.updateItems(items);
 			await this.props.updateWallet({ selectedCrypto: "bitcoin" });
 			
 			//Figure out what type of security/authentication is allowed for settings.
@@ -603,16 +618,18 @@ export default class App extends PureComponent {
 		//Background -> Foreground
 		if (this.state.appState.match(/inactive|background/) && nextAppState === "active" && !this.state.displayCamera) {
 			if (this.props.settings.biometrics || this.props.settings.pin) {
-				this.updatePriceHeader({display: false});
-				this.updateCameraRow({display: false});
-				this.updateTransactionList({display: false});
-				this.updateSettings({display: false});
-				this.updateSelectCoin({display: false});
-				this.updateTransactionDetail({display: false});
-				this.updateCamera({display: false});
-				this.updateReceiveTransaction({display: false});
+				const items = [
+					{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false },
+					{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
+					{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false },
+					{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false },
+					{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false },
+					{ stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: false },
+					{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
+					{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false }
+				];
+				this.updateItems(items);
 				this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-				//this.updateLoading({ display: true });
 				
 				try {
 					//Determine if user is a first timer. Create a new wallet if so.
@@ -739,66 +756,63 @@ export default class App extends PureComponent {
 		});
 	};
 	
-	//Handles The "QRCode" Opacity Animation
-	updateReceiveTransaction = async ({ display = true, duration = 400 } = {}) => {
+	updateItems = (items = []) => {
+		//items = [{ stateId: "", opacityId: "", display: false, duration: 400, onComplete: null }]
 		return new Promise(async (resolve) => {
 			try {
-				if (display) this.setState({ displayReceiveTransaction: display });
-				Animated.timing(
-					this.state.receiveTransactionOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
+				let itemsToDisplay = {};
+				let itemsToHide = {};
+				let animations = [];
+				let onCompleteFuncs = [];
+				
+				await Promise.all(items.map(async ({ stateId = "", opacityId = "", display = false, duration = 400, onComplete = null } = {}) => {
+					try {
+						//Handle Opacity Animations
+						
+						//Return if the desired value is already set for the given stateId
+						if (this.state[stateId] === display) return;
+						
+						//Push all onComplete functions into an array to call once the animation completes
+						try {if (typeof onComplete === "function") onCompleteFuncs.push(onComplete);} catch (e) {}
+						try {
+							
+							//Set the items to display and hide in the appropriate object.
+							if (display) {
+								itemsToDisplay = {...itemsToDisplay, [stateId]: display};
+							} else {
+								itemsToHide = {...itemsToHide, [stateId]: display};
+							}
+							
+							//Construct and push each animation to the animations array.
+							animations.push(
+								Animated.timing(
+									this.state[opacityId],
+									{
+										toValue: display ? 1 : 0,
+										duration
+									}
+								),
+							);
+							
+						} catch (e) {console.log(e);}
+					} catch (e) {}
+				}));
+				
+				//Display necessary items
+				if (Object.entries(itemsToDisplay).length !== 0 && itemsToDisplay.constructor === Object) this.setState(itemsToDisplay);
+				
+				//Start Animations.
+				Animated.parallel(animations).start(async() => {
 					//Perform any other action after the update has been completed.
-					if (!display) this.setState({ displayReceiveTransaction: display });
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-	
-	//Handles The "TransactionDetail" Opacity Animation
-	updateTransactionDetail = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				this.setState({ displayTransactionDetail: display });
-				Animated.timing(
-					this.state.transactionDetailOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-	
-	//Handles The "SelectCoin" Opacity Animation
-	updateSelectCoin = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				this.setState({ displaySelectCoin: display });
-				Animated.timing(
-					this.state.selectCoinOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
+					
+					//Hide necessary items
+					if (Object.entries(itemsToHide).length !== 0 && itemsToHide.constructor === Object) this.setState(itemsToHide);
+					
+					//Call all onComplete functions
+					onCompleteFuncs.map((onComplete) => {try {onComplete();} catch (e) {}});
 					resolve({ error: false });
 				});
+				
 			} catch (e) {
 				console.log(e);
 				resolve({ error: true, data: e });
@@ -806,250 +820,28 @@ export default class App extends PureComponent {
 		});
 	};
 	
-	//Handles The "Loading" Opacity Animation
-	updateLoading = async ({ display = true, duration = 600 } = {}) => {
+	updateItem = ({ stateId = "", opacityId = "", display = true, duration = 400, endToEndAnimation = true } = {}) => {
+		if (this.state[stateId] === display) return;
 		return new Promise(async (resolve) => {
 			try {
-				this.setState({ displayLoading: display });
+				if (endToEndAnimation) {
+					if (display) this.setState({[stateId]: display});
+				} else {
+					this.setState({[stateId]: display});
+				}
 				Animated.timing(
-					this.state.loadingOpacity,
+					this.state[opacityId],
 					{
 						toValue: display ? 1 : 0,
 						duration
 					}
 				).start(async () => {
 					//Perform any other action after the update has been completed.
-					resolve({ error: false });
+					if (!display && endToEndAnimation) this.setState({[stateId]: display});
+					resolve ({error: false});
 				});
 			} catch (e) {
 				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-	
-	//Handles The "TransactionList" View Opacity Animation
-	updateTransactionList = async ({ display = true, duration = 0 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				if (display) this.setState({ displayTransactionList: display });
-				Animated.timing(
-					this.state.transactionListOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					if (!display) this.setState({ displayTransactionList: display });
-					resolve({ error: false });
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-	
-	//Handles The "Camera" View Opacity Animation
-	updateCamera = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				this.setState({ displayCamera: display });
-				Animated.timing(
-					this.state.cameraOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					resolve({ error: false });
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-	
-	//Handles The "Settings" View Opacity Animation
-	updateSettings = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				this.setState({ displaySettings: display });
-				Animated.timing(
-					this.state.settingsOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-	
-	//Handles The "Biometrics" View Opacity Animation
-	updateBiometrics = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				this.setState({ displayBiometrics: display });
-				Animated.timing(
-					this.state.biometricsOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					if (display === true) this.authenticateUserWithBiometrics();
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-	
-	//Handles The "PinPad" View Opacity Animation
-	updatePin = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				this.setState({ displayPin: display });
-				Animated.timing(
-					this.state.pinOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-	
-	//Handles The "Header" Opacity Animation
-	updatePriceHeader = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				if (display) this.setState({ displayPriceHeader: display });
-				Animated.timing(
-					this.state.priceHeaderOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(() => {
-					//Perform any other action after the update has been completed.
-					if (!display) this.setState({ displayPriceHeader: display });
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-	
-	//Handles The TextInput Opacity Animation
-	updateTextInput = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				if (display) this.setState({ displayTextInput: display });
-				Animated.timing(
-					this.state.textInputOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					if (!display) this.setState({ displayTextInput: display });
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-	
-	updateSweepPrivateKey = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				if (display) this.setState({ displaySweepPrivateKey: display });
-				Animated.timing(
-					this.state.sweepPrivateKeyOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					if (!display) this.setState({ displaySweepPrivateKey: display });
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-	
-	//Handles The "Send", "Camera" and "Receive" Row Opacity Animation
-	updateCameraRow = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				if (display) this.setState({ displayCameraRow: display });
-				Animated.timing(
-					this.state.cameraRowOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					if (!display) this.setState({ displayCameraRow: display });
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-	
-	//Handles The "X" Button Opacity Animation
-	updateXButton = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				if (display) this.setState({ displayXButton: display });
-				Animated.timing(
-					this.state.xButtonOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					if (!display) this.setState({ displayXButton: display });
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
 			}
 		});
 	};
@@ -1058,13 +850,17 @@ export default class App extends PureComponent {
 	onSendPress = async () => {
 		try {
 			//Open Send State
-			this.updateCameraRow({display: false});
-			this.updateXButton({display: true});
-			this.updateCamera({ display: false });
-			this.updatePriceHeader({display: false, duration: 250});
-			this.updateTransactionList({ display: false, duration: 200 });
-			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			this.updateTextInput({display: true, duration: Platform.OS === "ios" ? 800 : 300});
+			
+			const items = [
+				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
+				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
+				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 250 },
+				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 },
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true }
+			];
+			this.updateItems(items);
+			this.updateFlex({ upperContentFlex: 1, lowerContentFlex: 0 });
+			this.updateItems([{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: true, duration: Platform.OS === "ios" ? 600 : 300 }]);
 			InteractionManager.runAfterInteractions(() => {
 				this.setState({optionSelected: "send"});
 			});
@@ -1082,14 +878,17 @@ export default class App extends PureComponent {
 			}
 			await this.setState({ privateKey: key });
 			//Open Send State
-			this.updateCameraRow({display: false});
-			this.updateXButton({display: true});
-			this.updateCamera({ display: false });
-			this.updatePriceHeader({display: false, duration: 250});
-			this.updateTransactionList({ display: false, duration: 200 });
-			this.updateTextInput({display: false, duration: 200});
+			const items = [
+				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true },
+				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
+				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 250 },
+				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 },
+				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false, duration: 200 }
+			];
+			this.updateItems(items);
 			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			this.updateSweepPrivateKey({display: true, duration: Platform.OS === "ios" ? 800 : 300});
+			this.updateItems([{ stateId: "displaySweepPrivateKey", opacityId: "sweepPrivateKeyOpacity", display: true, duration: Platform.OS === "ios" ? 800 : 300 }]);
 			InteractionManager.runAfterInteractions(() => {
 				this.setState({optionSelected: "send"});
 			});
@@ -1102,37 +901,48 @@ export default class App extends PureComponent {
 	onReceivePress = async () => {
 		if (this.state.optionSelected !== "receive") {
 			//Open Receive State
-			this.updateCameraRow({display: false});
-			this.updateXButton({display: true});
-			this.updatePriceHeader({display: false, duration: 250});
-			this.updateTextInput({display: false});
-			this.updateTransactionList({ display: false, duration: 200 });
+			const items = [
+				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true },
+				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 250 },
+				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
+				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 }
+			];
+			this.updateItems(items);
 			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			this.updateReceiveTransaction({display: true, duration: 800});
+			this.updateItem({ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: true, duration: 800 });
 			InteractionManager.runAfterInteractions(() => {
 				this.setState({optionSelected: "receive"});
 			});
 		} else {
 			//Close Receive State
 			this.setState({optionSelected: ""});
-			this.updateReceiveTransaction({display: false, duration: 200});
-			this.updateTextInput({display: false});
-			this.updateXButton({display: false, duration: 100});
+			
+			const items = [
+				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false, duration: 200 },
+				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100 },
+				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 350 }
+			];
+			this.updateItems(items);
 			await this.updateFlex();
-			this.updatePriceHeader({display: true, duration: 350});
+			this.updateItem({ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 350 });
 		}
 	};
 	
 	//Handles the series of animations necessary when the user taps a specific transaction from the TransactionList.
 	onTransactionPress = async (transaction = "") => {
 		try {
-			this.updateXButton({display: true});
-			this.updateCameraRow({display: false});
-			this.updatePriceHeader({display: false, duration: 350});
-			this.updateTextInput({display: false});
-			this.updateTransactionList({display: false, duration: 400});
+			const items = [
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true },
+				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
+				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 350 },
+				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
+				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 400 }
+			];
+			this.updateItems(items);
 			this.updateFlex({upperContentFlex: 0, lowerContentFlex: 1, duration: 400});
-			this.updateTransactionDetail({display: true});
+			this.updateItem({ stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: true });
 			
 			const {selectedWallet, selectedCrypto} = this.props.wallet;
 			transaction = await this.props.wallet[selectedWallet].transactions[selectedCrypto].filter((tx) => tx.hash === transaction);
@@ -1146,24 +956,29 @@ export default class App extends PureComponent {
 		if (this.state.displayLoading || this.state.displayPin || this.state.displayBiometrics || this.state.displayBiometricAuthenticationRetry || this.state.appHasLoaded === false) return;
 		if (!this.state.displaySelectCoin) {
 			//Open SelectCoin State
-			this.updateCameraRow({display: false});
-			this.updateXButton({display: true, duration: 500});
-			this.updatePriceHeader({display: false, duration: 350});
-			this.updateTextInput({display: false});
-			this.updateTransactionList({ display: false, duration: 200 });
-			this.updateReceiveTransaction({display: false});
-			await this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			this.updateSelectCoin({display: true, duration: 400});
+			const items = [
+				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true, duration: 500 },
+				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 300 },
+				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
+				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 },
+				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false },
+				{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: true, duration: 600 }
+			];
+			this.updateItems(items);
+			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
+			//this.updateItem({ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: true, duration: 400 });
 		} else {
 			//Close SelectCoin State
-			//TODO: Verify this comment is true. This condition is triggered when creating a new wallet from the SelectCoin view. It is used to properly close the view.
-			this.updateSelectCoin({display: false});
-			this.updateReceiveTransaction({display: false, duration: 200});
-			this.updateTextInput({display: false});
-			this.updateXButton({display: false, duration: 100});
-			//this.updateSelectCoin({display: false, duration: 400});
+			const items = [
+				{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false },
+				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false, duration: 200 },
+				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100 }
+			];
+			this.updateItems(items);
 			await this.updateFlex();
-			this.updatePriceHeader({display: true, duration: 350});
+			this.updateItem({ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 350 });
 		}
 	};
 	
@@ -1171,14 +986,17 @@ export default class App extends PureComponent {
 	onCameraPress = async () => {
 		try {
 			//Open Receive State
-			this.updateCameraRow({display: false});
-			this.updatePriceHeader({display: false, duration: 350});
-			this.updateTextInput({display: false});
-			this.updateReceiveTransaction({display: false});
-			this.updateXButton({display: false});
-			this.updateTransactionList({ display: false, duration: 200 });
+			const items = [
+				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
+				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 300 },
+				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
+				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false },
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false },
+				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 }
+			];
+			this.updateItems(items);
 			await this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			this.updateCamera({ display: true });
+			this.updateItem({ stateId: "displayCamera", opacityId: "cameraOpacity", display: true });
 		} catch (e) {
 			console.log(e);
 		}
@@ -1188,15 +1006,19 @@ export default class App extends PureComponent {
 	onSettingsPress = async () => {
 		try {
 			//Open Receive State
-			this.updateCameraRow({display: false});
-			this.updatePriceHeader({display: false, duration: 350});
-			this.updateTextInput({display: false});
-			this.updateReceiveTransaction({display: false});
-			this.updateXButton({display: false});
-			this.updateCamera({ display: false });
-			this.updateTransactionList({ display: false, duration: 200 });
+			const items = [
+				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
+				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 350 },
+				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
+				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false },
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false },
+				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
+				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 },
+				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: true, duration: 800 }
+			];
+			this.updateItems(items);
 			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			this.updateSettings({ display: true, duration: 50 });
+			//this.updateItem({ stateId: "displaySettings", opacityId: "settingsOpacity", display: true, duration: 50 });
 		} catch (e) {
 			console.log(e);
 		}
@@ -1205,19 +1027,22 @@ export default class App extends PureComponent {
 	//Handles the series of animations necessary to transition the view to handle Biometrics.
 	onBiometricsPress = async () => {
 		try {
-			this.updateReceiveTransaction({display: false });
-			this.updateSettings({display: false });
-			this.updateTransactionDetail({ display: false });
-			this.updateSelectCoin({display: false});
-			this.updateCameraRow({display: false});
-			this.updatePriceHeader({display: false });
-			this.updateTextInput({display: false});
-			this.updateXButton({display: false});
-			this.updateCamera({ display: false });
-			this.updateLoading({display: false});
-			this.updateTransactionList({ display: false });
+			const items = [
+				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false },
+				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false },
+				{ stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: false },
+				{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false },
+				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
+				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false },
+				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false },
+				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
+				{ stateId: "displayLoading", opacityId: "loadingOpacity", display: false },
+				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false }
+			];
+			this.updateItems(items);
 			await this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			this.updateBiometrics({ display: true });
+			this.updateItems([{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: true, onComplete: this.authenticateUserWithBiometrics }]);
 		} catch (e) {
 			console.log(e);
 		}
@@ -1226,20 +1051,23 @@ export default class App extends PureComponent {
 	//Handles the series of animations necessary to transition the view to handle Pin.
 	onPinPress = async () => {
 		try {
-			this.updateReceiveTransaction({display: false });
-			this.updateSettings({display: false });
-			this.updateTransactionDetail({ display: false });
-			this.updateSelectCoin({display: false}); //Maybe messing it up?
-			this.updateCameraRow({display: false});
-			this.updatePriceHeader({display: false });
-			this.updateTextInput({display: false});
-			this.updateXButton({display: false});
-			this.updateCamera({ display: false });
-			this.updateLoading({display: false});
-			this.updateTransactionList({ display: false });
-			this.updateBiometrics({ display: false });
+			const items = [
+				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false },
+				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false },
+				{ stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: false },
+				{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false },
+				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
+				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false },
+				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false },
+				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
+				{ stateId: "displayLoading", opacityId: "loadingOpacity", display: false },
+				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false },
+				{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false }
+			];
+			this.updateItems(items);
 			await this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			this.updatePin({ display: true });
+			this.updateItem({ stateId: "displayPin", opacityId: "pinOpacity", display: true });
 		} catch (e) {
 			console.log(e);
 		}
@@ -1247,18 +1075,21 @@ export default class App extends PureComponent {
 	
 	//Handles the series of animations necessary to revert the view back to it's original layout.
 	resetView = async () => {
-		this.updateTransactionList({ display: true });
-		if (!this.state.displayCameraRow) this.updateCameraRow({display: true});
-		if (this.state.displayCamera) this.updateCamera({ display: false });
-		if (this.state.displayXButton) this.updateXButton({display: false, duration: 100});
-		if (this.state.displayTextInput) this.updateTextInput({display: false, duration: 200});
-		if (this.state.displaySweepPrivateKey) this.updateSweepPrivateKey({display: false, duration: 200});
-		if (this.state.displayLoading) this.updateLoading({display: false, duration: 200});
-		if (this.state.displayReceiveTransaction) this.updateReceiveTransaction({display: false, duration: 200});
-		if (this.state.displaySettings) this.updateSettings({display: false, duration: 200});
-		if (this.state.displayTransactionDetail) this.updateTransactionDetail({ display: false, duration: 200 });
-		if (this.state.displaySelectCoin) this.updateSelectCoin({display: false, duration: 200});
-		if (!this.state.displayPriceHeader) this.updatePriceHeader({display: true, duration: 600});
+		const items = [
+			{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: true },
+			{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: true },
+			{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
+			{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100 },
+			{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false, duration: 200 },
+			{ stateId: "displaySweepPrivateKey", opacityId: "sweepPrivateKeyOpacity", display: false, duration: 200 },
+			{ stateId: "displayLoading", opacityId: "loadingOpacity", display: false, duration: 200 },
+			{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false, duration: 200 },
+			{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false, duration: 200 },
+			{ stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: false, duration: 200 },
+			{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false, duration: 200 },
+			{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 600 }
+		];
+		this.updateItems(items);
 		this.updateFlex({ duration: 400 });
 		InteractionManager.runAfterInteractions(() => {
 			this.props.updateWallet({ selectedTransaction: "" });
@@ -1269,13 +1100,14 @@ export default class App extends PureComponent {
 	//Handles the series of animations necessary for the user to expand the transaction list.
 	expandTransactions = () => {
 		this.setState({ transactionsAreExpanded: true });
-		this.updateXButton({display: true});
-		this.updateCameraRow({display: false, duration: 200});
-		this.updatePriceHeader({display: false, duration: 350});
-		this.updateTextInput({display: false});
+		const items = [
+			{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true },
+			{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 200 },
+			{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 350 },
+			{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false }
+		];
+		this.updateItems(items);
 		this.updateFlex({upperContentFlex: 0, lowerContentFlex: 1});
-		//this.updateReceiveTransaction({display: false, duration: 200});
-		//this.updateSelectCoin({display: false, duration: 200});
 	};
 	
 	//Handles any action that requires the Keyboard to be dismissed.
@@ -1299,8 +1131,8 @@ export default class App extends PureComponent {
 				try {
 					let hasPeers = false;
 					let hasCustomPeers = false;
-					try {hasPeers = Array.isArray(this.props.settings.peers[coin]) && this.props.settings.peers[coin].length;} catch (e) {}
-					try {hasCustomPeers = Array.isArray(this.props.settings.customPeers[coin]) && this.props.settings.customPeers[coin].length;} catch (e) {}
+					try {if (Array.isArray(this.props.settings.peers[coin]) && this.props.settings.peers[coin].length) hasPeers = true;} catch (e) {}
+					try {if (Array.isArray(this.props.settings.customPeers[coin]) && this.props.settings.customPeers[coin].length) hasCustomPeers = true;} catch (e) {}
 					
 					if (!hasPeers && !hasCustomPeers) {
 						//Attempt to retrieve a list of peers from the default servers.
@@ -1320,12 +1152,12 @@ export default class App extends PureComponent {
 				} catch (e) {}
 				
 				//Connect to an electrum server
-				const result = await electrum.start({ coin, peers: this.props.settings.peers[coin], customPeers: this.props.settings.customPeers[coin] });
-				if (result.error === true) {
-					resolve(result);
-					return;
-				}
-				await pauseExecution();
+				const result = await electrum.start({
+					coin,
+					peers: this.props.settings.peers[coin],
+					customPeers: this.props.settings.customPeers[coin]
+					
+				});
 				resolve(result);
 			} catch (e) {
 				console.log(e);
@@ -1338,7 +1170,7 @@ export default class App extends PureComponent {
 		try {
 			//Determine if we need to import a mnemonic phrase
 			if (bip39.validateMnemonic(data)) {
-				await this.updateCamera({ display: false });
+				await this.updateItem({ stateId: "displayCamera", opacityId: "cameraOpacity", display: false });
 				this.createNewWallet({ mnemonic: data });
 				return;
 			}
@@ -1348,7 +1180,7 @@ export default class App extends PureComponent {
 			if (validatePrivateKeyResults.isPrivateKey === true) {
 				
 				//Remove Camera View
-				await this.updateCamera({ display: false });
+				await this.updateItem({ stateId: "displayCamera", opacityId: "cameraOpacity", display: false });
 				this.onSweep(data);
 				return;
 			}
@@ -1358,7 +1190,7 @@ export default class App extends PureComponent {
 			if (data.substr(0, 5).toLowerCase() === "bitid") {
 				//Present user with the option to sign and send the request.
 				//Remove Camera View
-				await this.updateCamera({ display: false });
+				await this.updateItem({ stateId: "displayCamera", opacityId: "cameraOpacity", display: false });
 				//Reveal Sign Message View
 				//await this.updateSignMessage({ display: true });
 			}
@@ -1468,10 +1300,13 @@ export default class App extends PureComponent {
 			await this.setState({loadingMessage: `Creating ${walletName.split('wallet').join('Wallet ')} & Generating Addresses`, loadingProgress: 0.5});
 			
 			//Close Receive State
-			this.updateSelectCoin({display: false});
-			this.updateSettings({display: false});
-			this.updateXButton({display: false, duration: 100});
-			await this.updateLoading({ display: true });
+			const items = [
+				{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false },
+				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false },
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100 },
+				{ stateId: "displayLoading", opacityId: "loadingOpacity", display: true }
+			];
+			await this.updateItems(items);
 			
 			//Set the selectedWallet accordingly and update the wallets array.
 			await this.props.updateWallet({ selectedWallet: walletName, wallets });
@@ -1575,7 +1410,7 @@ export default class App extends PureComponent {
 							{this.state.displaySweepPrivateKey &&
 							<Animated.View style={[styles.textFormContainer, { opacity: this.state.sweepPrivateKeyOpacity }]}>
 								
-								<SweepPrivateKey privateKey={this.state.privateKey} privateKeyData={this.state.privateKeyData} refreshWallet={this.refreshWallet} onClose={this.resetView} updateXButton={this.updateXButton} />
+								<SweepPrivateKey privateKey={this.state.privateKey} privateKeyData={this.state.privateKeyData} refreshWallet={this.refreshWallet} onClose={this.resetView} updateXButton={this.updateItem} />
 							
 							</Animated.View>}
 							
@@ -1605,7 +1440,7 @@ export default class App extends PureComponent {
 					<View style={{ flex: 1 }}>
 						
 						{this.state.displayTransactionList &&
-						<LinearGradient style={{ flex: 1 }} colors={[ colors.white, "#f1f3f4", colors.white, colors.white]} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
+						<View style={{ flex: 1 }}>
 							<Animated.View style={{ flex: 1, opacity: this.state.transactionListOpacity }}>
 								<View style={styles.transactionListHeader}>
 									{!this.state.loadingTransactions &&
@@ -1629,7 +1464,7 @@ export default class App extends PureComponent {
 								</View>
 								<TransactionList onTransactionPress={this.onTransactionPress} transactions={this.getTransactions()} selectedCrypto={this.props.wallet.selectedCrypto} cryptoUnit={this.props.settings.cryptoUnit} exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]} blockHeight={this.props.wallet.blockHeight[this.props.wallet.selectedCrypto]} onRefresh={this.resetView} />
 							</Animated.View>
-						</LinearGradient>}
+						</View>}
 						
 						{this.state.displayTransactionDetail &&
 						<Animated.View style={[styles.transactionDetail, { opacity: this.state.transactionDetailOpacity }]}>

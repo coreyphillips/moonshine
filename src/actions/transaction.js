@@ -1,3 +1,5 @@
+import bitcoinUnits from "bitcoin-units";
+
 const {
 	Constants: {
 		actions
@@ -20,7 +22,14 @@ export const resetTransaction = (payload) => ({
 	payload
 });
 
-export const getRecommendedFee = () => (dispatch: any) => {
+/*
+TODO:
+Recommended fees are always grossly overestimated.
+Until this is resolved, getRecommendedFee divides that estimation by 4.
+ */
+export const getRecommendedFee = ({ coin = "bitcoin", transactionSize = 256 } = {}) => (dispatch: any) => {
+	const DIVIDE_RECOMMENDED_FEE_BY = 4;
+	const MAX_FEE_MULTIPLIER = 4;
 	return new Promise(async (resolve) => {
 
 		const failure = (errorTitle = "", errorMsg = "") => {
@@ -28,21 +37,41 @@ export const getRecommendedFee = () => (dispatch: any) => {
 		};
 
 		let recommendedFee = 6;
+		let maximumFee = 128;
 		try {
-			const response = await fetch("https://bitcoinfees.earn.com/api/v1/fees/recommended");
-			const jsonResponse = await response.json();
-			recommendedFee = jsonResponse.hourFee;
+			if (coin === "litecoin") {
+				//TODO: Random Litecoin Electrum servers appear to have difficulty with the feeEstimate method. Remove this condition once the issue is resolved.
+				const response = await fetch("https://bitcoinfees.earn.com/api/v1/fees/recommended");
+				const jsonResponse = await response.json();
+				recommendedFee = Math.round(jsonResponse.hourFee/DIVIDE_RECOMMENDED_FEE_BY);
+			} else {
+				const feeResponse = await walletHelpers.feeEstimate[coin].default();
+				let feeInSats = bitcoinUnits(feeResponse.data, "BTC").to("satoshi").value();
+				feeInSats = Math.round(feeInSats/transactionSize);
+				try {
+					recommendedFee = Math.round(feeInSats/DIVIDE_RECOMMENDED_FEE_BY);
+				} catch (e) {}
+			}
+			try {
+				const suggestedMaximumFee = recommendedFee * MAX_FEE_MULTIPLIER;
+				if (suggestedMaximumFee > maximumFee) maximumFee = suggestedMaximumFee;
+			} catch (e) {}
 		} catch (e) {
 			console.log(e);
 			failure();
 		}
-		
+		const feeTimestamp = moment().format();
+		const data = {
+			recommendedFee,
+			maximumFee,
+			feeTimestamp
+		};
 		dispatch({
 			type: actions.UPDATE_TRANSACTION,
-			payload: { recommendedFee, feeTimestamp: moment().format() }
+			payload: data
 		});
 
-		resolve({ error: false, data: { recommendedFee } });
+		resolve({ error: false, data });
 	});
 };
 

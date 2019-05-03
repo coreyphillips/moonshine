@@ -507,7 +507,7 @@ class SendTransaction extends PureComponent<Props> {
 			try {
 
 				//Set the loading state.
-				this.props.updateXButton({ display: false });
+				this.props.updateXButton({ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false });
 				await Promise.all(
 					this.updateLoading({ display: true , loadingMessage: "Sweeping Funds...", loadingProgress: 0.5})
 				);
@@ -638,7 +638,7 @@ class SendTransaction extends PureComponent<Props> {
 						enableLoadingSpinner: false,
 						enableLoadingErrorIcon: true
 					});
-					await this.props.updateXButton({ display: true });
+					await this.props.updateXButton({ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true });
 				} else {
 
 					//Success! The transaction completed successfully

@@ -90,14 +90,12 @@ const connectToRandomPeer = async (coin, peers = []) => {
 			if (connectionResponse.error === false) {
 				
 				//Ensure the server is responsive beyond a successful connection response
-				let versionResponse = [];
+				let pingResponse = false;
 				try {
-					//versionResponse = await api.mainClient[coin].server_version(v1, v2);
-					//const blockHeaderResponse = await api.mainClient[coin].blockchainHeaders_subscribe();
-					//connectionResponse.data = Object.assign(blockHeaderResponse, connectionResponse.data);
+					pingResponse = await api.mainClient[coin].server_ping();
 				} catch (e) {}
 				
-				if (connectionResponse.data) {
+				if (connectionResponse.data && pingResponse === null) {
 					api.peer[coin] = {
 						port: connectionResponse.data.port,
 						host: connectionResponse.data.host,
@@ -576,11 +574,11 @@ Estimates the transaction fee per kilobyte that needs to be paid for a transacti
 If the node doesn’t have enough information to make an estimate, the value -1 will be returned.
 Parameter: How many blocks the transaction may wait before being included.
  */
-const getFeeEstimate = async ({ blocksWillingToWait = 4, id = "", method = "getFeeEstimate", coin = "" } = {}) => {
+const getFeeEstimate = async ({ blocksWillingToWait = 8, id = "", method = "getFeeEstimate", coin = "" } = {}) => {
 	try {
-		//if (coin != api.coin) return;
-		if (api.mainClient[coin] === false) await connectToRandomPeer(api.coin, api.peers[coin]);
-		const response = await api.mainClient[api.coin].blockchainEstimatefee(blocksWillingToWait);
+		if (coin != api.coin) return;
+		if (api.mainClient[coin] === false) await connectToRandomPeer(coin, api.peers[coin]);
+		const response = await api.mainClient[coin].blockchainEstimatefee(blocksWillingToWait);
 		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin}));
 	} catch (e) {
 		console.log(e);

@@ -119,8 +119,8 @@ class ElectrumTesting extends PureComponent<Props> {
 			try {
 				let hasPeers = false;
 				let hasCustomPeers = false;
-				try {hasPeers = Array.isArray(this.props.settings.peers[key]) && this.props.settings.peers[key].length;} catch (e) {}
-				try {hasCustomPeers = Array.isArray(this.props.settings.customPeers[key]) && this.props.settings.customPeers[key].length;} catch (e) {}
+				try {if (Array.isArray(this.props.settings.peers[key]) && this.props.settings.peers[key].length) hasPeers = true;} catch (e) {}
+				try {if (Array.isArray(this.props.settings.customPeers[key]) && this.props.settings.customPeers[key].length) hasCustomPeers = true;} catch (e) {}
 				
 				if (!hasPeers && !hasCustomPeers) {
 					//Attempt to retrieve a list of peers from the default servers.

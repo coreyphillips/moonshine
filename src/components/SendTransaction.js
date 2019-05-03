@@ -108,7 +108,7 @@ class SendTransaction extends PureComponent<Props> {
 					const cryptoBalance = this.getCryptoBalance();
 					this.setState({cryptoBalance, fiatBalance});
 
-					//Set Maximum Fee (recommendedFee * 4) to prevent any user accidents.
+					//Set Maximum Fee to prevent any user accidents.
 					//Set Recommended Fee as Starting Fee
 					this.calculateFees();
 				} catch (e) {}
@@ -441,15 +441,15 @@ class SendTransaction extends PureComponent<Props> {
 			const difference = getDifferenceBetweenDates({ start, end });
 			if (!this.props.transaction.feeTimestamp || difference > 10) {
 				const { selectedWallet, selectedCrypto } = this.props.wallet;
-				const result = await this.props.getRecommendedFee();
 				const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto];
 				const transactionSize = getTransactionSize(utxos.length, this.state.spendMaxAmount ? 1 : 2);
-
+				const result = await this.props.getRecommendedFee({coin: selectedCrypto, transactionSize});
+				
 				//Ensure we have a valid recommendedFee
 				if (result.data.recommendedFee && !isNaN(Number(result.data.recommendedFee))) {
-					this.props.updateTransaction({ maximumFee: Number(result.data.recommendedFee) * 4, fee: Number(result.data.recommendedFee), transactionSize });
+					this.props.updateTransaction({ fee: Number(result.data.recommendedFee), transactionSize });
 				} else {
-					this.props.updateTransaction({ maximumFee: 24, fee: 6, transactionSize });
+					this.props.updateTransaction({ maximumFee: 128, fee: 6, transactionSize });
 				}
 			}
 		} catch (e) {

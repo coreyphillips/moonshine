@@ -9,12 +9,10 @@ import {
 	ScrollView,
 	Switch,
 	ActivityIndicator,
-	Platform,
-	InteractionManager
+	Platform
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
-import LinearGradient from "react-native-linear-gradient";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import XButton from "./XButton";
 import Fade from "./Fade";
@@ -22,7 +20,6 @@ import PinPad from "./PinPad";
 import ImportPhrase from "./ImportPhrase";
 import ElectrumOptions from "./ElectrumOptions";
 import * as electrum from "../utils/electrum";
-import nodejs from "nodejs-mobile-react-native";
 
 const {
 	Constants: {
@@ -44,7 +41,7 @@ class Settings extends PureComponent<Props> {
 		super(props);
 		this.state = {
 			displaySettings: true,
-			settingsOpacity: new Animated.Value(0),
+			settingsOpacity: new Animated.Value(1),
 
 			displayPin: false,
 			pinOpacity: new Animated.Value(0),
@@ -63,25 +60,15 @@ class Settings extends PureComponent<Props> {
 		};
 	}
 
-	async componentDidMount() {
-		InteractionManager.runAfterInteractions(() => {
-			try {
-				this.updateSettings({ display: true, duration: 800 });
-			} catch (e) {
-				console.log(e);
-			}
-		});
-	}
-
 	componentDidUpdate() {
 		Platform.OS === "ios" ? LayoutAnimation.easeInEaseOut() : null;
 	}
 
-	HeaderRow({ header = "", title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", gradientColors = ["#ffffff", "#ffffff"], onPress = () => null, headerStyle = {}, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) {
+	HeaderRow({ header = "", title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", onPress = () => null, headerStyle = {}, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) {
 		try {
 			return (
 				<TouchableOpacity onPress={() => onPress(value)} activeOpacity={1} style={styles.rowContainer}>
-					<LinearGradient style={styles.row} colors={gradientColors} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
+					<View style={styles.row}>
 
 						<View style={{ flex: 1 }}>
 							<View style={{ alignItems: "center", justifyContent: "center" }}>
@@ -122,7 +109,7 @@ class Settings extends PureComponent<Props> {
 							</View>
 						</View>
 
-					</LinearGradient>
+					</View>
 				</TouchableOpacity>
 			);
 		} catch (e) {
@@ -130,11 +117,11 @@ class Settings extends PureComponent<Props> {
 		}
 	}
 
-	Row({ title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", gradientColors = ["#ffffff", "#ffffff"], onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) {
+	Row({ title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", rowStyle = { backgroundColor: colors.white }, onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) {
 		try {
 			return (
 				<TouchableOpacity onPress={() => onPress(value)} activeOpacity={1} style={styles.rowContainer}>
-					<LinearGradient style={styles.row} colors={gradientColors} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
+					<View style={[styles.row, rowStyle]}>
 						{!col1Loading && col1Image === "" &&
 						<View style={[styles.col1, col1Style]}>
 							<Text style={[styles.title, titleStyle]}>{title}</Text>
@@ -164,7 +151,7 @@ class Settings extends PureComponent<Props> {
 						</View>
 						}
 
-					</LinearGradient>
+					</View>
 				</TouchableOpacity>
 			);
 		} catch (e) {
@@ -190,115 +177,66 @@ class Settings extends PureComponent<Props> {
 			console.log(e);
 		}
 	}
-
-	updateSettings = async ({ display = true, duration = 400 } = {}) => {
+	
+	updateItems = (items = []) => {
 		return new Promise(async (resolve) => {
 			try {
-				this.setState({ displaySettings: display });
-				Animated.timing(
-					this.state.settingsOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(() => {
+				let itemsToDisplay = {};
+				let itemsToHide = {};
+				let animations = [];
+				let onCompleteFuncs = [];
+				
+				await Promise.all(items.map(async ({ stateId = "", opacityId = "", display = false, duration = 400, onComplete = null } = {}) => {
+					try {
+						//Handle Opacity Animations
+						
+						//Return if the desired value is already set for the given stateId
+						if (this.state[stateId] === display) return;
+						
+						//Push all onComplete functions into an array to call once the animation completes
+						try {if (typeof onComplete === "function") onCompleteFuncs.push(onComplete);} catch (e) {}
+						try {
+							
+							//Set the items to display and hide in the appropriate object.
+							if (display) {
+								itemsToDisplay = {...itemsToDisplay, [stateId]: display};
+							} else {
+								itemsToHide = {...itemsToHide, [stateId]: display};
+							}
+							
+							//Construct and push each animation to the animations array.
+							animations.push(
+								Animated.timing(
+									this.state[opacityId],
+									{
+										toValue: display ? 1 : 0,
+										duration
+									}
+								),
+							);
+						} catch (e) {console.log(e);}
+					} catch (e) {}
+				}));
+				//Display necessary items
+				if (Object.entries(itemsToDisplay).length !== 0 && itemsToDisplay.constructor === Object) this.setState(itemsToDisplay);
+				//Start Animations.
+				Animated.parallel(animations).start(async() => {
 					//Perform any other action after the update has been completed.
+					//Hide necessary items
+					if (Object.entries(itemsToHide).length !== 0 && itemsToHide.constructor === Object) this.setState(itemsToHide);
+					
+					//Call all onComplete functions
+					onCompleteFuncs.map((onComplete) => {try {onComplete();} catch (e) {}});
 					resolve({ error: false });
 				});
+				
 			} catch (e) {
 				console.log(e);
 				resolve({ error: true, data: e });
 			}
 		});
 	};
-
-	//Handles The "PinPad" View Opacity Animation
-	updatePin = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				this.setState({ displayPin: display });
-				Animated.timing(
-					this.state.pinOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-
-	updateBackupPhrase = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				this.setState({ displayBackupPhrase: display });
-				Animated.timing(
-					this.state.backupPhraseOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-
-	updateImportPhrase = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				this.setState({ displayImportPhrase: display });
-				Animated.timing(
-					this.state.importPhraseOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					//if (display === false) this.setState({ displayImportPhrase: display });
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-
-	updateElectrumOptions = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				this.setState({ displayElectrumOptions: display });
-				Animated.timing(
-					this.state.electrumOptionsOpacity,
-					{
-						toValue: display ? 1 : 0,
-						duration
-					}
-				).start(async () => {
-					//Perform any other action after the update has been completed.
-					//if (display === false) this.setState({ displayImportPhrase: display });
-					resolve({error: false});
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-
+	
 	togglePin = async () => {
 		try {
 			if (this.props.settings.pin) {
@@ -308,8 +246,11 @@ class Settings extends PureComponent<Props> {
 			} else {
 				//Prompt User To Set A Pin.
 				this.props.updateSettings({ pin: true });
-				this.updatePin({ display: true });
-				this.updateSettings({ display: false });
+				const items = [
+					{ stateId: "displayPin", opacityId: "pinOpacity", display: true },
+					{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false },
+				];
+				this.updateItems(items);
 
 			}
 		} catch (e) {
@@ -325,9 +266,12 @@ class Settings extends PureComponent<Props> {
 	onPinSuccess = () => {
 		try {
 			//Hide the PinPad View
-			this.updatePin({ display: false });
 			//Show the Settings View
-			this.updateSettings({ display: true });
+			const items = [
+				{ stateId: "displayPin", opacityId: "pinOpacity", display: false },
+				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: true },
+			];
+			this.updateItems(items);
 		} catch (e) {
 			console.log(e);
 		}
@@ -340,9 +284,13 @@ class Settings extends PureComponent<Props> {
 				//Remove Saved Pin
 				resetKeychainValue({ key: "pin" });
 				//Hide the PinPad View
-				this.updatePin({ display: false });
 				//Show the Settings View
-				this.updateSettings({ display: true });
+				const items = [
+					{ stateId: "displayPin", opacityId: "pinOpacity", display: false },
+					{ stateId: "displaySettings", opacityId: "settingsOpacity", display: true },
+				];
+				this.updateItems(items);
+				
 				//Set pin to false in settings.
 				this.props.updateSettings({ pin: false });
 				return;
@@ -353,16 +301,22 @@ class Settings extends PureComponent<Props> {
 			}
 			if (this.state.displayImportPhrase) {
 				//Hide ImportPhrase component
-				this.updateImportPhrase({ display: false });
 				//Show the Settings View
-				this.updateSettings({ display: true });
+				const items = [
+					{ stateId: "displayImportPhrase", opacityId: "importPhraseOpacity", display: false },
+					{ stateId: "displaySettings", opacityId: "settingsOpacity", display: true }
+				];
+				this.updateItems(items);
 				return;
 			}
 			if (this.state.displayElectrumOptions) {
 				//Hide ImportPhrase component
-				this.updateElectrumOptions({ display: false });
 				//Show the Settings View
-				this.updateSettings({ display: true });
+				const items = [
+					{ stateId: "displayElectrumOptions", opacityId: "electrumOptionsOpacity", display: false },
+					{ stateId: "displaySettings", opacityId: "settingsOpacity", display: true }
+				];
+				this.updateItems(items);
 				return;
 			}
 			this.props.onBack();
@@ -385,14 +339,17 @@ class Settings extends PureComponent<Props> {
 	toggleBackupPhrase = async ({ selectedWallet = "", display = false }) => {
 		try {
 			if (!selectedWallet) return;
+			const items = [
+				{ stateId: "displayBackupPhrase", opacityId: "backupPhraseOpacity", display },
+				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: !display },
+			];
 			if (display) {
 				//Fetch Recovery Phrase
 				const keychainResult = await getKeychainValue({key: selectedWallet});
 				if (keychainResult.error === true) return;
 				const mnemonic = keychainResult.data.password;
 				await this.setState({ backupPhrase: mnemonic });
-				this.updateSettings({ display: false });
-				await this.updateBackupPhrase({display: true});
+				this.updateItems(items);
 				this.props.updateWallet({
 					[selectedWallet]: {
 						...this.props.wallet[selectedWallet],
@@ -402,8 +359,7 @@ class Settings extends PureComponent<Props> {
 				});
 			} else {
 				this.setState({backupPhrase: ""});
-				this.updateSettings({ display: true });
-				this.updateBackupPhrase({display: false});
+				this.updateItems(items);
 			}
 		} catch (e) {
 			console.log(e);
@@ -412,13 +368,11 @@ class Settings extends PureComponent<Props> {
 
 	toggleImportPhrase = async ({ display = false }) => {
 		try {
-			if (display) {
-				this.updateSettings({ display: false });
-				await this.updateImportPhrase({ display: true });
-			} else {
-				this.updateSettings({ display: true });
-				this.updateImportPhrase({display: false});
-			}
+			const items = [
+				{ stateId: "displayImportPhrase", opacityId: "importPhraseOpacity", display },
+				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: !display },
+			];
+			this.updateItems(items);
 		} catch (e) {
 
 		}
@@ -426,13 +380,11 @@ class Settings extends PureComponent<Props> {
 
 	toggleElectrumOptions = async ({ display = false }) => {
 		try {
-			if (display) {
-				this.updateSettings({ display: false });
-				await this.updateElectrumOptions({ display: true });
-			} else {
-				this.updateSettings({ display: true });
-				this.updateElectrumOptions({display: false});
-			}
+			const items = [
+				{ stateId: "displayElectrumOptions", opacityId: "electrumOptionsOpacity", display },
+				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: !display },
+			];
+			this.updateItems(items);
 		} catch (e) {
 			console.log(e);
 		}
@@ -454,7 +406,7 @@ class Settings extends PureComponent<Props> {
 
 
 	rescanWallet = async () => {
-		await nodejs.start("main.js");
+		//await nodejs.start("main.js");
 		try {
 			await this.setState({ rescanningWallet: true });
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
@@ -548,7 +500,7 @@ class Settings extends PureComponent<Props> {
 							{this.SwitchRow({ setting: "pin", title: "Enable Pin", onPress: this.togglePin })}
 
 							<View style={styles.rowContainer}>
-								<LinearGradient style={styles.row} colors={["#ffffff", "#ffffff"]} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
+								<View style={styles.row}>
 									<View>
 										<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
 											<Text style={styles.title}>Crypto Units</Text>
@@ -569,7 +521,7 @@ class Settings extends PureComponent<Props> {
 											</TouchableOpacity>
 										</View>
 									</View>
-								</LinearGradient>
+								</View>
 							</View>
 
 							{this.HeaderRow({
@@ -585,7 +537,6 @@ class Settings extends PureComponent<Props> {
 								title: "",
 								value: "Electrum Options",
 								onPress: () => this.toggleElectrumOptions({ display: true }),
-								gradientColors: [colors.white, colors.white],
 								col1Image: "alpha-e-box",
 								col1ImageColor: colors.purple,
 								col1Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10 },
@@ -598,7 +549,6 @@ class Settings extends PureComponent<Props> {
 								title: "",
 								value: "Import Mnemonic Phrase",
 								onPress: () => this.toggleImportPhrase({ display: true }),
-								gradientColors: [colors.white, colors.white],
 								col1Image: "import",
 								col1ImageColor: colors.purple,
 								col1Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10 },
@@ -611,7 +561,7 @@ class Settings extends PureComponent<Props> {
 								title: "Backup Wallet",
 								value: this.getBackupWalletValue(),
 								onPress: () => this.toggleBackupPhrase({ selectedWallet: this.props.wallet.selectedWallet, display: true }),
-								gradientColors: this.props.wallet[this.props.wallet.selectedWallet].hasBackedUpWallet ? [colors.white, colors.white] : ["#fb6f73", "#fb6f73", "#fd676a", "#fd676a"],
+								rowStyle: this.props.wallet[this.props.wallet.selectedWallet].hasBackedUpWallet ? { backgroundColor: colors.white } : { backgroundColor: colors.red },
 								col1Image: "wallet",
 								col1ImageColor: this.props.wallet[this.props.wallet.selectedWallet].hasBackedUpWallet ? colors.purple : colors.white,
 								col1Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10 },
