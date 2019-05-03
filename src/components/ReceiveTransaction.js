@@ -31,13 +31,14 @@ formatUri = ({ coin = "bitcoin", address = "" } = {}) => {
 
 onSharePress = (address = "", selectedCoin = "Bitcoin") => {
 	try {
+		const coin = capitalize(selectedCoin);
 		Share.share({
 			message: address,
 			url: "google.com",
-			title: `My ${capitalize(selectedCoin)} Address.`
+			title: `My ${coin} Address.`
 		}, {
 			// Android only:
-			dialogTitle: "My Bitcoin Address."
+			dialogTitle: `My ${coin} Address.`
 		});
 	} catch (e) {
 		console.log(e);
