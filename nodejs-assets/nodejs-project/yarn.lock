@@ -4,8 +4,8 @@
 
 "electrum-client@git+https://github.com/coreyphillips/node-electrum-client.git":
   version "0.0.6"
-  resolved "git+https://github.com/coreyphillips/node-electrum-client.git#cfef375345f119f5d4a2594de757341881f5d647"
+  resolved "git+https://github.com/coreyphillips/node-electrum-client.git#896ac7386742f6d71a4464df8820359f806b0278"
 
 "electrum-host-parse@git+https://github.com/coreyphillips/node-electrum-host-parse.git":
   version "0.1.1"
-  resolved "git+https://github.com/coreyphillips/node-electrum-host-parse.git#195cf39e212f44ed65e182aecfc8ba9b679650b4"
+  resolved "git+https://github.com/coreyphillips/node-electrum-host-parse.git#4190a7874a534d3c1aef7b52b3b8db37d1532021"
