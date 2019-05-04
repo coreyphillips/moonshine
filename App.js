@@ -196,6 +196,13 @@ export default class App extends PureComponent {
 	};
 	
 	launchDefaultFuncs = async ({ displayLoading = true, resetView = true } = {}) => {
+		
+		//Determine if the user has any existing wallets. Create a new wallet if so.
+		if (this.props.wallet.wallets.length === 0) {
+			this.createWallet("wallet0", true);
+			return;
+		}
+		
 		const items = [
 			{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false },
 			{ stateId: "displayPin", opacityId: "pinOpacity", display: false }
@@ -675,17 +682,12 @@ export default class App extends PureComponent {
 	
 	async componentDidMount() {
 		//This gets called after redux-persist rehydrates
+		
 		//Spin up the nodejs thread
 		await nodejs.start("main.js");
 		
 		InteractionManager.runAfterInteractions(async () => {
 			try {
-				//Determine if the user has any existing wallets. Create a new wallet if so.
-				if (this.props.wallet.wallets.length === 0) {
-					this.createWallet("wallet0", true);
-					return;
-				}
-				
 				//Check if Biometrics is Enabled
 				if (this.props.settings.biometrics) {
 					this.onBiometricsPress();

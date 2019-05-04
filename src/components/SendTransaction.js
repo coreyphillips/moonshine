@@ -349,6 +349,8 @@ class SendTransaction extends PureComponent<Props> {
 		const cryptoUnit = this.props.settings.cryptoUnit;
 		let fiatAmount = "";
 		let satoshiAmount = "";
+		
+		if (!isNaN(amount)) amount = await amount.toString();
 
 		//Remove all commas
 		amount = amount.split(',').join("");
@@ -790,7 +792,7 @@ class SendTransaction extends PureComponent<Props> {
 							maxLength={80}
 							autoCapitalize="none"
 							placeholder="Anything entered here will be public"
-							style={styles.textInput}
+							style={[styles.textInput, { borderRadius: 5 }]}
 							selectionColor={colors.lightPurple}
 							onChangeText={(message) => this.props.updateTransaction({ message })}
 							value={this.props.transaction.message}
