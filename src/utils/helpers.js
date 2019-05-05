@@ -255,7 +255,7 @@ const getTransactionData = ({ txId = "", selectedCrypto = "bitcoin" } = {}) => {
 	});
 };
 
-const getExchangeRate = ({ selectedCrypto = "bitcoin" } = {}) => {
+const getExchangeRate = ({ selectedCrypto = "bitcoin", selectedCurrency = "usd", selectedService = "coincap" } = {}) => {
 	return new Promise(async (resolve) => {
 
 		const failure = (errorTitle = "", errorMsg = "") => {
@@ -270,7 +270,7 @@ const getExchangeRate = ({ selectedCrypto = "bitcoin" } = {}) => {
 
 		let exchangeRate = 0;
 		try {
-			exchangeRate = await walletHelpers.exchangeRate[selectedCrypto].default();
+			exchangeRate = await walletHelpers.exchangeRate[selectedCrypto].default({ service: selectedService, selectedCurrency });
 			if (exchangeRate.error) failure("Invalid Exchange Rate Data");
 			resolve({ error: false, data: exchangeRate.data });
 		} catch (e) {

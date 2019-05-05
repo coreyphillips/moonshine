@@ -71,6 +71,22 @@ const coinCapExchangeRateHelper = async ({ selectedCrypto = "bitcoin" } = {}) =>
 	}
 };
 
+const coinGeckoExchangeRateHelper = async ({ selectedCrypto = "bitcoin", selectedCurrency = "usd" } = {}) => {
+	let exchangeRate = 0;
+	try {
+		let coin = selectedCrypto.toLowerCase();
+		coin = coin.replace("testnet", "");
+		
+		const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coin}&vs_currencies=${selectedCurrency}`);
+		const jsonResponse = await response.json();
+		exchangeRate = Number(jsonResponse[selectedCrypto][selectedCurrency]).toFixed(2);
+		if (exchangeRate === 0) return({ error: true, data: "Invalid Exchange Rate Data." });
+		return({ error: false, data: exchangeRate });
+	} catch (e) {
+		return({ error: true, data: "Invalid Exchange Rate Data." });
+	}
+};
+
 const bitupperExchangeRateHelper = async ({ selectedCrypto = "bitcoin" } = {}) => {
 	let exchangeRate = 0;
 	try {
@@ -640,87 +656,119 @@ const walletHelpers = {
 	},
 	exchangeRate: {
 		bitcoin: {
-			coincap: async () => {
-				const exchangeRate = await coinCapExchangeRateHelper({ selectedCrypto: "bitcoin" });
+			coingecko: async ({ selectedCurrency = "usd" }) => {
+				const exchangeRate = await coinGeckoExchangeRateHelper({ selectedCrypto: "bitcoin", selectedCurrency });
 				if (exchangeRate.error === false) {
 					return ({error: false, data: exchangeRate.data});
 				} else {
 					return ({ error: true, data: "Invalid Exchange Rate Data." });
 				}
 			},
-			bitupper: async () => {
-				const exchangeRate = await bitupperExchangeRateHelper({ selectedCrypto: "bitcoin" });
+			coincap: async ({ selectedCurrency = "usd" }) => {
+				const exchangeRate = await coinCapExchangeRateHelper({ selectedCrypto: "bitcoin", selectedCurrency });
 				if (exchangeRate.error === false) {
 					return ({error: false, data: exchangeRate.data});
 				} else {
 					return ({ error: true, data: "Invalid Exchange Rate Data." });
 				}
 			},
-			default: async (service = "coincap") => {
-				return await walletHelpers.exchangeRate.bitcoin[service]();
+			bitupper: async ({ selectedCurrency = "usd" }) => {
+				const exchangeRate = await bitupperExchangeRateHelper({ selectedCrypto: "bitcoin", selectedCurrency });
+				if (exchangeRate.error === false) {
+					return ({error: false, data: exchangeRate.data});
+				} else {
+					return ({ error: true, data: "Invalid Exchange Rate Data." });
+				}
+			},
+			default: async ({ service = "coincap", selectedCurrency = "usd" } = {}) => {
+				return await walletHelpers.exchangeRate.bitcoin[service]({ selectedCurrency });
 			}
 		},
 		bitcoinTestnet: {
-			coincap: async () => {
-				const exchangeRate = await coinCapExchangeRateHelper({ selectedCrypto: "bitcoin" });
+			coingecko: async ({ selectedCurrency = "usd" }) => {
+				const exchangeRate = await coinGeckoExchangeRateHelper({ selectedCrypto: "bitcoin", selectedCurrency });
 				if (exchangeRate.error === false) {
 					return ({error: false, data: exchangeRate.data});
 				} else {
 					return ({ error: true, data: "Invalid Exchange Rate Data." });
 				}
 			},
-			bitupper: async () => {
-				const exchangeRate = await bitupperExchangeRateHelper({ selectedCrypto: "bitcoin" });
+			coincap: async ({ selectedCurrency = "usd" }) => {
+				const exchangeRate = await coinCapExchangeRateHelper({ selectedCrypto: "bitcoin", selectedCurrency });
 				if (exchangeRate.error === false) {
 					return ({error: false, data: exchangeRate.data});
 				} else {
 					return ({ error: true, data: "Invalid Exchange Rate Data." });
 				}
 			},
-			default: async (service = "coincap") => {
-				return await walletHelpers.exchangeRate.bitcoin[service]();
+			bitupper: async ({ selectedCurrency = "usd" }) => {
+				const exchangeRate = await bitupperExchangeRateHelper({ selectedCrypto: "bitcoin", selectedCurrency });
+				if (exchangeRate.error === false) {
+					return ({error: false, data: exchangeRate.data});
+				} else {
+					return ({ error: true, data: "Invalid Exchange Rate Data." });
+				}
+			},
+			default: async ({ service = "coincap", selectedCurrency = "usd" } = {}) => {
+				return await walletHelpers.exchangeRate.bitcoin[service]({ selectedCurrency });
 			}
 		},
 		litecoin: {
-			coincap: async () => {
-				const exchangeRate = await coinCapExchangeRateHelper({ selectedCrypto: "litecoin" });
+			coingecko: async ({ selectedCurrency = "usd" }) => {
+				const exchangeRate = await coinGeckoExchangeRateHelper({ selectedCrypto: "litecoin", selectedCurrency });
 				if (exchangeRate.error === false) {
 					return ({error: false, data: exchangeRate.data});
 				} else {
 					return ({ error: true, data: "Invalid Exchange Rate Data." });
 				}
 			},
-			bitupper: async () => {
-				const exchangeRate = await bitupperExchangeRateHelper({ selectedCrypto: "litecoin" });
+			coincap: async ({ selectedCurrency = "usd" }) => {
+				const exchangeRate = await coinCapExchangeRateHelper({ selectedCrypto: "litecoin", selectedCurrency });
 				if (exchangeRate.error === false) {
 					return ({error: false, data: exchangeRate.data});
 				} else {
 					return ({ error: true, data: "Invalid Exchange Rate Data." });
 				}
 			},
-			default: async (service = "coincap") => {
-				return await walletHelpers.exchangeRate.litecoin[service]();
+			bitupper: async ({ selectedCurrency = "usd" }) => {
+				const exchangeRate = await bitupperExchangeRateHelper({ selectedCrypto: "litecoin", selectedCurrency });
+				if (exchangeRate.error === false) {
+					return ({error: false, data: exchangeRate.data});
+				} else {
+					return ({ error: true, data: "Invalid Exchange Rate Data." });
+				}
+			},
+			default: async ({ service = "coincap", selectedCurrency = "usd" } = {}) => {
+				return await walletHelpers.exchangeRate.litecoin[service]({ selectedCurrency });
 			}
 		},
 		litecoinTestnet: {
-			coincap: async () => {
-				const exchangeRate = await coinCapExchangeRateHelper({ selectedCrypto: "litecoin" });
+			coingecko: async ({ selectedCurrency = "usd" }) => {
+				const exchangeRate = await coinGeckoExchangeRateHelper({ selectedCrypto: "litecoin", selectedCurrency });
 				if (exchangeRate.error === false) {
 					return ({error: false, data: exchangeRate.data});
 				} else {
 					return ({ error: true, data: "Invalid Exchange Rate Data." });
 				}
 			},
-			bitupper: async () => {
-				const exchangeRate = await bitupperExchangeRateHelper({ selectedCrypto: "litecoin" });
+			coincap: async ({ selectedCurrency = "usd" }) => {
+				const exchangeRate = await coinCapExchangeRateHelper({ selectedCrypto: "litecoin", selectedCurrency });
 				if (exchangeRate.error === false) {
 					return ({error: false, data: exchangeRate.data});
 				} else {
 					return ({ error: true, data: "Invalid Exchange Rate Data." });
 				}
 			},
-			default: async (rawtx, service = "coincap") => {
-				return await walletHelpers.exchangeRate.litecoinTestnet[service]();
+			bitupper: async ({ selectedCurrency = "usd" }) => {
+				const exchangeRate = await bitupperExchangeRateHelper({ selectedCrypto: "litecoin", selectedCurrency });
+				if (exchangeRate.error === false) {
+					return ({error: false, data: exchangeRate.data});
+				} else {
+					return ({ error: true, data: "Invalid Exchange Rate Data." });
+				}
+			},
+			default: async ({ service = "coincap", selectedCurrency = "usd" } = {}) => {
+				return await walletHelpers.exchangeRate.litecoinTestnet[service]({ selectedCurrency });
 			}
 		}
 	},

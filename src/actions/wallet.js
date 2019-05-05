@@ -29,7 +29,7 @@ const updateWallet = (payload) => ({
 	payload
 });
 
-const getExchangeRate = ({ selectedCoin = "bitcoin" } = {}) => () => {
+const getExchangeRate = ({ selectedCoin = "bitcoin", selectedCurrency = "usd", selectedService = "coincap" } = {}) => () => {
 	return new Promise(async (resolve) => {
 
 		const failure = (errorTitle = "", errorMsg = "") => {
@@ -44,7 +44,7 @@ const getExchangeRate = ({ selectedCoin = "bitcoin" } = {}) => () => {
 
 		let exchangeRate = 0;
 		try {
-			exchangeRate = await walletHelpers.exchangeRate[selectedCoin].default();
+			exchangeRate = await walletHelpers.exchangeRate[selectedCoin].default({ service: selectedService, selectedCurrency });
 			if (exchangeRate.error) failure("Invalid Exchange Rate Data");
 			resolve({ error: false, data: exchangeRate.data });
 		} catch (e) {
@@ -506,17 +506,21 @@ const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAdd
 		}
 		
 		try {
+			//Make sure to dispatch and save new addresses if there are no addresses initially.
+			let addNewAddresses = false;
 			//Create Addresses if none exist
 			if (!addresses.length) {
 				//Generate receiving and change addresses.
 				const newAddresses = await generateAddresses({ addressAmount: 5, changeAddressAmount: 0, addressIndex: 0, selectedCrypto, wallet });
 				if (!newAddresses.error) addresses = newAddresses.data.addresses;
+				addNewAddresses = true;
 			}
 			//Create Change Addresses if none exist
 			if (!changeAddresses.length) {
 				//Generate receiving and change addresses.
 				const newAddresses = await generateAddresses({ addressAmount: 0, changeAddressAmount: 5, addressIndex: 0, selectedCrypto, wallet });
 				if (!newAddresses.error) changeAddresses = newAddresses.data.changeAddresses;
+				addNewAddresses = true;
 			}
 			
 			let allAddresses = addresses.slice(addressIndex, addresses.length);
@@ -570,7 +574,7 @@ const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAdd
 				}
 			}
 			
-			if (allTransactions.length) {
+			if (allTransactions.length || addNewAddresses) {
 				const payload = {
 					wallet,
 					selectedCrypto,

@@ -135,12 +135,12 @@ export default class App extends PureComponent {
 		loadingAnimationName: "cloudBook"
 	};
 	
-	setExchangeRate = async ({selectedCrypto = "bitcoin"} = {}) => {
+	setExchangeRate = async ({ selectedCrypto = "bitcoin", selectedCurrency = "usd", selectedService = "coincap" } = {}) => {
 		//const start = this.props.transaction.feeTimestamp;
 		//const end = new Date();
 		//const difference = getDifferenceBetweenDates({ start, end });
 		//if (!this.props.transaction.feeTimestamp || difference > 10) {
-		const exchangeRate = await getExchangeRate({ selectedCrypto });
+		const exchangeRate = await getExchangeRate({ selectedCrypto, selectedCurrency, selectedService });
 		if (exchangeRate.error === false) {
 			this.props.updateWallet({
 				exchangeRate: {
@@ -267,7 +267,7 @@ export default class App extends PureComponent {
 		try {
 			//Enable the loading state
 			this.setState({ loadingTransactions: true });
-			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			const { selectedWallet, selectedCrypto, selectedService, selectedCurrency } = this.props.wallet;
 			
 			//Check if the user is online
 			const isConnected = await isOnline();
@@ -282,7 +282,7 @@ export default class App extends PureComponent {
 			//Save isConnected state to isOnline.
 			if (this.props.user.isOnline === false) this.props.updateUser({ isOnline: isConnected });
 			
-			this.setExchangeRate({ selectedCrypto }); //Set the exchange rate for the selected currency
+			this.setExchangeRate({ selectedCrypto, selectedService, selectedCurrency }); //Set the exchange rate for the selected currency
 			//Update status of the user-facing loading message and progress bar
 			if (!ignoreLoading) this.setState({ loadingMessage: "Connecting to Electrum Server...", loadingProgress: 0.4 });
 			if (reconnectToElectrum) {

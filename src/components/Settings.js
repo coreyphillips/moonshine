@@ -20,7 +20,7 @@ import PinPad from "./PinPad";
 import ImportPhrase from "./ImportPhrase";
 import ElectrumOptions from "./ElectrumOptions";
 import * as electrum from "../utils/electrum";
-
+//import nodejs from "nodejs-mobile-react-native";
 const {
 	Constants: {
 		colors
@@ -571,12 +571,12 @@ class Settings extends PureComponent<Props> {
 							})}
 
 							{this.Row({
-								title: "Rescan Wallet",
-								col2Loading: this.state.rescanningWallet,
-								col2Image: "radar",
+								value: "Rescan Wallet",
+								col1Loading: this.state.rescanningWallet,
+								col1Image: "radar",
 								onPress: this.rescanWallet,
-								col1Style: { flex: 1, alignItems: "flex-start", justifyContent: "center", paddingHorizontal: 10 },
-								col2Style: { flex: 0.5, alignItems: "center", justifyContent: "center" }
+								valueStyle: { color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" },
+								col2Style: { flex: 1, alignItems: "center", justifyContent: "center" },
 							})}
 
 							<View style={{ paddingVertical: 70 }} />
