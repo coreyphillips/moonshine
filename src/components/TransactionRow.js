@@ -25,7 +25,7 @@ const {
 
 class TransactionRow extends PureComponent {
 	render() {
-		let { id, coin, address, amount, label, date, transactionBlockHeight, exchangeRate, currentBlockHeight, cryptoUnit, type, onTransactionPress, messages } = this.props;
+		let { id, coin, address, amount, label, date, transactionBlockHeight, exchangeRate, currentBlockHeight, cryptoUnit, type, onTransactionPress, messages, isBlacklisted } = this.props;
 		getCryptoAmountLabel = () => {
 			try {
 				amount = Number(amount);
@@ -86,28 +86,31 @@ class TransactionRow extends PureComponent {
 		if (!label) label = address;
 		if (label.length > 18) label = `${label.substr(0, 18)}...`;
 		const fontWeight = type === "sent" ? "normal" : "bold";
+		const backgroundColor = isBlacklisted ? colors.red : "transparent";
+		const textColor = isBlacklisted ? colors.white : colors.darkPurple;
 		return (
-			<TouchableOpacity onPress={() => onTransactionPress(id)} style={styles.container}>
+			<TouchableOpacity onPress={() => onTransactionPress(id)} style={[styles.container, { backgroundColor }]}>
 				<View style={styles.header}>
-					<Text style={styles.smallText}>{moment.unix(date).format('l @ h:mm a')}</Text>
+					{isBlacklisted &&<Text style={[styles.text, { fontWeight: "bold", fontSize: 16, color: colors.red  }]}>UTXO Blacklisted</Text>}
+					<Text style={[styles.smallText, { color: isBlacklisted ? colors.red : colors.darkPurple }]}>{moment.unix(date).format('l @ h:mm a')}</Text>
 				</View>
 				<View style={styles.row}>
 					<View style={styles.col1}>
-						<Text style={[styles.text, { fontWeight, fontSize: 14 }]}>{label}</Text>
-						<Text style={[styles.smallText, { fontWeight, fontSize: 14 }]}>Confirmations: {getConfirmations()}</Text>
+						<Text style={[styles.text, { fontWeight, fontSize: 14, color: textColor  }]}>{label}</Text>
+						<Text style={[styles.smallText, { fontWeight, fontSize: 14, color: textColor  }]}>Confirmations: {getConfirmations()}</Text>
 					</View>
 					<View style={styles.col2}>
-						<Text style={[styles.text, { fontWeight }]}>{getFiatAmountLabel()}</Text>
-						<Text style={[styles.text, { fontWeight }]}>{type === "received" ? "+" : "-"}{getCryptoAmountLabel()}</Text>
+						<Text style={[styles.text, { fontWeight, color: textColor  }]}>{getFiatAmountLabel()}</Text>
+						<Text style={[styles.text, { fontWeight, color: textColor  }]}>{type === "received" ? "+" : "-"}{getCryptoAmountLabel()}</Text>
 					</View>
 				</View>
 				{messages.length > 0 &&
 				<View style={styles.row}>
 					<View style={[styles.col1, { flex: 0.6 }]}>
-						<Text style={[styles.text, { fontWeight, fontSize: 16 }]}>Message:</Text>
+						<Text style={[styles.text, { fontWeight, fontSize: 16, color: textColor  }]}>Message:</Text>
 					</View>
 					<View style={[styles.col2, { flex: 1 }]}>
-						<Text style={[styles.text, { fontWeight }]}>{getMessages()}</Text>
+						<Text style={[styles.text, { fontWeight, color: textColor  }]}>{getMessages()}</Text>
 					</View>
 				</View>}
 			</TouchableOpacity>

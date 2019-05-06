@@ -460,9 +460,7 @@ const walletHelpers = {
 					const response = await electrum.getNewBlockHeadersSubscribe({ id: Math.random(), coin: "bitcoin" });
 					if (response.error === false) {
 						let blockHeight = 0;
-						try {
-							blockHeight = response.data.blockHeight;
-						} catch (e) {}
+						try { blockHeight = response.data; } catch (e) {}
 						//Ensure the block height is defined and its value is greater than 1.
 						if (blockHeight !== undefined && blockHeight > 1) return { error: false, data: blockHeight };
 					}
@@ -481,9 +479,7 @@ const walletHelpers = {
 					const response = await electrum.getNewBlockHeadersSubscribe({ id: Math.random(), coin: "bitcoinTestnet" });
 					if (response.error === false) {
 						let blockHeight = 0;
-						try {
-							blockHeight = response.data.blockHeight;
-						} catch (e) {}
+						try { blockHeight = response.data; } catch (e) {}
 						//Ensure the block height is defined and its value is greater than 1.
 						if (blockHeight !== undefined && blockHeight > 1) return { error: false, data: blockHeight };
 					}
@@ -502,9 +498,7 @@ const walletHelpers = {
 					const response = await electrum.getNewBlockHeadersSubscribe({ id: Math.random(), coin: "litecoin" });
 					if (response.error === false) {
 						let blockHeight = 0;
-						try {
-							blockHeight = response.data.blockHeight;
-						} catch (e) {}
+						try { blockHeight = response.data; } catch (e) {}
 						//Ensure the block height is defined and its value is greater than 1.
 						if (blockHeight !== undefined && blockHeight > 1) return { error: false, data: blockHeight };
 					}
@@ -523,9 +517,7 @@ const walletHelpers = {
 					const response = await electrum.getNewBlockHeadersSubscribe({ id: Math.random(), coin: "litecoinTestnet" });
 					if (response.error === false) {
 						let blockHeight = 0;
-						try {
-							blockHeight = response.data.blockHeight;
-						} catch (e) {}
+						try { blockHeight = response.data; } catch (e) {}
 						//Ensure the block height is defined and its value is greater than 1.
 						if (blockHeight !== undefined && blockHeight > 1) return { error: false, data: blockHeight };
 					}

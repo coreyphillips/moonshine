@@ -356,7 +356,9 @@ class SendTransaction extends PureComponent<Props> {
 		amount = amount.split(',').join("");
 
 		//Remove all decimals if the cryptoUnit is satoshi/litoshi and is currently displayed in crypto.
-		if (cryptoUnit === "satoshi" || cryptoUnit === "litoshi" && this.state.displayInCrypto) amount = amount.split('.').join("");
+		if (this.state.displayInCrypto) {
+			if (cryptoUnit === "satoshi" || cryptoUnit === "litoshi") amount = amount.split('.').join("");
+		}
 		//Format input
 		amount = removeAllButFirstInstanceOfPeriod(amount);
 
@@ -521,6 +523,7 @@ class SendTransaction extends PureComponent<Props> {
 				return;
 			}
 			const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
+			const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
 			const confirmedBalance = this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto];
 			const changeAddressIndex = this.props.wallet[selectedWallet].changeAddressIndex[selectedCrypto];
 			const transactionFee = Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee);
@@ -546,7 +549,7 @@ class SendTransaction extends PureComponent<Props> {
 				}
 			}
 
-			const result = await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, changeAddress, wallet: selectedWallet, selectedCrypto, message });
+			const result = await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, blacklistedUtxos, changeAddress, wallet: selectedWallet, selectedCrypto, message });
 			return result;
 		} catch (e) {
 			console.log(e);

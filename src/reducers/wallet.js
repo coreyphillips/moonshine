@@ -157,36 +157,36 @@ module.exports = (state = {
 				}
 			};
 
-		case actions.BLACKLIST_TRANSACTION:
+		case actions.TOGGLE_UTXO_BLACKLIST:
 
-			let blacklistedTransactions = [];
+			let blacklistedUtxos = [];
 			try {
-				blacklistedTransactions = state[action.payload.wallet].blacklistedTransactions[action.payload.selectedCrypto];
+				blacklistedUtxos = state[action.payload.wallet].blacklistedUtxos[action.payload.selectedCrypto];
 			} catch (e) {}
 
 			let transactionToBlacklist = action.payload.transaction;
 
-			let transactionIndex = blacklistedTransactions.indexOf(transactionToBlacklist);
+			let transactionIndex = blacklistedUtxos.indexOf(transactionToBlacklist);
 			if (transactionIndex > -1) {
 				//Remove whitelisted transaction from the blacklist.
-				blacklistedTransactions.splice(transactionIndex, 1);
+				blacklistedUtxos.splice(transactionIndex, 1);
 			} else {
 				//Add blacklist transaction to the blacklist.
-				blacklistedTransactions.push(transactionToBlacklist);
+				blacklistedUtxos.push(transactionToBlacklist);
 			}
 
 			let oldBlacklistedTransactions = {};
 			try {
-				oldBlacklistedTransactions = state[action.payload.wallet].blacklistedTransactions;
+				oldBlacklistedTransactions = state[action.payload.wallet].blacklistedUtxos;
 			} catch (e) {}
 
 			return {
 				...state,
 				[action.payload.wallet]: {
 					...state[action.payload.wallet],
-					blacklistedTransactions: {
+					blacklistedUtxos: {
 						...oldBlacklistedTransactions,
-						[action.payload.selectedCrypto]: blacklistedTransactions
+						[action.payload.selectedCrypto]: blacklistedUtxos
 					}
 				}
 			};

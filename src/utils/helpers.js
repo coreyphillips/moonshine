@@ -379,7 +379,7 @@ const getTransactionSize = (numInputs, numOutputs) => {
 	return numInputs*180 + numOutputs*34 + 10 + numInputs;
 };
 
-const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confirmedBalance = 0, utxos = [], changeAddress = "", wallet = "wallet0", selectedCrypto = "bitcoin", message = "" } = {}) => {
+const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confirmedBalance = 0, utxos = [], blacklistedUtxos = [], changeAddress = "", wallet = "wallet0", selectedCrypto = "bitcoin", message = "" } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
 			const network = networks[selectedCrypto];
@@ -403,38 +403,19 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 			let txb = new bitcoin.TransactionBuilder(network);
 
 			//Add Inputs
-			await Promise.all(
-				utxos.map((utxo) => {
+			const utxosLength = utxos.length;
+			for (let i = 0; i < utxosLength; i++) {
+				try {
+					const utxo = utxos[i];
+					if (blacklistedUtxos.includes(utxo.tx_hash)) continue;
 					const path = utxo.path;
 					const keyPair = root.derivePath(path);
-					//const keyPair = root.derivePath("m/49");
 					const p2wpkh = bitcoin.payments.p2wpkh({pubkey: keyPair.publicKey, network});
-					//const p2sh = bitcoin.payments.p2sh({ redeem: p2wpkh, network });
-					/*
-					const p2pk = bitcoin.payments.p2pk({pubkey: keyPair.publicKey, network});
-					const p2wsh = bitcoin.payments.p2wsh({redeem: p2pk, network});
-					let p2wpkhOutScript = null;
-					try {
-						p2wpkhOutScript = p2wpkh.output;
-					} catch (e) {
-					}
-					let p2wshOutScript = null;
-					try {
-						p2wshOutScript = p2wsh.output;
-					} catch (e) {
-					}
-					*/
-					//let prevOutPutScript = null;
-					//if (p2wpkhOutScript !== null) prevOutPutScript = p2wpkhOutScript; //22 bytes
-					//if (p2wshOutScript !== null) prevOutPutScript = p2wshOutScript; //34 bytes
-					// For P2WPKH (bech32): txb.addInput(unspent.txId, unspent.vout, null, p2wpkh.output) // NOTE: provide the prevOutScript!
-					// For P2SH (3J98t1WpEZ73CNmQviecrnyiWrnqRhWNLy): txb.addInput(unspent.txId, unspent.vout)
-					// For P2PWPKH txb.addInput(unspent.txId, unspent.vout, null, p2wpkh.output) // NOTE: provide the prevOutScript!
-					// For p2wsh txb.addInput(unspent.txId, unspent.vout, null, p2wsh.output) // NOTE: provide the prevOutScript!
-					// For P2SH(P2WPKH) txb.addInput(unspent.txId, unspent.vout)
 					txb.addInput(utxo.txid, utxo.vout, null, p2wpkh.output);
-				})
-			);
+				} catch (e) {
+					console.log(e);
+				}
+			}
 
 			if (message !== "") {
 				const data = Buffer.from(message, "utf8");
@@ -450,17 +431,22 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 			);
 
 			//Loop through and sign
-			await Promise.all(
-				utxos.map((utxo, i) => {
-					try {
-						const path = utxo.path;
-						const keyPair = root.derivePath(path);
-						txb.sign(i, keyPair, null, null, utxo.value);
-					} catch (e) {
-						console.log(e);
+			let index = 0;
+			for (let i = 0; i < utxosLength; i++) {
+				try {
+					const utxo = utxos[i];
+					if (blacklistedUtxos.includes(utxo.tx_hash)) {
+						if (index > 0) index--;
+						continue;
 					}
-				})
-			);
+					const path = utxo.path;
+					const keyPair = root.derivePath(path);
+					txb.sign(index, keyPair, null, null, utxo.value);
+					index++;
+				} catch (e) {
+					console.log(e);
+				}
+			}
 			const rawTx = txb.build().toHex();
 			resolve({ error: false, data: rawTx });
 		} catch (e) {

@@ -753,15 +753,17 @@ const getNewBlockHeadersSubscribe = ({ id = Math.random(), coin = "", updateBloc
 				if (msg.method === method) {
 					let blockHeight = 0;
 					try {
-						blockHeight = msg.height;
-					} catch (e) {
-						try {
-							blockHeight = msg.block_height;
-						} catch (e) {}
-					}
+						if (msg.data.height) {
+							blockHeight = msg.data.height;
+						} else if (msg.data.block_height) {
+							blockHeight = msg.data.block_height;
+						} else {
+							resolve({ error: true, data: blockHeight });
+						}
+					} catch (e) {}
 					nodejs.channel.removeListener("message", this.getNewBlockHeadersSubscribe[id]);
 					if (blockHeight !== 0) updateBlockHeight({ selectedCrypto: coin, blockHeight });
-					resolve(msg);
+					resolve({ error: msg.error, data: blockHeight });
 				}
 			});
 			//Ensure the listener is setup and established.

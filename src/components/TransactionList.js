@@ -20,7 +20,7 @@ const {
 //transactions = [], selectedCrypto = "bitcoin", exchangeRate = 0, blockHeight = 0, onRefresh = () => null, onTransactionPress = () => null
 class TransactionList extends PureComponent {
 
-	displayItem = ({ transaction = {}, selectedCrypto = "bitcoin", exchangeRate = 0, blockHeight = 0, onTransactionPress = () => null, cryptoUnit = "satoshi" } = {}) => {
+	displayItem = ({ style = {}, transaction = {}, selectedCrypto = "bitcoin", exchangeRate = 0, blockHeight = 0, onTransactionPress = () => null, cryptoUnit = "satoshi", isBlacklisted = false } = {}) => {
 		try {
 			const hash = transaction.item.hash;
 			const timestamp = transaction.item.timestamp;
@@ -32,7 +32,7 @@ class TransactionList extends PureComponent {
 			const messages = transaction.item.messages;
 			//const { amount, confirmations, data, hash, status, timestamp, type } = transaction;
 			return (
-				<View style={styles.transaction}>
+				<View style={[styles.transaction, style]}>
 					<TransactionRow
 						id={hash}
 						coin={selectedCrypto}
@@ -49,6 +49,7 @@ class TransactionList extends PureComponent {
 						transactionBlockHeight={block}
 						currentBlockHeight={blockHeight}
 						onTransactionPress={onTransactionPress}
+						isBlacklisted={isBlacklisted}
 					/>
 				</View>
 			);
@@ -74,10 +75,25 @@ class TransactionList extends PureComponent {
 			console.log(e);
 		}
 	};
+	
+	//Returns all transactions for the selected crypto.
+	getTransactions = () => {
+		try {
+			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			const transactions = this.props.wallet[selectedWallet].transactions[selectedCrypto];
+			if (Array.isArray(transactions)) {
+				return transactions;
+			}
+			return [];
+		} catch (e) {
+			//console.log(e);
+			return [];
+		}
+	};
 
 	hasTransactions = () => {
 		try {
-			return this.props.transactions.length > 0;
+			return this.getTransactions().length > 0;
 		} catch (e) {
 			return false;
 		}
@@ -94,11 +110,26 @@ class TransactionList extends PureComponent {
 				{this.hasTransactions() &&
 				<FlatList
 					contentContainerStyle={{ paddingBottom: 60 }}
-					data={this.props.transactions}
-					extraData={this.props.transactions}
+					data={this.getTransactions()}
+					extraData={this.getTransactions()}
 					keyExtractor={(transaction, index) => `${transaction.hash}${index}`}
 					ListEmptyComponent={this.displayEmptyComponent}
-					renderItem={(transaction) => this.displayItem({ transaction, selectedCrypto: this.props.selectedCrypto, exchangeRate: this.props.exchangeRate, blockHeight: this.props.blockHeight, onTransactionPress: this.props.onTransactionPress, cryptoUnit: this.props.cryptoUnit })}
+					renderItem={(transaction) => {
+						const { selectedWallet, selectedCrypto } = this.props.wallet;
+						let isBlacklisted = false;
+						try { isBlacklisted = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto].includes(transaction.item.hash); } catch (e) {}
+						return (
+							this.displayItem({
+								transaction,
+								selectedCrypto: this.props.wallet.selectedCrypto,
+								exchangeRate: this.props.wallet.exchangeRate[selectedCrypto],
+								blockHeight: this.props.wallet.blockHeight[selectedCrypto],
+								onTransactionPress: this.props.onTransactionPress,
+								cryptoUnit: this.props.settings.cryptoUnit,
+								isBlacklisted
+							})
+						);
+					}}
 					refreshControl={
 						<RefreshControl
 							refreshing={false}
@@ -117,34 +148,11 @@ class TransactionList extends PureComponent {
 
 // Default values for props
 TransactionList.defaultProps = {
-	transactions: [],
-	selectedCrypto: "bitcoin",
-	exchangeRate: "0",
-	blockHeight: 0,
 	onRefresh: () => null,
 	onTransactionPress: () => null
 };
 
 TransactionList.propTypes = {
-	transactions: PropTypes.arrayOf(PropTypes.shape({
-		address: PropTypes.string,
-		amount: PropTypes.number.isRequired,
-		block: PropTypes.number,
-		data: PropTypes.string.isRequired,
-		fee: PropTypes.number.isRequired,
-		hash: PropTypes.string,
-		inputAmount: PropTypes.number.isRequired,
-		messages: PropTypes.arrayOf(PropTypes.string).isRequired,
-		outputAmount: PropTypes.number.isRequired,
-		path: PropTypes.string,
-		receivedAmount: PropTypes.number.isRequired,
-		sentAmount: PropTypes.number.isRequired,
-		timestamp: PropTypes.number,
-		type: PropTypes.string.isRequired,
-	})),
-	selectedCrypto: PropTypes.string.isRequired,
-	exchangeRate: PropTypes.string.isRequired,
-	blockHeight: PropTypes.number.isRequired,
 	onRefresh: PropTypes.func.isRequired,
 	onTransactionPress: PropTypes.func.isRequired
 };
@@ -180,4 +188,23 @@ const styles = StyleSheet.create({
 });
 
 
-module.exports = TransactionList;
+const connect = require("react-redux").connect;
+const bindActionCreators = require("redux").bindActionCreators;
+const walletActions = require("../actions/wallet");
+const settingsActions = require("../actions/settings");
+
+const mapStateToProps = ({...state}) => ({
+	...state
+});
+
+const mapDispatchToProps = (dispatch) => {
+	const actions = {
+		...walletActions,
+		...settingsActions
+	};
+	return bindActionCreators({
+		...actions
+	}, dispatch);
+};
+
+module.exports = connect(mapStateToProps, mapDispatchToProps)(TransactionList);

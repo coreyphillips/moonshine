@@ -281,7 +281,6 @@ export default class App extends PureComponent {
 			
 			//Save isConnected state to isOnline.
 			if (this.props.user.isOnline === false) this.props.updateUser({ isOnline: isConnected });
-			
 			this.setExchangeRate({ selectedCrypto, selectedService, selectedCurrency }); //Set the exchange rate for the selected currency
 			//Update status of the user-facing loading message and progress bar
 			if (!ignoreLoading) this.setState({ loadingMessage: "Connecting to Electrum Server...", loadingProgress: 0.4 });
@@ -486,7 +485,8 @@ export default class App extends PureComponent {
 			if (resetUtxosResponse.error === false && getNextAvailableAddressResponse.error === false) {
 				try {
 					utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
-					await this.props.updateBalance({ utxos, selectedCrypto, selectedWallet, wallet: selectedWallet });
+					const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
+					await this.props.updateBalance({ utxos, blacklistedUtxos, selectedCrypto, selectedWallet, wallet: selectedWallet });
 				} catch (e) {
 					console.log(e);
 				}
@@ -1464,13 +1464,13 @@ export default class App extends PureComponent {
 										<EvilIcon name={"chevron-up"} size={30} color={colors.darkPurple} />}
 									</TouchableOpacity>
 								</View>
-								<TransactionList onTransactionPress={this.onTransactionPress} transactions={this.getTransactions()} selectedCrypto={this.props.wallet.selectedCrypto} cryptoUnit={this.props.settings.cryptoUnit} exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]} blockHeight={this.props.wallet.blockHeight[this.props.wallet.selectedCrypto]} onRefresh={this.resetView} />
+								<TransactionList onTransactionPress={this.onTransactionPress} onRefresh={this.resetView} />
 							</Animated.View>
 						</View>}
 						
 						{this.state.displayTransactionDetail &&
 						<Animated.View style={[styles.transactionDetail, { opacity: this.state.transactionDetailOpacity }]}>
-							<TransactionDetail blacklistTransaction={() => this.props.blacklistTransaction({ transaction: this.props.wallet.selectedTransaction.hash, wallet: this.props.wallet.selectedWallet, selectedCrypto: this.props.wallet.selectedCrypto })} transaction={this.props.wallet.selectedTransaction} selectedCrypto={this.props.wallet.selectedCrypto} cryptoUnit={this.props.settings.cryptoUnit} exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]} currentBlockHeight={this.props.wallet.blockHeight[this.props.wallet.selectedCrypto]} />
+							<TransactionDetail />
 						</Animated.View>}
 					
 					</View>

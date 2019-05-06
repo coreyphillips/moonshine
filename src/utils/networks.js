@@ -73,7 +73,7 @@ const defaultWalletShape = {
 	changeAddressIndex: zeroValueItems,
 	utxos: arrayTypeItems,
 	transactions: arrayTypeItems,
-	blacklistedTransactions: arrayTypeItems,
+	blacklistedUtxos: arrayTypeItems,
 	confirmedBalance: zeroValueItems,
 	unconfirmedBalance: zeroValueItems,
 	lastUpdated: zeroValueItems,

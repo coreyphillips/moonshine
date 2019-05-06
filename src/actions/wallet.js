@@ -270,7 +270,7 @@ const addTransaction = ({ wallet = "wallet0", transaction = {}, selectedCrypto =
 	});
 };
 
-const updateBalance = ({ wallet = "wallet0", utxos = [], selectedCrypto = "bitcoin" } = {}) => async (dispatch: any) => {
+const updateBalance = ({ wallet = "wallet0", utxos = [], blacklistedUtxos = [], selectedCrypto = "bitcoin" } = {}) => async (dispatch: any) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({ error: true, data });
@@ -286,7 +286,7 @@ const updateBalance = ({ wallet = "wallet0", utxos = [], selectedCrypto = "bitco
 			let unconfirmedBalance = 0;
 			await Promise.all(utxos.map(async (utxo) => {
 				try {
-					confirmedBalance += utxo.value;
+					if(!blacklistedUtxos.includes(utxo.tx_hash)) confirmedBalance += utxo.value;
 				} catch (e) {}
 			}));
 			/*
@@ -374,7 +374,7 @@ const addAddresses = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressA
 	});
 };
 
-const blacklistTransaction = ({ transaction = "", wallet = "wallet0", selectedCrypto = "" } = {}) => async (dispatch: any) => {
+const toggleUtxoBlacklist = ({ transaction = "", selectedWallet = "wallet0", selectedCrypto = "" } = {}) => async (dispatch: any) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({error: true, data});
@@ -382,14 +382,14 @@ const blacklistTransaction = ({ transaction = "", wallet = "wallet0", selectedCr
 		try {
 			
 			dispatch({
-				type: actions.BLACKLIST_TRANSACTION,
+				type: actions.TOGGLE_UTXO_BLACKLIST,
 				payload: {
 					transaction,
-					wallet,
+					wallet: selectedWallet,
 					selectedCrypto
 				}
 			});
-			resolve({ error: false, data: transaction, wallet, selectedCrypto });
+			resolve({ error: false, data: transaction, wallet: selectedWallet, selectedCrypto });
 		} catch (e) {
 			console.log(e);
 			failure(e);
@@ -613,7 +613,7 @@ module.exports = {
 	resetUtxos,
 	updateBlockHeight,
 	addTransaction,
-	blacklistTransaction,
+	toggleUtxoBlacklist,
 	addAddresses,
 	initialImportSync
 };

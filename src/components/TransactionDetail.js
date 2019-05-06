@@ -8,8 +8,8 @@ import {
 	TouchableOpacity
 } from "react-native";
 import { systemWeights } from "react-native-typography";
-import * as Progress from 'react-native-progress';
 import bitcoinUnits from "bitcoin-units";
+import Button from "./Button";
 
 const {
 	Constants: {
@@ -38,44 +38,6 @@ class TransactionDetail extends PureComponent <Props> {
 		loading: false
 	};
 
-	async componentDidMount() {
-		try {
-			//this.updateLoading({ display: false });
-		} catch (e) {
-			console.log(e);
-		}
-	}
-
-	updateLoading = async ({ display = true, duration = 400 } = {}) => {
-		return new Promise(async (resolve) => {
-			try {
-				this.setState({ loading: display });
-				Animated.parallel([
-					Animated.timing(
-						this.state.loadingOpacity,
-						{
-							toValue: display ? 1 : 0,
-							duration
-						}
-					),
-					Animated.timing(
-						this.state.transactionOpacity,
-						{
-							toValue: display ? 0 : 1,
-							duration
-						}
-					)
-				]).start(() => {
-					//Perform any other action after the update has been completed.
-					resolve({ error: false });
-				});
-			} catch (e) {
-				console.log(e);
-				resolve({ error: true, data: e });
-			}
-		});
-	};
-
 	Row = ({ title = "", value = "", onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) => {
 		try {
 			return (
@@ -95,34 +57,38 @@ class TransactionDetail extends PureComponent <Props> {
 
 	openTxId = (txid) => {
 		let url = "";
-		if (this.props.selectedCrypto === "bitcoin") url = `https://blockstream.info/tx/${txid}`;
-		if (this.props.selectedCrypto === "bitcoinTestnet") url = `https://blockstream.info/testnet/tx/${txid}`;
-		if (this.props.selectedCrypto === "litecoin") url = `https://chain.so/tx/LTC/${txid}`;
-		if (this.props.selectedCrypto === "litecoinTestnet") url = `https://chain.so/tx/LTCTEST/${txid}`;
+		const selectedCrypto = this.props.wallet.selectedCrypto;
+		if (selectedCrypto === "bitcoin") url = `https://blockstream.info/tx/${txid}`;
+		if (selectedCrypto === "bitcoinTestnet") url = `https://blockstream.info/testnet/tx/${txid}`;
+		if (selectedCrypto === "litecoin") url = `https://chain.so/tx/LTC/${txid}`;
+		if (selectedCrypto === "litecoinTestnet") url = `https://chain.so/tx/LTCTEST/${txid}`;
 		openUrl(url);
 	};
 
 	openBlock = (block) => {
 		let url = "";
-		if (this.props.selectedCrypto === "bitcoin") url = `https://blockstream.info/block-height/${block}`;
-		if (this.props.selectedCrypto === "bitcoinTestnet") url = `https://blockstream.info/testnet/block-height/${block}`;
-		if (this.props.selectedCrypto === "litecoin") url = `https://chain.so/block/LTC/${block}`;
-		if (this.props.selectedCrypto === "litecoinTestnet") url = `https://chain.so/block/LTC/${block}`;
+		const selectedCrypto = this.props.wallet.selectedCrypto;
+		if (selectedCrypto === "bitcoin") url = `https://blockstream.info/block-height/${block}`;
+		if (selectedCrypto === "bitcoinTestnet") url = `https://blockstream.info/testnet/block-height/${block}`;
+		if (selectedCrypto === "litecoin") url = `https://chain.so/block/LTC/${block}`;
+		if (selectedCrypto === "litecoinTestnet") url = `https://chain.so/block/LTC/${block}`;
 		openUrl(url);
 	};
 
 	openAddress = (address = "") => {
 		let url = "";
-		if (this.props.selectedCrypto === "bitcoin") url = `https://blockstream.info/address/${address}`;
-		if (this.props.selectedCrypto === "bitcoinTestnet") url = `https://blockstream.info/testnet/address/${address}`;
-		if (this.props.selectedCrypto === "litecoin") url = `https://chain.so/address/LTC/${address}`;
-		if (this.props.selectedCrypto === "litecoinTestnet") url = `https://chain.so/address/LTCTEST/${address}`;
+		const selectedCrypto = this.props.wallet.selectedCrypto;
+		if (selectedCrypto === "bitcoin") url = `https://blockstream.info/address/${address}`;
+		if (selectedCrypto === "bitcoinTestnet") url = `https://blockstream.info/testnet/address/${address}`;
+		if (selectedCrypto === "litecoin") url = `https://chain.so/address/LTC/${address}`;
+		if (selectedCrypto === "litecoinTestnet") url = `https://chain.so/address/LTCTEST/${address}`;
 		openUrl(url);
 	};
 
 	openMessage = (tx = "") => {
 		let url = "";
-		switch (this.props.selectedCrypto) {
+		const selectedCrypto = this.props.wallet.selectedCrypto;
+		switch (selectedCrypto) {
 			case "bitcoin":
 				url = `https://chain.so/tx/BTC/${tx}`;
 				break;
@@ -142,9 +108,9 @@ class TransactionDetail extends PureComponent <Props> {
 	};
 
 	getAmount = (amount) => {
-		const cryptoUnit = this.props.cryptoUnit;
-		const selectedCrypto = this.props.selectedCrypto;
-		const exchangeRate = this.props.exchangeRate;
+		const cryptoUnit = this.props.settings.cryptoUnit;
+		const selectedCrypto = this.props.wallet.selectedCrypto;
+		const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
 		amount = Number(amount);
 		const crypto = cryptoUnit === "satoshi" ? amount : bitcoinUnits(amount, "satoshi").to(cryptoUnit).value();
 		bitcoinUnits.setFiat("usd", exchangeRate);
@@ -155,8 +121,12 @@ class TransactionDetail extends PureComponent <Props> {
 
 	getConfirmations = () => {
 		try {
-			if (this.props.transaction.block === null || this.props.transaction.block === 0) return 0;
-			return formatNumber(Number(this.props.currentBlockHeight) - (Number(this.props.transaction.block) - 1));
+			let transaction = "";
+			try {transaction = this.props.wallet.selectedTransaction;} catch (e) {}
+			if (transaction.block === null || transaction.block === 0) return 0;
+			const selectedCrypto = this.props.wallet.selectedCrypto;
+			const currentBlockHeight = this.props.wallet.blockHeight[selectedCrypto];
+			return formatNumber(Number(currentBlockHeight) - (Number(transaction.block) - 1));
 		} catch (e) {
 			console.log(e);
 			return 0;
@@ -166,8 +136,10 @@ class TransactionDetail extends PureComponent <Props> {
 	getMessages = () => {
 		try {
 			let message = "";
-			const messageLength = this.props.transaction.messages.length;
-			this.props.transaction.messages.forEach((item, i) => {
+			let transaction = "";
+			try {transaction = this.props.wallet.selectedTransaction;} catch (e) {}
+			const messageLength = transaction.messages.length;
+			transaction.messages.forEach((item, i) => {
 				if (messageLength === 1 && i+1 === messageLength) {
 					message = message.concat(`${item}`);
 				} else {
@@ -180,48 +152,79 @@ class TransactionDetail extends PureComponent <Props> {
 			return "";
 		}
 	};
+	
+	toggleUtxoBlacklist = async () => {
+		try {
+			const transaction = this.props.wallet.selectedTransaction.hash;
+			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto];
+			const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
+			await this.props.toggleUtxoBlacklist({ transaction, selectedWallet, selectedCrypto });
+			await this.props.updateBalance({ utxos, blacklistedUtxos, selectedCrypto, wallet: selectedWallet });
+		} catch (e) {}
+	};
 
 	/*
-	blacklistTransaction = async () => {
-		try {
-			const result = await this.props.blacklistTransaction();
-		} catch (e) {
-			console.log(e);
-		}
-	};
-
 	getBlacklistValue = () => {
 		try {
-			const result = this.props.blacklistedTransactions.indexOf(this.props.transaction.hash);
-			alert(result);
-			return result > -1 ? "Blacklist" : "Whitelist"
+			const { selectedCrypto, selectedWallet } = this.props.wallet;
+			const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
+			let transacationHash = "";
+			try { transacationHash = this.props.wallet.selectedTransaction.hash; } catch (e) {}
+			const result = blacklistedUtxos.includes(transacationHash);
+			return result ? "Whitelist UTXO" : "Blacklist UTXO";
 		} catch (e) {
 			console.log(e);
+			return "Blacklist UTXO";
 		}
 	};
-	*/
+	 */
+	
+	isBlacklisted = () => {
+		try {
+			const { selectedCrypto, selectedWallet } = this.props.wallet;
+			const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
+			let transacationHash = "";
+			try { transacationHash = this.props.wallet.selectedTransaction.hash; } catch (e) {}
+			return blacklistedUtxos.includes(transacationHash);
+		} catch (e) {
+			console.log(e);
+			return false;
+		}
+	};
+	
+	isActiveUtxo = () => {
+		try {
+			const { selectedCrypto, selectedWallet } = this.props.wallet;
+			const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto];
+			let transactionHash = "";
+			try { transactionHash = this.props.wallet.selectedTransaction.hash; } catch (e) {}
+			let txHashes = utxos.map((utxo) => utxo.tx_hash);
+			return txHashes.includes(transactionHash);
+		} catch (e) {
+			return false;
+		}
+	};
 
 	render() {
-		if (!this.props.transaction) return <View />;
-		const { block, type, hash, timestamp, fee, address } = this.props.transaction;
+		
+		if (!this.props.wallet.selectedTransaction) return <View />;
+		const { block, type, hash, timestamp, fee, address } = this.props.wallet.selectedTransaction;
 
 		const confirmations = getConfirmations();
 		const status = block === 0 || block === null || confirmations === 0 ? "Pending" : "Confirmed";
 		const blockHeight = block === 0 ? "?" : block;
-		const messagesLength = this.props.transaction.messages.length;
-		let amount = Number(this.props.transaction.amount)-Number(fee);
+		const messagesLength = this.props.wallet.selectedTransaction.messages.length;
+		const isBlacklisted = this.isBlacklisted();
+		let amount = Number(this.props.wallet.selectedTransaction.amount)-Number(fee);
 
 		return (
 			<View style={styles.container}>
-				{this.state.loading &&
-				<Animated.View style={[styles.loading, { opacity: this.state.loadingOpacity }]}>
-					<Progress.CircleSnail size={80} animated={true} color={[colors.purple, colors.lightPurple, colors.darkPurple]} />
-				</Animated.View>}
 				<ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} style={{ flex: 1 }}>
 					<Animated.View style={[styles.transactionData, { opacity: this.state.transactionOpacity }]}>
 						<Text style={styles.header}>Transaction Details</Text>
 
-						{this.Row({ title: "Network:", value: capitalize(this.props.selectedCrypto) })}
+						{this.Row({ title: "Network:", value: capitalize(this.props.wallet.selectedCrypto) })}
 						<View style={styles.separator} />
 
 						{messagesLength > 0 && this.Row({ title: "Message:", value: this.getMessages(), onPress: () => this.openMessage(hash), valueStyle: { textDecorationLine: "underline" } })}
@@ -257,6 +260,9 @@ class TransactionDetail extends PureComponent <Props> {
 
 						{this.Row({ title: "TxId:", value: hash, onPress: () => this.openTxId(hash), valueStyle: { textDecorationLine: "underline" } })}
 						<View style={styles.separator} />
+						
+						{this.isActiveUtxo() &&
+						<Button style={{ ...styles.button, backgroundColor: isBlacklisted ? colors.red : "#813fb1" }} text={isBlacklisted ? "Whitelist UTXO" : "Blacklist UTXO"} onPress={this.toggleUtxoBlacklist} />}
 
 					</Animated.View>
 				</ScrollView>
@@ -285,17 +291,6 @@ const styles = StyleSheet.create({
 		flex: 0.6,
 		alignItems: "flex-start",
 		justifyContent: "center",
-	},
-	loading: {
-		position: "absolute",
-		zIndex: 100,
-		top: 0,
-		bottom: 0,
-		left: 0,
-		right: 0,
-		alignItems: "center",
-		justifyContent: "center",
-		backgroundColor: "transparent"
 	},
 	transactionData: {
 		flex: 1,
@@ -328,8 +323,31 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		textAlign: "center",
 		marginVertical: 20
-	}
+	},
+	button: {
+		minWidth: "20%",
+		paddingHorizontal: 10,
+		paddingVertical: 6,
+	},
 });
 
+const connect = require("react-redux").connect;
+const bindActionCreators = require("redux").bindActionCreators;
+const walletActions = require("../actions/wallet");
+const settingsActions = require("../actions/settings");
 
-module.exports = TransactionDetail;
+const mapStateToProps = ({...state}) => ({
+	...state
+});
+
+const mapDispatchToProps = (dispatch) => {
+	const actions = {
+		...walletActions,
+		...settingsActions
+	};
+	return bindActionCreators({
+		...actions
+	}, dispatch);
+};
+
+module.exports = connect(mapStateToProps, mapDispatchToProps)(TransactionDetail);
