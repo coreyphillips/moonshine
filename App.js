@@ -268,6 +268,8 @@ export default class App extends PureComponent {
 			//Enable the loading state
 			this.setState({ loadingTransactions: true });
 			const { selectedWallet, selectedCrypto, selectedService, selectedCurrency } = this.props.wallet;
+			const keyDerivationPath = this.props.wallet[selectedWallet].keyDerivationPath[selectedCrypto];
+			const addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];
 			
 			//Check if the user is online
 			const isConnected = await isOnline();
@@ -378,7 +380,7 @@ export default class App extends PureComponent {
 			//This function loads up the user's transaction history for the transaction list, gathers the wallet's next available addresses/changeAddresses and creates more as needed
 			//TODO: This function is way too large/multipurpose and needs to be broken up for easier use and testing.
 
-			await this.props.getNextAvailableAddress({ addresses, changeAddresses, addressIndex, changeAddressIndex, indexThreshold: 1, currentBlockHeight, selectedCrypto, selectedWallet, wallet: selectedWallet, customPeers: this.props.settings.customPeers[selectedCrypto] });
+			await this.props.getNextAvailableAddress({ addresses, changeAddresses, addressIndex, changeAddressIndex, indexThreshold: 1, currentBlockHeight, selectedCrypto, selectedWallet, wallet: selectedWallet, customPeers: this.props.settings.customPeers[selectedCrypto], keyDerivationPath, addressType });
 			
 			//Update status of the user-facing loading message and progress bar
 			if (ignoreLoading === false) this.setState({ loadingMessage: "Updating UTXO's", loadingProgress: 0.8 });
@@ -475,7 +477,7 @@ export default class App extends PureComponent {
 			//Begin Rescan of transactions if necessary based on the saved path indexes.
 			let getNextAvailableAddressResponse = { error: false, data: [] };
 			if (needsToRescanTransactions) {
-				getNextAvailableAddressResponse = await this.props.getNextAvailableAddress({ addresses, changeAddresses, addressIndex, changeAddressIndex, indexThreshold: 1, currentBlockHeight, selectedCrypto, selectedWallet, wallet: selectedWallet, customPeers: this.props.settings.customPeers[selectedCrypto] });
+				getNextAvailableAddressResponse = await this.props.getNextAvailableAddress({ addresses, changeAddresses, addressIndex, changeAddressIndex, indexThreshold: 1, currentBlockHeight, selectedCrypto, selectedWallet, wallet: selectedWallet, customPeers: this.props.settings.customPeers[selectedCrypto], keyDerivationPath, addressType });
 			}
 			
 			//Update status of the user-facing loading message and progress bar
@@ -537,8 +539,7 @@ export default class App extends PureComponent {
 	
 	createWallet = async (walletName = "wallet0", ignoreAddressCheck = false) => {
 		try {
-			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			
+			const { selectedCrypto } = this.props.wallet;
 			const items = [
 				{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false },
 				{ stateId: "displayPin", opacityId: "pinOpacity", display: false },
@@ -575,6 +576,7 @@ export default class App extends PureComponent {
 			const wallets = this.props.wallet.wallets.concat(walletName);
 			//Set the selectedWallet accordingly and update the wallets array.
 			await this.props.updateWallet({ selectedWallet: walletName, wallets });
+			const { selectedWallet } = this.props.wallet;
 			this.setState({loadingMessage: "Fetching Current Block Height...", loadingProgress: 0.15});
 			let addresses = [];
 			try {
@@ -1313,9 +1315,10 @@ export default class App extends PureComponent {
 			//Set the selectedWallet accordingly and update the wallets array.
 			await this.props.updateWallet({ selectedWallet: walletName, wallets });
 			
+			const { selectedCrypto } = this.props.wallet;
+
 			await this.props.createWallet({ wallet: walletName, mnemonic, generateAllAddresses: mnemonic === "" });
 			
-			const { selectedCrypto } = this.props.wallet;
 			await this.restartElectrum({ coin: selectedCrypto });
 			//Get Current Block Height
 			this.props.updateBlockHeight({ selectedCrypto });
@@ -1412,7 +1415,7 @@ export default class App extends PureComponent {
 							{this.state.displaySweepPrivateKey &&
 							<Animated.View style={[styles.textFormContainer, { opacity: this.state.sweepPrivateKeyOpacity }]}>
 								
-								<SweepPrivateKey privateKey={this.state.privateKey} privateKeyData={this.state.privateKeyData} refreshWallet={this.refreshWallet} onClose={this.resetView} updateXButton={this.updateItem} />
+								<SweepPrivateKey privateKey={this.state.privateKey} refreshWallet={this.refreshWallet} onClose={this.resetView} updateXButton={this.updateItem} />
 							
 							</Animated.View>}
 							

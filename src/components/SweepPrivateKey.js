@@ -830,6 +830,7 @@ class SendTransaction extends PureComponent<Props> {
 			const transactionFee = Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee);
 			const amount = Number(this.props.transaction.amount);
 			const message = this.props.transaction.message;
+			const addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];
 			let changeAddress = "";
 			//Create More Change Addresses as needed
 			//Only add a changeAddress if the user is not spending the max amount.
@@ -850,7 +851,7 @@ class SendTransaction extends PureComponent<Props> {
 				}
 			}
 
-			const result = await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, changeAddress, wallet: selectedWallet, selectedCrypto, message });
+			const result = await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, changeAddress, wallet: selectedWallet, selectedCrypto, message, addressType });
 			return result;
 		} catch (e) {
 			console.log(e);

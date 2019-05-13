@@ -79,6 +79,18 @@ const defaultWalletShape = {
 	lastUpdated: zeroValueItems,
 	hasBackedUpWallet: false,
 	walletBackupTimestamp: "",
+	keyDerivationPath: {
+		bitcoin: "84",
+		bitcoinTestnet: "84",
+		litecoin: "84",
+		litecoinTestnet: "84"
+	},
+	addressType: { //Accepts bech32, segwit, legacy
+		bitcoin: "bech32",
+		bitcoinTestnet: "bech32",
+		litecoin: "bech32",
+		litecoinTestnet: "bech32"
+	}
 };
 
 const getCoinImage = (coin = "bitcoin") => {

@@ -42,10 +42,12 @@ Bitbip's Alpha is available for download here:
     * Add a UTXO selector to create custom transactions
         * This will allow users to select from a list of available utxo's to include in their transaction.
     * Implement coinselect (https://github.com/bitcoinjs/coinselect)
-    * Add support for UTXO blacklisting
-        * This will allow users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo will also exclude it's amount from their total balance.
+    * Add support for UTXO blacklisting - *Partially Complete (0.1.1) - Blacklist functionality can be accessed via the Transaction Detail view for now.*
+        * This allows users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo excludes it's amount from the wallet's total balance.
     * Allow users to manually select which public Electrum servers to randomly use if not connecting to their own node
     * Add support for additional currencies in the settings
+    * Add support for Segwit-compatible & legacy addresses in settings - *Complete (0.1.1)*
+    * Allow users to select the key derivation path in settings - *Complete (0.1.1)*
     * Support individual private key sweeping functionality - *Complete (0.1.1)*
     * UI Improvements/Redesign:
         * Settings View

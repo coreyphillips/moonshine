@@ -469,7 +469,8 @@ class SendTransaction extends PureComponent<Props> {
 				this.state.rawTxCopiedOpacity,
 				{
 					toValue: 1,
-					duration: 500
+					duration: 500,
+					useNativeDriver: true
 				}
 			).start(async () => {
 				setTimeout(() => {
@@ -477,7 +478,8 @@ class SendTransaction extends PureComponent<Props> {
 						this.state.rawTxCopiedOpacity,
 						{
 							toValue: 0,
-							duration
+							duration,
+							useNativeDriver: true
 						}
 					).start();
 				}, duration/4);
@@ -529,6 +531,7 @@ class SendTransaction extends PureComponent<Props> {
 			const transactionFee = Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee);
 			const amount = Number(this.props.transaction.amount);
 			const message = this.props.transaction.message;
+			const addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];
 			let changeAddress = "";
 			//Create More Change Addresses as needed
 			//Only add a changeAddress if the user is not spending the max amount.
@@ -549,7 +552,7 @@ class SendTransaction extends PureComponent<Props> {
 				}
 			}
 
-			const result = await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, blacklistedUtxos, changeAddress, wallet: selectedWallet, selectedCrypto, message });
+			const result = await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, blacklistedUtxos, changeAddress, wallet: selectedWallet, selectedCrypto, message, addressType });
 			return result;
 		} catch (e) {
 			console.log(e);
@@ -643,7 +646,8 @@ class SendTransaction extends PureComponent<Props> {
 					this.state.loadingOpacity,
 					{
 						toValue: 0,
-						duration: 400
+						duration: 400,
+						useNativeDriver: true
 					}
 				).start(async () => {
 					//Close component after opacity fade-out

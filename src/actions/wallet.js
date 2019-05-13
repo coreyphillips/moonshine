@@ -76,7 +76,7 @@ const deleteWallet = ({ wallet } = {}) => async (dispatch: any) => {
 	});
 };
 
-const importWallet = ({ wallets = [], mnemonic = "" } = {}) => async () => {
+const importWallet = ({ wallets = [], mnemonic = "", keyDerivationPath = "84" } = {}) => async () => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({error: true, data});
@@ -95,7 +95,7 @@ const importWallet = ({ wallets = [], mnemonic = "" } = {}) => async () => {
 			//Add wallet name to wallets array;
 			const walletName = `wallet${highestNumber+1}`;
 			
-			const response = await createWallet({ wallet: walletName, mnemonic});
+			const response = await createWallet({ wallet: walletName, mnemonic, keyDerivationPath });
 			
 			if (response.error === false) {
 				resolve({error: false, data: response.data});
@@ -108,7 +108,7 @@ const importWallet = ({ wallets = [], mnemonic = "" } = {}) => async () => {
 	});
 };
 
-const createWallet = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressAmount = 2, changeAddressAmount = 2, mnemonic = "", generateAllAddresses = true } = {}) => async (dispatch: any) => {
+const createWallet = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressAmount = 2, changeAddressAmount = 2, mnemonic = "", generateAllAddresses = true, keyDerivationPath = "84" } = {}) => async (dispatch: any) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({error: true, data});
@@ -141,7 +141,8 @@ const createWallet = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressA
 							addressAmount,
 							changeAddressAmount,
 							selectedCrypto: coin,
-							wallet
+							wallet,
+							keyDerivationPath
 						});
 						if (addresses.error) addresses = {data: {addresses: [], changeAddresses: []}};
 						allAddresses[coin].addresses = addresses.data.addresses;
@@ -149,7 +150,7 @@ const createWallet = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressA
 					})
 				);
 			} else {
-				let generatedAddresses = await generateAddresses({ addressAmount, changeAddressAmount, selectedCrypto, wallet });
+				let generatedAddresses = await generateAddresses({ addressAmount, changeAddressAmount, selectedCrypto, wallet, keyDerivationPath });
 				if (generatedAddresses.error) {
 					allAddresses[selectedCrypto].addresses = generatedAddresses.data.addresses;
 					allAddresses[selectedCrypto].changeAddresses = generatedAddresses.data.changeAddresses;
@@ -344,14 +345,14 @@ const updateBlockHeight = ({ selectedCrypto = "bitcoin" } = {}) => async (dispat
 	});
 };
 
-const addAddresses = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressAmount = 5, changeAddressAmount = 5, addressIndex = 0, changeAddressIndex = 0 }) => async (dispatch: any) => {
+const addAddresses = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressAmount = 5, changeAddressAmount = 5, addressIndex = 0, changeAddressIndex = 0, keyDerivationPath = "84" }) => async (dispatch: any) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({error: true, data});
 		};
 		try {
 			//Generate receiving and change addresses.
-			let addresses = await generateAddresses({ addressAmount, changeAddressAmount, addressIndex, changeAddressIndex, selectedCrypto, wallet });
+			let addresses = await generateAddresses({ addressAmount, changeAddressAmount, addressIndex, changeAddressIndex, selectedCrypto, wallet, keyDerivationPath });
 			if (addresses.error) {
 				addresses = { data: { addresses: [], changeAddresses: [] } };
 			}
@@ -397,7 +398,7 @@ const toggleUtxoBlacklist = ({ transaction = "", selectedWallet = "wallet0", sel
 	});
 };
 
-const initialImportSync = ({ wallet = "wallet0", selectedCrypto = "bitcoin", currentBlockHeight = 0 }) => async (dispatch: any) => {
+const initialImportSync = ({ wallet = "wallet0", selectedCrypto = "bitcoin", currentBlockHeight = 0, keyDerivationPath = "84" }) => async (dispatch: any) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({ error: true, data });
@@ -419,7 +420,7 @@ const initialImportSync = ({ wallet = "wallet0", selectedCrypto = "bitcoin", cur
 			
 			//Create Addresses
 			//Generate receiving and change addresses.
-			const newAddresses = await generateAddresses({ addressAmount: 50, changeAddressAmount: 50, addressIndex: 0, selectedCrypto, wallet });
+			const newAddresses = await generateAddresses({ addressAmount: 50, changeAddressAmount: 50, addressIndex: 0, selectedCrypto, wallet, keyDerivationPath });
 			const addresses = newAddresses.data.addresses;
 			const changeAddresses = newAddresses.data.changeAddresses;
 			
@@ -493,7 +494,7 @@ const initialImportSync = ({ wallet = "wallet0", selectedCrypto = "bitcoin", cur
 	});
 };
 
-const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAddresses = [], addressIndex = 0, changeAddressIndex = 0, selectedCrypto = "bitcoin", currentBlockHeight = 0 } = {}) => async (dispatch: any) => {
+const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAddresses = [], addressIndex = 0, changeAddressIndex = 0, selectedCrypto = "bitcoin", currentBlockHeight = 0, keyDerivationPath = "84", addressType = "bech32" } = {}) => async (dispatch: any) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({ error: true, data });
@@ -511,14 +512,14 @@ const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAdd
 			//Create Addresses if none exist
 			if (!addresses.length) {
 				//Generate receiving and change addresses.
-				const newAddresses = await generateAddresses({ addressAmount: 5, changeAddressAmount: 0, addressIndex: 0, selectedCrypto, wallet });
+				const newAddresses = await generateAddresses({ addressAmount: 5, changeAddressAmount: 0, addressIndex: 0, selectedCrypto, wallet, keyDerivationPath, addressType });
 				if (!newAddresses.error) addresses = newAddresses.data.addresses;
 				addNewAddresses = true;
 			}
 			//Create Change Addresses if none exist
 			if (!changeAddresses.length) {
 				//Generate receiving and change addresses.
-				const newAddresses = await generateAddresses({ addressAmount: 0, changeAddressAmount: 5, addressIndex: 0, selectedCrypto, wallet });
+				const newAddresses = await generateAddresses({ addressAmount: 0, changeAddressAmount: 5, addressIndex: 0, selectedCrypto, wallet, keyDerivationPath, addressType });
 				if (!newAddresses.error) changeAddresses = newAddresses.data.changeAddresses;
 				addNewAddresses = true;
 			}
@@ -554,7 +555,7 @@ const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAdd
 				if (foundLastUsedAddress === false) {
 					i = 0;
 					//Generate receiving and change addresses.
-					const newAddresses = await generateAddresses({ addressAmount: 5, changeAddressAmount: 0, addressIndex, selectedCrypto, wallet });
+					const newAddresses = await generateAddresses({ addressAmount: 5, changeAddressAmount: 0, addressIndex, selectedCrypto, wallet, keyDerivationPath, addressType });
 					allAddresses = allAddresses.concat(newAddresses.data.addresses);
 					addresses = addresses.concat(newAddresses.data.addresses);
 				}
@@ -563,7 +564,7 @@ const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAdd
 				if (foundLastUsedChangeAddress === false) {
 					i = 0;
 					//Generate receiving and change addresses.
-					const newChangeAddresses = await generateAddresses({ addressAmount: 0, changeAddressAmount: 5, changeAddressIndex, selectedCrypto, wallet });
+					const newChangeAddresses = await generateAddresses({ addressAmount: 0, changeAddressAmount: 5, changeAddressIndex, selectedCrypto, wallet, keyDerivationPath, addressType });
 					allAddresses = allAddresses.concat(newChangeAddresses.data.changeAddresses);
 					changeAddresses = changeAddresses.concat(newChangeAddresses.data.changeAddresses);
 				}

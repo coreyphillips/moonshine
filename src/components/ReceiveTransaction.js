@@ -59,7 +59,8 @@ class ReceiveTransaction extends PureComponent {
 				this.state.addressOpacity,
 				{
 					toValue: 1,
-					duration: 500
+					duration: 500,
+					useNativeDriver: true
 				}
 			).start(async () => {
 				setTimeout(() => {
@@ -67,7 +68,8 @@ class ReceiveTransaction extends PureComponent {
 						this.state.addressOpacity,
 						{
 							toValue: 0,
-							duration
+							duration,
+							useNativeDriver: true
 						}
 					).start();
 				}, duration/4);

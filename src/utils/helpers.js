@@ -379,11 +379,12 @@ const getTransactionSize = (numInputs, numOutputs) => {
 	return numInputs*180 + numOutputs*34 + 10 + numInputs;
 };
 
-const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confirmedBalance = 0, utxos = [], blacklistedUtxos = [], changeAddress = "", wallet = "wallet0", selectedCrypto = "bitcoin", message = "" } = {}) => {
+const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confirmedBalance = 0, utxos = [], blacklistedUtxos = [], changeAddress = "", wallet = "wallet0", selectedCrypto = "bitcoin", message = "", addressType = "bech32" } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
 			const network = networks[selectedCrypto];
 			const totalFee = getTransactionSize(utxos.length, changeAddress ? 2 : 1) * transactionFee;
+			addressType = addressType.toLowerCase();
 
 			//Address and amount to send.
 			let targets = [{ address, value: amount }];
@@ -410,8 +411,15 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 					if (blacklistedUtxos.includes(utxo.tx_hash)) continue;
 					const path = utxo.path;
 					const keyPair = root.derivePath(path);
-					const p2wpkh = bitcoin.payments.p2wpkh({pubkey: keyPair.publicKey, network});
-					txb.addInput(utxo.txid, utxo.vout, null, p2wpkh.output);
+					
+					if (addressType === "bech32") {
+						const p2wpkh = bitcoin.payments.p2wpkh({pubkey: keyPair.publicKey, network});
+						txb.addInput(utxo.txid, utxo.vout, null, p2wpkh.output);
+					}
+					
+					if (addressType === "segwit") {txb.addInput(utxo.txid, utxo.vout);}
+					
+					if (addressType === "legacy") {txb.addInput(utxo.txid, utxo.vout);}
 				} catch (e) {
 					console.log(e);
 				}
@@ -441,7 +449,15 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 					}
 					const path = utxo.path;
 					const keyPair = root.derivePath(path);
-					txb.sign(index, keyPair, null, null, utxo.value);
+					
+					if (addressType === "bech32") {txb.sign(index, keyPair, null, null, utxo.value);}
+					if (addressType === "segwit") {
+						const p2wpkh = bitcoin.payments.p2wpkh({pubkey: keyPair.publicKey, network});
+						const p2sh = bitcoin.payments.p2sh({redeem: p2wpkh, network});
+						txb.sign(index, keyPair, p2sh.redeem.output, null, utxo.value);
+					}
+					if (addressType === "legacy") {txb.sign(index, keyPair);}
+					
 					index++;
 				} catch (e) {
 					console.log(e);
@@ -484,7 +500,7 @@ const getCoinNetwork = (coin = "") => {
 	return networks[coin];
 };
 
-const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, wallet = "wallet0", addressIndex = 0, changeAddressIndex = 0, selectedCrypto = "bitcoin", type = "bech32" } = {}) => {
+const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, wallet = "wallet0", addressIndex = 0, changeAddressIndex = 0, selectedCrypto = "bitcoin", keyDerivationPath = "84", addressType = "bech32" } = {}) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({error: true, data});
@@ -494,6 +510,7 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 			const networkValue = networkType === "testnet" ? 1 : 0; //Used to modify the derivation path accordingly
 			const network = networks[selectedCrypto]; //Returns the network object based on the selected crypto.
 			const keychainResult = await getKeychainValue({ key: wallet });
+			addressType = addressType.toLowerCase();
 			if (keychainResult.error === true) return;
 
 			const mnemonic = keychainResult.data.password;
@@ -506,14 +523,12 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 			//Generate Addresses
 			let addressArray = new Array(addressAmount).fill(null);
 			let changeAddressArray = new Array(changeAddressAmount).fill(null);
-			type = "bech32";
-			//type = "p2pkh";
 			await Promise.all(
 				addressArray.map(async (item, i) => {
 					try {
-						const addressPath = `m/49'/${networkValue}'/0'/0/${i + addressIndex}`;
+						const addressPath = `m/${keyDerivationPath}'/${networkValue}'/0'/0/${i + addressIndex}`;
 						const addressKeypair = root.derivePath(addressPath);
-						const address = await getAddress(addressKeypair, network, type);
+						const address = await getAddress(addressKeypair, network, addressType);
 						//console.log(`Log: Created address ${i + addressIndex}: ${address}`);
 						addresses.push({ address, path: addressPath });
 						return {address, path: addressPath};
@@ -521,9 +536,9 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 				}),
 				changeAddressArray.map(async (item, i) => {
 					try {
-						const changeAddressPath = `m/49'/${networkValue}'/0'/1/${i + changeAddressIndex}`;
+						const changeAddressPath = `m/${keyDerivationPath}'/${networkValue}'/0'/1/${i + changeAddressIndex}`;
 						const changeAddressKeypair = root.derivePath(changeAddressPath);
-						const address = await getAddress(changeAddressKeypair, network, type);
+						const address = await getAddress(changeAddressKeypair, network, addressType);
 						changeAddresses.push({ address, path: changeAddressPath });
 						return {address, path: changeAddressPath};
 					} catch (e) {}
@@ -534,7 +549,7 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 			for (let i = addressIndex; i < addressAmount+addressIndex; i++) {
 				const addressPath = `m/49'/${networkValue}'/0'/0/${i}`;
 				const addressKeypair = root.derivePath(addressPath);
-				const address = await getAddress(addressKeypair, network, type);
+				const address = await getAddress(addressKeypair, network, addressType);
 				console.log(`Log: Created address ${i}: ${address}`);
 				addresses.push({ address, path: addressPath });
 			}
@@ -561,31 +576,16 @@ const getAddress = (keyPair, network, type = "bech32") => {
 		case "bech32":
 			//Get Native Bech32 (bc1) addresses
 			return bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network }).address;
-		case "p2sh":
+		case "segwit":
 			//Get Segwit P2SH Address (3)
 			return bitcoin.payments.p2sh({
 				redeem: bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network }),
 				network
 			}).address;
 			//Get Legacy Address (1)
-		case "p2pkh":
+		case "legacy":
 			return bitcoin.payments.p2pkh({ pubkey: keyPair.publicKey, network }).address;
 	}
-	/*
-	if (type === "bech32") {
-		//Get Native Bech32 (bc1) addresses
-		const {address} = bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network });
-		return address;
-	}
-	if (type === "p2sh") {
-		//Get Segwit P2SH Address (3)
-		const { address } = bitcoin.payments.p2sh({
-			redeem: bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network }),
-			network
-		});
-		return address;
-	}
-	*/
 };
 
 //Used to validate price inputs.

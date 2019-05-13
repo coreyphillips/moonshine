@@ -29,7 +29,8 @@ const {
 
 const {
 	resetKeychainValue,
-	getKeychainValue
+	getKeychainValue,
+	capitalize
 } = require("../utils/helpers");
 const {
 	getCoinData
@@ -178,6 +179,38 @@ class Settings extends PureComponent<Props> {
 		}
 	}
 	
+	_displayOption({ value = "", currentValue = "", onPress = () => null, optionsLength = 1 } = {}) {
+		let width = 90/(optionsLength).toFixed(0);
+		width = width.toString();
+		width = `${width}%`;
+		const isMatch = currentValue.toLowerCase() === value.toLowerCase();
+		return (
+			<TouchableOpacity key={value} onPress={onPress} style={[styles.cryptoUnitButton, { width, backgroundColor: isMatch ? colors.lightPurple : colors.white }]}>
+				<Text style={[styles.text, { color: isMatch ? colors.white : colors.purple}]}>{value}</Text>
+			</TouchableOpacity>
+		);
+	}
+	MultiOptionRow({ title = "", subTitle = "", currentValue = "", options = [{ value: "", onPress: () => null }] } = {}) {
+		const optionsLength = options.length;
+		try {
+			return (
+				<View style={styles.rowContainer}>
+					<View style={styles.row}>
+						<View>
+							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
+								<Text style={styles.title}>{title}</Text>
+								{subTitle !== "" && <Text style={styles.subTitle}>{subTitle}</Text>}
+							</View>
+							<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginHorizontal: 20 }}>
+								{options.map((option) => this._displayOption({ ...option, optionsLength, currentValue}))}
+							</View>
+						</View>
+					</View>
+				</View>
+			);
+		} catch (e) {}
+	}
+	
 	updateItems = (items = []) => {
 		return new Promise(async (resolve) => {
 			try {
@@ -210,7 +243,8 @@ class Settings extends PureComponent<Props> {
 									this.state[opacityId],
 									{
 										toValue: display ? 1 : 0,
-										duration
+										duration,
+										useNativeDriver: true
 									}
 								),
 							);
@@ -259,7 +293,6 @@ class Settings extends PureComponent<Props> {
 	};
 
 	toggleSetting = (setting = "") => {
-		//alert(this.props.settings[setting]);
 		this.props.updateSettings({ [setting]: !this.props.settings[setting] });
 	};
 
@@ -389,6 +422,69 @@ class Settings extends PureComponent<Props> {
 			console.log(e);
 		}
 	};
+	
+	updateKeyDerivationPath = async ({ keyDerivationPath = "84", rescanWallet = true } = {}) => {
+		try {
+			await this.updateWallet({ data: [{ key: "keyDerivationPath", value: keyDerivationPath }] });
+			if (rescanWallet) this.rescanWallet();
+		} catch (e) {
+			console.log("Log: There was an error, 2.");
+			console.log(e);
+		}
+	};
+	
+	updateAddressType = async ({ addressType = "bech32", rescanWallet = true } = {}) => {
+		try {
+			let keyDerivationPath = "84";
+			switch (addressType) {
+				case "bech32":
+					keyDerivationPath = "84";
+					break;
+				case "segwit":
+					keyDerivationPath = "49";
+					break;
+				case "legacy":
+					keyDerivationPath = "44";
+					break;
+				default:
+					keyDerivationPath = "84";
+					break;
+			}
+			await this.updateWallet({
+				data:
+					[
+						{key: "addressType", value: addressType},
+						{key: "keyDerivationPath", value: keyDerivationPath}
+					]
+			});
+			if (rescanWallet) this.rescanWallet();
+		} catch (e) {
+			console.log("Log: There was an error, 1.");
+			console.log(e);
+		}
+	};
+	
+	updateWallet = async ({ data = [] } = {}) => {
+		try {
+			if (!data) return;
+			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			
+			let newData = {};
+			await Promise.all(data.map(({ key = undefined, value = undefined } = {}) => {
+					if (key && value) newData[key] = {...this.props.wallet[selectedWallet][key], [selectedCrypto]: value};
+				})
+			);
+			await this.props.updateWallet({
+				...this.props.wallet,
+				[selectedWallet]: {
+					...this.props.wallet[selectedWallet],
+					...newData
+				}
+			});
+		} catch (e) {
+			console.log(e);
+		}
+	};
 
 	reconnectToPeer = async () => {
 		try {
@@ -406,18 +502,9 @@ class Settings extends PureComponent<Props> {
 
 
 	rescanWallet = async () => {
-		//await nodejs.start("main.js");
 		try {
 			await this.setState({ rescanningWallet: true });
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			await electrum.stop({ coin: selectedCrypto });
-			await electrum.start({
-				coin: selectedCrypto,
-				peers: this.props.settings.peers[selectedCrypto],
-				customPeers: this.props.settings.customPeers[selectedCrypto]
-			});
-
-
 			await this.props.updateWallet({
 				[selectedWallet]: {
 					...this.props.wallet[selectedWallet],
@@ -431,6 +518,10 @@ class Settings extends PureComponent<Props> {
 					},
 					addresses: {
 						...this.props.wallet[selectedWallet].addresses,
+						[selectedCrypto]: []
+					},
+					changeAddresses: {
+						...this.props.wallet[selectedWallet].changeAddresses,
 						[selectedCrypto]: []
 					},
 					transactions: {
@@ -451,9 +542,6 @@ class Settings extends PureComponent<Props> {
 					}
 				}
 			});
-
-
-			await this.props.getNextAvailableAddress({ addresses: [], changeAddresses: [], addressIndex: 0, changeAddressIndex: 0, indexThreshold: 1, selectedCrypto, selectedWallet, wallet: selectedWallet });
 			await this.props.refreshWallet();
 			await this.setState({ rescanningWallet: false });
 		} catch (e) {
@@ -487,7 +575,14 @@ class Settings extends PureComponent<Props> {
 	};
 
 	render() {
-		const coinDataLabel = getCoinData({ selectedCrypto: this.props.wallet.selectedCrypto, cryptoUnit: "BTC" });
+		let coinDataLabel = "?";
+		try {coinDataLabel = getCoinData({ selectedCrypto: this.props.wallet.selectedCrypto, cryptoUnit: "BTC" });} catch (e) {}
+		let keyDerivationPath = "84";
+		try {keyDerivationPath = this.props.wallet[this.props.wallet.selectedWallet].keyDerivationPath[this.props.wallet.selectedCrypto];} catch (e) {}
+		let isTestnet = true;
+		try {isTestnet = this.props.wallet.selectedCrypto.includes("Testnet");} catch (e) {}
+		let addressType = "bech32";
+		try {addressType = this.props.wallet[this.props.wallet.selectedWallet].addressType[this.props.wallet.selectedCrypto];} catch (e) {}
 		return (
 			<View style={styles.container}>
 
@@ -509,13 +604,6 @@ class Settings extends PureComponent<Props> {
 											<TouchableOpacity onPress={() => this.updateCryptoUnit("BTC")} style={[styles.cryptoUnitButton, { backgroundColor: this.props.settings.cryptoUnit === "BTC" ? colors.lightPurple : colors.white }]}>
 												<Text style={[styles.text, { color: this.props.settings.cryptoUnit === "BTC" ? colors.white : colors.purple}]}>{coinDataLabel.acronym}</Text>
 											</TouchableOpacity>
-											{/*
-											<TouchableOpacity onPress={() => this.updateCryptoUnit("mBTC")} style={[styles.cryptoUnitButton, { backgroundColor: this.props.settings.cryptoUnit === "mBTC" ? colors.lightPurple : colors.white }]}>
-												<Text style={[styles.text, { color: this.props.settings.cryptoUnit === "mBTC" ? colors.white : colors.purple}]}>{`m${coinDataLabel}`}</Text>
-											</TouchableOpacity>
-											<TouchableOpacity onPress={() => this.updateCryptoUnit("μBTC")} style={[styles.cryptoUnitButton, { backgroundColor: this.props.settings.cryptoUnit === "μBTC" ? colors.lightPurple : colors.white }]}>
-												<Text style={[styles.text, { color: this.props.settings.cryptoUnit === "μBTC" ? colors.white : colors.purple}]}>{`μ${coinDataLabel}`}</Text>
-											</TouchableOpacity>*/}
 											<TouchableOpacity onPress={() => this.updateCryptoUnit("satoshi")} style={[styles.cryptoUnitButton, { backgroundColor: this.props.settings.cryptoUnit === "satoshi" ? colors.lightPurple : colors.white }]}>
 												<Text style={[styles.text, { color: this.props.settings.cryptoUnit === "satoshi" ? colors.white : colors.purple}]}>{coinDataLabel.satoshi}</Text>
 											</TouchableOpacity>
@@ -544,7 +632,29 @@ class Settings extends PureComponent<Props> {
 								titleStyle: { color: colors.purple },
 								valueStyle: { color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }
 							})}
-
+							
+							{this.MultiOptionRow({
+								title: "Address Type",
+								currentValue: addressType,
+								options:[
+									{value: "Legacy", onPress: () => this.updateAddressType({ addressType: "legacy" }) },
+									{value: "Segwit", onPress: () => this.updateAddressType({ addressType: "segwit" }) },
+									{value: "Bech32", onPress: () => this.updateAddressType({ addressType: "bech32" }) },
+								]
+							})}
+							
+							{this.MultiOptionRow({
+								title: "Key Derivation Path",
+								subTitle: `m/${keyDerivationPath}'/0'/0'/${isTestnet ? 1 : 0}/0`,
+								currentValue: keyDerivationPath,
+								options:[
+									{value: "0", onPress: () => this.updateKeyDerivationPath({ keyDerivationPath: "0" }) },
+									{value: "44", onPress: () => this.updateKeyDerivationPath({ keyDerivationPath: "44" }) },
+									{value: "49", onPress: () => this.updateKeyDerivationPath({ keyDerivationPath: "49" }) },
+									{value: "84", onPress: () => this.updateKeyDerivationPath({ keyDerivationPath: "84" }) },
+								]
+							})}
+							
 							{this.Row({
 								title: "",
 								value: "Import Mnemonic Phrase",
@@ -571,7 +681,7 @@ class Settings extends PureComponent<Props> {
 							})}
 
 							{this.Row({
-								value: "Rescan Wallet",
+								value: `Rescan ${capitalize(this.props.wallet.selectedCrypto)} Wallet`,
 								col1Loading: this.state.rescanningWallet,
 								col1Image: "radar",
 								onPress: this.rescanWallet,
@@ -660,7 +770,8 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.white,
 		borderRadius: 11.5,
 		width: "80%",
-		minHeight: 80
+		minHeight: 80,
+		paddingVertical: 10
 	},
 	cryptoUnitButton: {
 		alignItems: "center",
@@ -699,6 +810,12 @@ const styles = StyleSheet.create({
 	},
 	text: {
 		...systemWeights.regular,
+		color: colors.purple,
+		fontSize: 16,
+		textAlign: "left"
+	},
+	subTitle: {
+		...systemWeights.light,
 		color: colors.purple,
 		fontSize: 16,
 		textAlign: "left"
