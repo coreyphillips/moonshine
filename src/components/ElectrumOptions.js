@@ -172,26 +172,23 @@ class ElectrumOptions extends PureComponent {
 				await this.setState({ saving: coin });
 				const host = this.state[coin].host.trim();
 				const port = this.state[coin].port.trim();
-
-				//Ensure the user passed in a host & port to test.
-				if (host === "" || port === "") {
-					if (host === "" && port === "") {
-						alert("Please specify a host and port to connect to.");
-					} else if (host === "") {
-						alert("Please specify a host to connect to.");
-					} else if (port === "") {
-						alert("Please specify a port to connect to.");
-					}
-					await this.setState({ loading: "" });
-					await this.setState({ saving: "" });
-					return;
-				}
-
+				
 				//Remove any customPeer of host and port are blank.
 				if (host === "" && port === "") {
 					const currentPeers = this.props.settings.customPeers;
 					await this.props.updateSettings({ customPeers: {...currentPeers, [coin]: [] } });
-					this.setState({ saving: "" });
+					await this.setState({ saving: "", loading: "" });
+					return;
+				}
+
+				//Ensure the user passed in a host & port to test.
+				if (host === "" || port === "") {
+					if (host === "") {
+						alert("Please specify a host to connect to.");
+					} else if (port === "") {
+						alert("Please specify a port to connect to.");
+					}
+					await this.setState({ saving: "", loading: "" });
 					return;
 				}
 
@@ -226,6 +223,7 @@ class ElectrumOptions extends PureComponent {
 							extraData={this.state}
 							keyExtractor={(coin, index) => `${index}`}
 							renderItem={({ item }) => {
+								if (!this.props.settings.testnet && item.toLowerCase().includes("testnet")) return;
 								return (
 									<ElectrumInput
 										coin={item}

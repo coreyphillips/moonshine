@@ -12,7 +12,6 @@ import {
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography/dist/index";
 import bitcoinUnits from "bitcoin-units";
-
 const {
 	Constants: {
 		colors
@@ -132,9 +131,20 @@ class WalletSliderEntry extends PureComponent {
 				<ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} style={styles.innerContainer}>
 					{this.Header()}
 					<View style={styles.scrollViewContent}>
-						{this.props.coins.map((coin, i) => (
-							<CoinButton key={`${coin}${i}`} coin={coin} label={capitalize(coin)} onCoinPress={this.props.onCoinPress} wallet={this.props.data} balance={this.props.wallet[this.props.data].confirmedBalance[coin]} cryptoUnit={this.props.settings.cryptoUnit} />
-						))}
+						{this.props.coins.map((coin, i) => {
+							if (!this.props.settings.testnet && coin.toLowerCase().includes("testnet")) return;
+							return (
+								<CoinButton
+									key={`${coin}${i}`}
+									coin={coin}
+									label={capitalize(coin)}
+									onCoinPress={this.props.onCoinPress}
+									wallet={this.props.data}
+									balance={this.props.wallet[this.props.data].confirmedBalance[coin]}
+									cryptoUnit={this.props.settings.cryptoUnit}
+								/>
+							);
+						})}
 						{this.props.wallet.wallets.length > 1 &&
 						<TouchableOpacity onPress={() => this.deleteWallet({wallet: this.props.data })} style={styles.deleteButton}>
 							<Text style={[styles.text, { color: colors.white }]}>Delete Wallet</Text>

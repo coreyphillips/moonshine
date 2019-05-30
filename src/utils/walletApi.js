@@ -247,6 +247,9 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 							//console.log(e);
 						}
 					}));
+					
+					let outputLength = 0;
+					try {outputLength = decodedTransaction.vout.length;} catch (e) {}
 
 					//Iterate over each output and add it's satoshi value to outputAmount
 					await Promise.all(decodedTransaction.vout.map(async (output) => {
@@ -261,11 +264,9 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 							} catch (e) {}
 							//If an address from this wallet has already matched a previous input we have sent this transaction
 							//If this address is explicitly listed as an output address this is a receive type transaction.
-							let match = false;
 							let nIndexIsUndefined = false;
 							try {
 								if (output.scriptPubKey.addresses.includes(tx.address)) {
-									match = true;
 									if (inputAddressMatch === false) type = "received";
 								}
 							} catch (e) {
@@ -274,39 +275,27 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 							}
 							if (nIndexIsUndefined) return;
 
-							/*
-							if (match === false) {
-								let isMatch = await Promise.all(allAddresses.filter((address) => output.scriptPubKey.addresses.includes(address.address)));
-								match = isMatch.length > 0;
-							}
-							*/
-
-							if (match === false) {
-								await Promise.all(addresses.map((address) => {
-									try {
-										if (output.scriptPubKey.addresses.includes(address.address)) match = true;
-									} catch (e) {
-										//console.log(e);
+							await Promise.all(addresses.map((address) => {
+								try {
+									if (output.scriptPubKey.addresses.includes(address.address)) {
+										type = "received";
+										receivedAmount = Number((receivedAmount + output.value).toFixed(8));
 									}
-								}));
-							}
-							//If the address above wasn't a match try iterating over the change addresses.
-							if (match === false) {
-								//Iterate over each change address. Add the value of every address that is not a changeAddress
-								await Promise.all(changeAddresses.map((changeAddress) => {
-									try {
-										if (output.scriptPubKey.addresses.includes(changeAddress.address)) match = true;
-									} catch (e) {
-										//console.log(e);
+								} catch (e) {
+									//console.log(e);
+								}
+							}));
+							
+							await Promise.all(changeAddresses.map((changeAddress) => {
+								try {
+									if (output.scriptPubKey.addresses.includes(changeAddress.address)) {
+										if (inputAddressMatch && outputLength === 1) type = "received";
+										receivedAmount = Number((receivedAmount + output.value).toFixed(8));
 									}
-								}));
-							}
-
-							try {
-								if (match) receivedAmount = Number((receivedAmount + output.value).toFixed(8));
-							} catch (e) {
-								//console.log(e);
-							}
+								} catch (e) {
+									//console.log(e);
+								}
+							}));
 
 							try {
 								outputAmount = Number((outputAmount + Number(output.value)).toFixed(8));
@@ -672,7 +661,7 @@ const walletHelpers = {
 					return ({ error: true, data: "Invalid Exchange Rate Data." });
 				}
 			},
-			default: async ({ service = "coincap", selectedCurrency = "usd" } = {}) => {
+			default: async ({ service = "coingecko", selectedCurrency = "usd" } = {}) => {
 				return await walletHelpers.exchangeRate.bitcoin[service]({ selectedCurrency });
 			}
 		},
@@ -701,7 +690,7 @@ const walletHelpers = {
 					return ({ error: true, data: "Invalid Exchange Rate Data." });
 				}
 			},
-			default: async ({ service = "coincap", selectedCurrency = "usd" } = {}) => {
+			default: async ({ service = "coingecko", selectedCurrency = "usd" } = {}) => {
 				return await walletHelpers.exchangeRate.bitcoin[service]({ selectedCurrency });
 			}
 		},
@@ -730,7 +719,7 @@ const walletHelpers = {
 					return ({ error: true, data: "Invalid Exchange Rate Data." });
 				}
 			},
-			default: async ({ service = "coincap", selectedCurrency = "usd" } = {}) => {
+			default: async ({ service = "coingecko", selectedCurrency = "usd" } = {}) => {
 				return await walletHelpers.exchangeRate.litecoin[service]({ selectedCurrency });
 			}
 		},
@@ -759,7 +748,7 @@ const walletHelpers = {
 					return ({ error: true, data: "Invalid Exchange Rate Data." });
 				}
 			},
-			default: async ({ service = "coincap", selectedCurrency = "usd" } = {}) => {
+			default: async ({ service = "coingecko", selectedCurrency = "usd" } = {}) => {
 				return await walletHelpers.exchangeRate.litecoinTestnet[service]({ selectedCurrency });
 			}
 		}

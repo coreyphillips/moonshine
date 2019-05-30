@@ -30,7 +30,9 @@ const {
 const {
 	resetKeychainValue,
 	getKeychainValue,
-	capitalize
+	capitalize,
+	getExchangeRate,
+	openUrl
 } = require("../utils/helpers");
 const {
 	getCoinData
@@ -57,7 +59,8 @@ class Settings extends PureComponent<Props> {
 			displayElectrumOptions: false,
 			electrumOptionsOpacity: new Animated.Value(0),
 
-			rescanningWallet: false
+			rescanningWallet: false,
+			connectingToElectrum: false
 		};
 	}
 
@@ -190,7 +193,7 @@ class Settings extends PureComponent<Props> {
 			</TouchableOpacity>
 		);
 	}
-	MultiOptionRow({ title = "", subTitle = "", currentValue = "", options = [{ value: "", onPress: () => null }] } = {}) {
+	MultiOptionRow({ title = "", subTitle = "", currentValue = "", options = [{ value: "", onPress: () => null }], subTitleIsLink = false } = {}) {
 		const optionsLength = options.length;
 		try {
 			return (
@@ -199,7 +202,11 @@ class Settings extends PureComponent<Props> {
 						<View>
 							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
 								<Text style={styles.title}>{title}</Text>
-								{subTitle !== "" && <Text style={styles.subTitle}>{subTitle}</Text>}
+								{subTitle !== "" && !subTitleIsLink && <Text style={styles.subTitle}>{subTitle}</Text>}
+								{subTitle !== "" && subTitleIsLink &&
+								<TouchableOpacity onPress={() => openUrl(`https://${subTitle}`)} style={{ alignItems: "center", justifyContent: "center" }}>
+									<Text style={styles.subTitle}>{subTitle}</Text>
+								</TouchableOpacity>}
 							</View>
 							<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginHorizontal: 20 }}>
 								{options.map((option) => this._displayOption({ ...option, optionsLength, currentValue}))}
@@ -269,6 +276,14 @@ class Settings extends PureComponent<Props> {
 				resolve({ error: true, data: e });
 			}
 		});
+	};
+	
+	toggleTestnet = async () => {
+		try {
+			this.props.updateSettings({ testnet: !this.props.settings.testnet });
+		} catch (e) {
+			console.log(e);
+		}
 	};
 	
 	togglePin = async () => {
@@ -359,8 +374,9 @@ class Settings extends PureComponent<Props> {
 	getBackupWalletValue = () => {
 		try {
 			const selectedWallet = this.props.wallet.selectedWallet;
+			const walletName = this.props.wallet.selectedWallet.split('wallet').join('Wallet ');
 			if (this.props.wallet[selectedWallet].hasBackedUpWallet) {
-				return `Wallet last backed up on\n${moment(this.props.wallet[selectedWallet].walletBackupTimestamp).format('l @ h:mm a')}.`;
+				return `${walletName} last backed up on\n${moment(this.props.wallet[selectedWallet].walletBackupTimestamp).format('l @ h:mm a')}.`;
 			} else {
 				return "Wallet has not\nbeen backed up.";
 			}
@@ -489,17 +505,22 @@ class Settings extends PureComponent<Props> {
 	reconnectToPeer = async () => {
 		try {
 			const selectedCrypto = this.props.wallet.selectedCrypto;
+			await this.setState({ connectingToElectrum: true });
 			await electrum.stop({ coin: selectedCrypto });
-			await electrum.start({
+			const start = await electrum.start({
 				coin: selectedCrypto,
 				peers: this.props.settings.peers[selectedCrypto],
 				customPeers: this.props.settings.customPeers[selectedCrypto]
 			});
+			if (start.error === false) {
+				//Set the new electrum peer.
+				this.props.updateSettings({ currentPeer: start.data });
+			}
+			await this.setState({ connectingToElectrum: false });
 		} catch (e) {
 			console.log(e);
 		}
 	};
-
 
 	rescanWallet = async () => {
 		try {
@@ -564,6 +585,46 @@ class Settings extends PureComponent<Props> {
 			console.log(e);
 		}
 	};
+	
+	updateExchangeRateService = async ({ selectedService = "coingecko" } = {}) => {
+		try {
+			await this.props.updateSettings({ selectedService });
+			const { selectedWallet, selectedCrypto, selectedCurrency } = this.props.wallet;
+			const exchangeRate = await getExchangeRate({ selectedCrypto, selectedCurrency, selectedService });
+			if (exchangeRate.error === false) {
+				await this.props.updateWallet({
+					exchangeRate: {
+						...this.props.wallet.exchangeRate,
+						[selectedCrypto]: exchangeRate.data
+					}
+				});
+				
+				try {
+					const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
+					const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
+					this.props.updateBalance({ utxos, blacklistedUtxos, selectedCrypto, selectedWallet, wallet: selectedWallet });
+				} catch (e) {
+					//console.log(e);
+				}
+			}
+		} catch (e) {
+			//console.log(e);
+		}
+	};
+	
+	getExchangeRateSourceUrl = ({ selectedService = "coingecko"} = {}) => {
+		try {
+			switch (selectedService) {
+				case "coingecko":
+					return "coingecko.com";
+				case "coincap":
+					return "coincap.io";
+				default: return "?";
+			}
+		} catch (e) {
+			return "?";
+		}
+	};
 
 	getBackupPhrase = () => {
 		const backupPhrase = this.state.backupPhrase.split(" ");
@@ -575,24 +636,49 @@ class Settings extends PureComponent<Props> {
 	};
 
 	render() {
+		const { selectedWallet, selectedCrypto } = this.props.wallet;
 		let coinDataLabel = "?";
-		try {coinDataLabel = getCoinData({ selectedCrypto: this.props.wallet.selectedCrypto, cryptoUnit: "BTC" });} catch (e) {}
+		try {coinDataLabel = getCoinData({ selectedCrypto, cryptoUnit: "BTC" });} catch (e) {}
 		let keyDerivationPath = "84";
-		try {keyDerivationPath = this.props.wallet[this.props.wallet.selectedWallet].keyDerivationPath[this.props.wallet.selectedCrypto];} catch (e) {}
+		try {keyDerivationPath = this.props.wallet[selectedWallet].keyDerivationPath[selectedCrypto];} catch (e) {}
 		let isTestnet = true;
-		try {isTestnet = this.props.wallet.selectedCrypto.includes("Testnet");} catch (e) {}
+		try {isTestnet = selectedCrypto.includes("Testnet");} catch (e) {}
 		let addressType = "bech32";
-		try {addressType = this.props.wallet[this.props.wallet.selectedWallet].addressType[this.props.wallet.selectedCrypto];} catch (e) {}
+		try {addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];} catch (e) {}
+		const walletName = selectedWallet.split('wallet').join('Wallet ');
+		const cryptoLabel = capitalize(selectedCrypto);
 		return (
 			<View style={styles.container}>
 
 				<Animated.View style={{ flex: 1, opacity: this.state.settingsOpacity }}>
 					<ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} contentContainerStyle={{flexGrow:1}} style={{ flex: 1, paddingTop: 20 }}>
 						<TouchableOpacity activeOpacity={1} style={styles.container}>
+							
+							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+								<View style={[styles.header, { marginBottom: 5 }]}>
+									<Text style={[styles.title, { color: colors.white, fontWeight: "bold" }]}>General Settings</Text>
+								</View>
+								<View style={{ height: 1.5, backgroundColor: colors.white, width: "80%" }} />
+							</View>
+							
 							{this.props.settings.biometricsIsSupported &&
-							this.SwitchRow({ setting: "biometrics", title: `Enable ${this.props.settings.biometricTypeSupported}`, onPress: this.toggleSetting })
+								this.SwitchRow({ setting: "biometrics", title: `Enable ${this.props.settings.biometricTypeSupported}`, onPress: this.toggleSetting })
 							}
+							
 							{this.SwitchRow({ setting: "pin", title: "Enable Pin", onPress: this.togglePin })}
+							
+							{this.SwitchRow({ setting: "testnet", title: "Enable Testnet", onPress: this.toggleTestnet })}
+							
+							{this.MultiOptionRow({
+								title: "Exchange Rate Source",
+								subTitle: this.getExchangeRateSourceUrl({ selectedService: this.props.settings.selectedService}),
+								subTitleIsLink: true,
+								currentValue: this.props.settings.selectedService,
+								options:[
+									{value: "Coingecko", onPress: () => this.updateExchangeRateService({ selectedService: "coingecko" }) },
+									{value: "CoinCap", onPress: () => this.updateExchangeRateService({ selectedService: "coincap" }) }
+								]
+							})}
 
 							<View style={styles.rowContainer}>
 								<View style={styles.row}>
@@ -611,16 +697,19 @@ class Settings extends PureComponent<Props> {
 									</View>
 								</View>
 							</View>
-
-							{this.HeaderRow({
-								header: "Connected To:",
-								value: `${this.getPeerInfo().host}:${this.getPeerInfo().port}`,
-								onPress: this.reconnectToPeer,
-								col1Style: { flex: 0 },
-								col2Style: { flex: 1, alignItems: "center", justifyContent: "flex-start", paddingHorizontal: 10, marginTop: 5 }
+							
+							{this.Row({
+								title: "",
+								value: "Import Mnemonic Phrase",
+								onPress: () => this.toggleImportPhrase({ display: true }),
+								col1Image: "import",
+								col1ImageColor: colors.purple,
+								col1Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10 },
+								col2Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 },
+								titleStyle: { color: colors.purple },
+								valueStyle: { color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }
 							})}
-
-
+							
 							{this.Row({
 								title: "",
 								value: "Electrum Options",
@@ -631,6 +720,22 @@ class Settings extends PureComponent<Props> {
 								col2Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 },
 								titleStyle: { color: colors.purple },
 								valueStyle: { color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }
+							})}
+							
+							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+								<View style={[styles.header, { marginBottom: 5 }]}>
+									<Text style={[styles.title, { color: colors.white, fontWeight: "bold" }]}>{walletName}: {cryptoLabel} Settings</Text>
+								</View>
+								<View style={{ height: 1.5, backgroundColor: colors.white, width: "80%" }} />
+							</View>
+
+							{this.HeaderRow({
+								header: "Connected To:",
+								value: `${this.getPeerInfo().host}:${this.getPeerInfo().port}`,
+								onPress: this.reconnectToPeer,
+								col2Loading: this.state.connectingToElectrum || !this.getPeerInfo().host,
+								col1Style: { flex: 0 },
+								col2Style: { flex: 1, alignItems: "center", justifyContent: "flex-start", paddingHorizontal: 10, marginTop: 5 }
 							})}
 							
 							{this.MultiOptionRow({
@@ -654,39 +759,27 @@ class Settings extends PureComponent<Props> {
 									{value: "84", onPress: () => this.updateKeyDerivationPath({ keyDerivationPath: "84" }) },
 								]
 							})}
-							
-							{this.Row({
-								title: "",
-								value: "Import Mnemonic Phrase",
-								onPress: () => this.toggleImportPhrase({ display: true }),
-								col1Image: "import",
-								col1ImageColor: colors.purple,
-								col1Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10 },
-								col2Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 },
-								titleStyle: { color: colors.purple },
-								valueStyle: { color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }
-							})}
 
 							{this.Row({
 								title: "Backup Wallet",
 								value: this.getBackupWalletValue(),
-								onPress: () => this.toggleBackupPhrase({ selectedWallet: this.props.wallet.selectedWallet, display: true }),
-								rowStyle: this.props.wallet[this.props.wallet.selectedWallet].hasBackedUpWallet ? { backgroundColor: colors.white } : { backgroundColor: colors.red },
+								onPress: () => this.toggleBackupPhrase({ selectedWallet, display: true }),
+								rowStyle: this.props.wallet[selectedWallet].hasBackedUpWallet ? { backgroundColor: colors.white } : { backgroundColor: colors.red },
 								col1Image: "wallet",
-								col1ImageColor: this.props.wallet[this.props.wallet.selectedWallet].hasBackedUpWallet ? colors.purple : colors.white,
+								col1ImageColor: this.props.wallet[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white,
 								col1Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10 },
 								col2Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 },
-								titleStyle: { color: this.props.wallet[this.props.wallet.selectedWallet].hasBackedUpWallet ? colors.purple : colors.white },
-								valueStyle: { color: this.props.wallet[this.props.wallet.selectedWallet].hasBackedUpWallet ? colors.purple : colors.white, fontSize: 16, textAlign: "center", fontWeight: this.props.settings.hasBackedUpWallet ? "normal" : "bold" }
+								titleStyle: { color: this.props.wallet[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white },
+								valueStyle: { color: this.props.wallet[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white, fontSize: 16, textAlign: "center", fontWeight: this.props.settings.hasBackedUpWallet ? "normal" : "bold" }
 							})}
 
 							{this.Row({
-								value: `Rescan ${capitalize(this.props.wallet.selectedCrypto)} Wallet`,
+								value: `Rescan ${walletName}\n${cryptoLabel} Wallet`,
 								col1Loading: this.state.rescanningWallet,
 								col1Image: "radar",
 								onPress: this.rescanWallet,
 								valueStyle: { color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" },
-								col2Style: { flex: 1, alignItems: "center", justifyContent: "center" },
+								col2Style: { flex: 1, alignItems: "center", justifyContent: "center", textAlign: "center" },
 							})}
 
 							<View style={{ paddingVertical: 70 }} />
@@ -706,10 +799,10 @@ class Settings extends PureComponent<Props> {
 
 				{this.state.displayBackupPhrase &&
 				<Animated.View style={[styles.pinPad, { opacity: this.state.backupPhraseOpacity }]}>
-					<Text style={[styles.headerText, { position: "absolute", top: 25, left: 0, right: 0 }]}> {this.props.wallet.selectedWallet.split('wallet').join('Wallet ')} </Text>
+					<Text style={[styles.headerText, { position: "absolute", top: 25, left: 0, right: 0 }]}> {walletName} </Text>
 					{this.Row({
 						value: this.getBackupPhrase(),
-						onPress: () => this.toggleBackupPhrase({ selectedWallet: this.props.wallet.selectedWallet, display: false }),
+						onPress: () => this.toggleBackupPhrase({ selectedWallet, display: false }),
 						col1Style: { flex: 0.1 },
 						col2Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 30 },
 						valueStyle: { color: colors.purple, textAlign: "left", paddingHorizontal: 20, fontWeight: "bold" }

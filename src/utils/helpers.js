@@ -6,7 +6,9 @@ import {
 import AsyncStorage from "@react-native-community/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 import * as Keychain from "react-native-keychain";
+import { decode as atob } from 'base-64';
 import "../../shim";
+
 const {
 	networks
 } = require("./networks");
@@ -255,9 +257,8 @@ const getTransactionData = ({ txId = "", selectedCrypto = "bitcoin" } = {}) => {
 	});
 };
 
-const getExchangeRate = ({ selectedCrypto = "bitcoin", selectedCurrency = "usd", selectedService = "coincap" } = {}) => {
+const getExchangeRate = ({ selectedCrypto = "bitcoin", selectedCurrency = "usd", selectedService = "coingecko" } = {}) => {
 	return new Promise(async (resolve) => {
-
 		const failure = (errorTitle = "", errorMsg = "") => {
 			resolve({ error: true, errorTitle, errorMsg });
 		};
@@ -761,7 +762,37 @@ const decodeOpReturnMessage = (opReturn = "") => {
 	}
 };
 
+const base64UrlToHex = (input: string) => {
+	const raw = atob(base64UrlToBase64(input));
+	let HEX = '';
+	
+	for (let i = 0; i < raw.length; i++) {
+		const hexChar = raw.charCodeAt(i).toString(16);
+		HEX += (hexChar.length === 2 ? hexChar : '0' + hexChar);
+	}
+	return HEX.toUpperCase();
+};
+
+const base64UrlToBase64 = (input: string) => {
+	// Replace non-url compatible chars with base64 standard chars
+	input = input
+		.replace(/-/g, '+')
+		.replace(/_/g, '/');
+	
+	// Pad out with standard base64 required padding characters
+	const pad = input.length % 4;
+	if (pad) {
+		if (pad === 1) {
+			throw new Error('InvalidLengthError: Input base64url string is the wrong length to determine padding');
+		}
+		input += new Array(5-pad).join('=');
+	}
+	
+	return input;
+};
+
 module.exports = {
+	base64UrlToHex,
 	getItem,
 	setItem,
 	setKeychainValue,

@@ -25,7 +25,6 @@ module.exports = (state = {
 	selectedCrypto: "bitcoin",
 	selectedCurrency: "usd",
 	selectedWallet: "wallet0",
-	selectedService: "coincap", //Exchange Rate Data Source (coincap, coingecko, bitupper)
 	wallets: [],
 	selectedTransaction: "",
 	availableCoins,
@@ -308,7 +307,6 @@ module.exports = (state = {
 				selectedCrypto: "bitcoin",
 				selectedWallet: "wallet0",
 				selectedCurrency: "usd",
-				selectedService: "coincap",
 				wallets: [],
 				selectedTransaction: "",
 				availableCoins,

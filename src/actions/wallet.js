@@ -29,7 +29,7 @@ const updateWallet = (payload) => ({
 	payload
 });
 
-const getExchangeRate = ({ selectedCoin = "bitcoin", selectedCurrency = "usd", selectedService = "coincap" } = {}) => () => {
+const getExchangeRate = ({ selectedCoin = "bitcoin", selectedCurrency = "usd", selectedService = "coingecko" } = {}) => () => {
 	return new Promise(async (resolve) => {
 
 		const failure = (errorTitle = "", errorMsg = "") => {

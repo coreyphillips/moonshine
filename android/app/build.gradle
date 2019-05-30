@@ -74,7 +74,7 @@ import com.android.build.OutputFile
 
 project.ext.react = [
     entryFile: "index.js",
-    nodeExecutableAndArgs: ["/usr/local/Cellar/node/11.10.1/bin/node"]
+    nodeExecutableAndArgs: ["/Users/coreyphillips/.nmv/versions/node/v12.3.1/bin/node"]
 ]
 
 apply from: "../../node_modules/react-native/react.gradle"
@@ -92,7 +92,7 @@ def enableSeparateBuildPerCPUArchitecture = false
 /**
  * Run Proguard to shrink the Java bytecode in release builds.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -103,12 +103,13 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.kisswallet"
+        applicationId "com.bitbip"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 16
         versionName "0.1.1"
         multiDexEnabled true
+        missingDimensionStrategy 'react-native-camera', 'general'
     }
     splits {
         abi {
@@ -118,7 +119,7 @@ android {
             include "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
     }
-
+    /*
     signingConfigs {
         release {
             storeFile file(MYAPP_RELEASE_STORE_FILE)
@@ -127,7 +128,7 @@ android {
             keyPassword new String(System.console().readPassword("\n\$ Enter keys password: "))
         }
     }
-
+    */
     buildTypes {
         debug {
             manifestPlaceholders = [excludeSystemAlertWindowPermission: "false"]
@@ -136,7 +137,7 @@ android {
             manifestPlaceholders = [excludeSystemAlertWindowPermission: "true"]
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            signingConfig signingConfigs.release
+            //signingConfig signingConfigs.release
         }
     }
     // applicationVariants are e.g. debug, release

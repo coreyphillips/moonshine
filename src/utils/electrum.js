@@ -45,6 +45,25 @@ const getFuncName = () => {
 	return getFuncName.caller.name;
 };
 
+const setupListener = async ({ id = "", method = "", resolve = () => null }) => {
+	try {
+		//Add a new listener that self-removes once complete.
+		this[method][id] = ((msg) => {
+			msg = JSON.parse(msg);
+			if (msg.method === method && msg.id === id) {
+				nodejs.channel.removeListener("message", this[method][id]);
+				resolve(msg);
+			}
+		});
+		//Ensure the listener is setup and established.
+		await nodejs.channel.addListener(
+			"message",
+			this[method][id],
+			this
+		);
+	} catch (e) {}
+};
+
 //peers = A list of peers acquired from default electrum servers using the getPeers method.
 //customPeers = A list of peers added by the user to connect to by default in lieu of the default peer list.
 const start = async ({ id = Math.random(), coin = "", peers = [], customPeers = []} = {}) => {
@@ -120,21 +139,7 @@ const disconnectFromPeer = ({ id = Math.random(), coin = "" } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.disconnectFromPeer[id] = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.disconnectFromPeer[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.disconnectFromPeer[id],
-				this
-			);
-			
+			await setupListener({ id, method, resolve });
 			nodejs.channel.send(JSON.stringify({ method, coin, id }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -184,20 +189,7 @@ const getAddressBalance = ({ address = "", id = Math.random(), coin = "" } = {})
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getAddressBalance[id] = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getAddressBalance[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getAddressBalance[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
@@ -210,20 +202,7 @@ const getAddressScriptHashBalance = ({ address = "", id = Math.random(), coin = 
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getAddressScriptHashBalance[id] = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getAddressScriptHashBalance[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getAddressScriptHashBalance[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			const script = bitcoin.address.toOutputScript(address, networks[coin]);
 			let hash = bitcoin.crypto.sha256(script);
@@ -241,20 +220,7 @@ const getAddressScriptHashesBalance = ({ addresses = [], id = Math.random(), coi
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getAddressScriptHashesBalance[id] = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getAddressScriptHashesBalance[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getAddressScriptHashesBalance[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			let scriptHashes = [];
 			await Promise.all(addresses.map(({ address, path }) => {
@@ -280,20 +246,7 @@ const getAddressScriptHashHistory = ({ address = "", id = Math.random(), coin = 
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getAddressScriptHashHistory[id] = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getAddressScriptHashHistory[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getAddressScriptHashHistory[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			const script = bitcoin.address.toOutputScript(address, networks[coin]);
 			let hash = bitcoin.crypto.sha256(script);
@@ -311,20 +264,7 @@ const getAddressScriptHashesHistory = ({ addresses = [], id = Math.random(), coi
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getAddressScriptHashesHistory[id] = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getAddressScriptHashesHistory[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getAddressScriptHashesHistory[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			let scriptHashes = [];
 			await Promise.all(addresses.map(({ address, path }) => {
@@ -350,20 +290,7 @@ const listUnspentAddressScriptHash = ({ address = "", id = Math.random(), coin =
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.listUnspentAddressScriptHash[id] = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.listUnspentAddressScriptHash[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.listUnspentAddressScriptHash[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			const script = bitcoin.address.toOutputScript(address, networks[coin]);
 			let hash = bitcoin.crypto.sha256(script);
@@ -381,20 +308,7 @@ const listUnspentAddressScriptHashes = ({ addresses = [], id = Math.random(), co
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.listUnspentAddressScriptHashes[id] = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.listUnspentAddressScriptHashes[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.listUnspentAddressScriptHashes[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			const scriptHashes = [];
 			await Promise.all(addresses.map(({ address = "", path = "" } = {}) => {
@@ -419,20 +333,7 @@ const getAddressScriptHashMempool = ({ address = "", id = Math.random(), coin = 
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getAddressScriptHashMempool[id] = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getAddressScriptHashMempool[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getAddressScriptHashMempool[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			const script = bitcoin.address.toOutputScript(address, networks[coin]);
 			let hash = bitcoin.crypto.sha256(script);
@@ -450,20 +351,7 @@ const getAddressScriptHashesMempool = ({ addresses = [], id = Math.random(), coi
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getAddressScriptHashesMempool[id] = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getAddressScriptHashesMempool[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getAddressScriptHashesMempool[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			const scriptHashes = [];
 			await Promise.all(addresses.map(({ address, path }) => {
@@ -487,20 +375,7 @@ const getMempool = ({ address = "", id = Math.random(), coin = "" } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getMempool = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getMempool);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getMempool,
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
@@ -513,20 +388,7 @@ const listUnspentAddress = ({ address = "", id = Math.random(), coin = "" } = {}
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.listUnspentAddress[id] = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.listUnspentAddress[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.listUnspentAddress[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
@@ -539,20 +401,7 @@ const getFeeEstimate = ({ blocksWillingToWait = 8, id = Math.random(), coin = ""
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getFeeEstimate = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method) {
-					nodejs.channel.removeListener("message", this.getFeeEstimate);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getFeeEstimate,
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ id, method, blocksWillingToWait, coin }));
 		} catch (e) {
@@ -565,20 +414,7 @@ const getAddressHistory = ({ address = "", id = Math.random(), coin = "" } = {})
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getAddressHistory[id] = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getAddressHistory[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getAddressHistory[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
@@ -591,20 +427,7 @@ const getTransactionHex = ({ txId = "", id = Math.random(), coin = "" } = {}) =>
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getTransactionHex[id] = ((msg) => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getTransactionHex[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getTransactionHex[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, txId, coin, id }));
 		} catch (e) {
@@ -617,20 +440,7 @@ const getDonationAddress = ({ id = Math.random(), coin = "" } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getDonationAddress[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getDonationAddress[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getDonationAddress[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method: "getDonationAddress", coin, id }));
 		} catch (e) {
@@ -643,20 +453,7 @@ const getPeers = ({ id = Math.random(), coin = "" } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getPeers[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getPeers[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getPeers[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, coin, id }));
 		} catch (e) {
@@ -669,20 +466,7 @@ const getAvailablePeers = ({ id = Math.random(), coin } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getAvailablePeers[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getAvailablePeers[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getAvailablePeers[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, coin, id }));
 		} catch (e) {
@@ -695,20 +479,7 @@ const getVersion = ({ id = Math.random(), coin = "" } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getVersion[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getVersion[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getVersion[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			nodejs.channel.send(JSON.stringify({ method, id, coin }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -720,20 +491,7 @@ const getNewBlockHeightSubscribe = ({ id = Math.random(), coin = "" } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getNewBlockHeightSubscribe[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					resolve({ ...msg, message: "Successfully subscribed to receive new block heights." });
-					nodejs.channel.removeListener("message", this.getNewBlockHeightSubscribe[id]);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getNewBlockHeightSubscribe[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, coin, id }));
 		} catch (e) {
@@ -783,20 +541,7 @@ const getTransactionMerkle = ({ id = Math.random(), txHash = "", height = "", co
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getTransactionMerkle[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getTransactionMerkle[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getTransactionMerkle[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, id, txHash, height, coin }));
 		} catch (e) {
@@ -809,20 +554,7 @@ const getTransaction = ({ id = Math.random(), txHash = "", coin = "" } = {}) => 
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getTransaction[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getTransaction[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getTransaction[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, id, txHash, coin }));
 		} catch (e) {
@@ -835,20 +567,7 @@ const getTransactions = ({ id = Math.random(), txHashes = [], coin = "" } = {}) 
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getTransactions[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getTransactions[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getTransactions[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			nodejs.channel.send(JSON.stringify({ method, id, txHashes, coin }));
 		} catch (e) {
 			resolve({ id, method, error: true, data: e });
@@ -861,20 +580,7 @@ const getAddressUtxo = ({ id = Math.random(), txHash = "", index = "", coin = ""
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getAddressUtxo[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getAddressUtxo[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getAddressUtxo[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, id, txHash, index, coin }));
 		} catch (e) {
@@ -887,20 +593,7 @@ const broadcastTransaction = ({ id = Math.random(), rawTx = "", coin = "" } = {}
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.broadcastTransaction[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.broadcastTransaction[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.broadcastTransaction[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, id, rawTx, coin }));
 		} catch (e) {
@@ -913,20 +606,7 @@ const getBlockChunk = ({ id = Math.random(), index = "", coin = "" } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getBlockChunk[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getBlockChunk[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getBlockChunk[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, id, index, coin }));
 		} catch (e) {
@@ -939,20 +619,7 @@ const getBlockHeader = ({ id = Math.random(), height = "", coin = "" } = {}) => 
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getBlockHeader[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getBlockHeader[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getBlockHeader[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, id, height, coin }));
 		} catch (e) {
@@ -965,20 +632,7 @@ const getHeader = ({ id = Math.random(), height = "", coin = "" } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getHeader[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getHeader[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getHeader[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, id, height, coin }));
 		} catch (e) {
@@ -991,20 +645,7 @@ const getBanner = ({ id = Math.random(), coin = "" } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getBanner[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getBanner[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getBanner[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, id, coin }));
 		} catch (e) {
@@ -1017,20 +658,7 @@ const pingServer = ({ id = Math.random() } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.pingServer[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.pingServer[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.pingServer[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, id }));
 		} catch (e) {
@@ -1043,20 +671,7 @@ const getAddressProof = ({ address = "", id = Math.random(), coin = "" } = {}) =
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			//Add a new listener that self-removes once complete.
-			this.getAddressProof[id] = (msg => {
-				msg = JSON.parse(msg);
-				if (msg.method === method && msg.id === id) {
-					nodejs.channel.removeListener("message", this.getAddressProof[id]);
-					resolve(msg);
-				}
-			});
-			//Ensure the listener is setup and established.
-			await nodejs.channel.addListener(
-				"message",
-				this.getAddressProof[id],
-				this
-			);
+			await setupListener({ id, method, resolve });
 			
 			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {

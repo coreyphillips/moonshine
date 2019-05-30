@@ -15,7 +15,8 @@ import {
 	Dimensions,
 	LayoutAnimation,
 	AppState,
-	InteractionManager
+	InteractionManager,
+	TouchableWithoutFeedback
 } from "react-native";
 import { systemWeights } from "react-native-typography";
 import EvilIcon from "react-native-vector-icons/EvilIcons";
@@ -135,7 +136,7 @@ export default class App extends PureComponent {
 		loadingAnimationName: "cloudBook"
 	};
 	
-	setExchangeRate = async ({ selectedCrypto = "bitcoin", selectedCurrency = "usd", selectedService = "coincap" } = {}) => {
+	setExchangeRate = async ({ selectedCrypto = "bitcoin", selectedCurrency = "usd", selectedService = "coingecko" } = {}) => {
 		//const start = this.props.transaction.feeTimestamp;
 		//const end = new Date();
 		//const difference = getDifferenceBetweenDates({ start, end });
@@ -267,7 +268,8 @@ export default class App extends PureComponent {
 		try {
 			//Enable the loading state
 			this.setState({ loadingTransactions: true });
-			const { selectedWallet, selectedCrypto, selectedService, selectedCurrency } = this.props.wallet;
+			const { selectedWallet, selectedCrypto, selectedCurrency } = this.props.wallet;
+			const { selectedService } = this.props.settings;
 			const keyDerivationPath = this.props.wallet[selectedWallet].keyDerivationPath[selectedCrypto];
 			const addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];
 			
@@ -708,7 +710,6 @@ export default class App extends PureComponent {
 				console.log(e);
 			}
 		});
-		
 	}
 	
 	componentDidUpdate() {
@@ -1342,88 +1343,89 @@ export default class App extends PureComponent {
 				<Animated.View style={[styles.upperContent, { flex: this.state.upperContentFlex }]}>
 					<LinearGradient style={styles.linearGradient} colors={["#8e45bf", "#7931ab","#5e1993", "#59158e"]} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
 						
-						<TouchableOpacity style={{ flex: 1 }} activeOpacity={1} onPress={this.dismissKeyboard}>
-							
-							{this.state.displayPriceHeader &&
-							<Animated.View style={[styles.settingsContainer, { opacity: this.state.priceHeaderOpacity, zIndex: 200 }]}>
-								<TouchableOpacity style={{ paddingTop: 10, paddingRight: 10, paddingLeft: 30, paddingBottom: 30 }} onPress={this.onSettingsPress}>
-									<Ionicons name={"ios-cog"} size={30} color={colors.white} />
-								</TouchableOpacity>
-							</Animated.View>}
-							
-							{this.state.displayBiometrics &&
-							<Animated.View style={[styles.settings, { opacity: this.state.biometricsOpacity }]}>
-								<Biometrics
-									biometricTypeSupported={this.props.settings.biometricTypeSupported}
-									retryAuthentication={this.state.displayBiometricAuthenticationRetry ? this.authenticateUserWithBiometrics : null}
-								/>
-							</Animated.View>}
-							
-							{this.state.displayPin &&
-							<Animated.View style={[styles.settings, { opacity: this.state.pinOpacity }]}>
-								<PinPad onSuccess={this.launchDefaultFuncs} onFailure={this.onPinFailure} />
-							</Animated.View>}
-							
-							{this.state.displayLoading &&
-							<Loading
-								loadingOpacity={this.state.loadingOpacity}
-								loadingMessage={this.state.loadingMessage}
-								loadingProgress={this.state.loadingProgress}
-								width={width/2}
-								animationName={this.state.loadingAnimationName}
-							/>}
-							
-							{this.state.displayCamera &&
-							<Animated.View style={[styles.camera, { opacity: this.state.cameraOpacity }]}>
-								<Camera onClose={this.state.optionSelected === "send" ? this.onSendPress : this.resetView} onBarCodeRead={this.onBarCodeRead} />
-							</Animated.View>}
-							
-							{this.state.displaySettings &&
-							<Animated.View style={[styles.settings, { opacity: this.state.settingsOpacity }]}>
-								<Settings createNewWallet={this.createNewWallet} onBack={this.resetView} refreshWallet={this.refreshWallet} />
-							</Animated.View>}
-							
-							<Animated.View style={[styles.priceHeader, { opacity: this.state.priceHeaderOpacity }]}>
-								<TouchableOpacity onPress={this.onSelectCoinPress} style={{ position: "absolute",top: 0, paddingTop: 10, paddingBottom: 20, paddingHorizontal: 30 }}>
-									<Text style={styles.cryptoValue}>{this.props.wallet.selectedWallet.split('wallet').join('Wallet ')}</Text>
-								</TouchableOpacity>
-								<Header
-									fiatValue={this.getFiatBalance()}
-									fiatSymbol={this.props.settings.fiatSymbol}
-									cryptoValue={this.getCryptoBalance()}
-									cryptoUnit={this.props.settings.cryptoUnit}
-									selectedCrypto={this.props.wallet.selectedCrypto}
-									selectedWallet={this.props.wallet.selectedWallet}
-									exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]}
-									isOnline={this.props.user.isOnline}
-									onSelectCoinPress={this.onSelectCoinPress}
-								/>
-							</Animated.View>
-							
-							{this.state.displayReceiveTransaction &&
-							<Animated.View style={[styles.ReceiveTransaction, { opacity: this.state.receiveTransactionOpacity }]}>
-								<ReceiveTransaction address={this.getQrCodeAddress()} amount={0.005} size={200} />
-							</Animated.View>}
-							
-							{this.state.displayTextInput &&
-							<Animated.View style={[styles.textFormContainer, { opacity: this.state.textInputOpacity }]}>
+						<TouchableWithoutFeedback style={{ flex: 1 }} activeOpacity={1} onPress={this.dismissKeyboard}>
+							<View style={{ flex: 1 }}>
+								{this.state.displayPriceHeader &&
+								<Animated.View style={[styles.settingsContainer, { opacity: this.state.priceHeaderOpacity, zIndex: 200 }]}>
+									<TouchableOpacity style={{ paddingTop: 10, paddingRight: 10, paddingLeft: 30, paddingBottom: 30 }} onPress={this.onSettingsPress}>
+										<Ionicons name={"ios-cog"} size={30} color={colors.white} />
+									</TouchableOpacity>
+								</Animated.View>}
 								
-								<SendTransaction onCameraPress={this.onCameraPress} refreshWallet={this.refreshWallet} onClose={this.resetView} />
-							
-							</Animated.View>}
-							
-							{this.state.displaySweepPrivateKey &&
-							<Animated.View style={[styles.textFormContainer, { opacity: this.state.sweepPrivateKeyOpacity }]}>
+								{this.state.displayBiometrics &&
+								<Animated.View style={[styles.settings, { opacity: this.state.biometricsOpacity }]}>
+									<Biometrics
+										biometricTypeSupported={this.props.settings.biometricTypeSupported}
+										retryAuthentication={this.state.displayBiometricAuthenticationRetry ? this.authenticateUserWithBiometrics : null}
+									/>
+								</Animated.View>}
 								
-								<SweepPrivateKey privateKey={this.state.privateKey} refreshWallet={this.refreshWallet} onClose={this.resetView} updateXButton={this.updateItem} />
-							
-							</Animated.View>}
-							
-							{this.state.displayCameraRow &&
-							<Animated.View style={[styles.cameraRow, { opacity: this.state.cameraRowOpacity }]}>
-								<CameraRow onSendPress={this.onSendPress} onReceivePress={this.onReceivePress} onCameraPress={this.onCameraPress} />
-							</Animated.View>}
-						</TouchableOpacity>
+								{this.state.displayPin &&
+								<Animated.View style={[styles.settings, { opacity: this.state.pinOpacity }]}>
+									<PinPad onSuccess={this.launchDefaultFuncs} onFailure={this.onPinFailure} />
+								</Animated.View>}
+								
+								{this.state.displayLoading &&
+								<Loading
+									loadingOpacity={this.state.loadingOpacity}
+									loadingMessage={this.state.loadingMessage}
+									loadingProgress={this.state.loadingProgress}
+									width={width/2}
+									animationName={this.state.loadingAnimationName}
+								/>}
+								
+								{this.state.displayCamera &&
+								<Animated.View style={[styles.camera, { opacity: this.state.cameraOpacity }]}>
+									<Camera onClose={this.state.optionSelected === "send" ? this.onSendPress : this.resetView} onBarCodeRead={this.onBarCodeRead} />
+								</Animated.View>}
+								
+								{this.state.displaySettings &&
+								<Animated.View style={[styles.settings, { opacity: this.state.settingsOpacity }]}>
+									<Settings createNewWallet={this.createNewWallet} onBack={this.resetView} refreshWallet={this.refreshWallet} />
+								</Animated.View>}
+								
+								<Animated.View style={[styles.priceHeader, { opacity: this.state.priceHeaderOpacity }]}>
+									<TouchableOpacity onPress={this.onSelectCoinPress} style={{ position: "absolute",top: 0, paddingTop: 10, paddingBottom: 20, paddingHorizontal: 30 }}>
+										<Text style={styles.cryptoValue}>{this.props.wallet.selectedWallet.split('wallet').join('Wallet ')}</Text>
+									</TouchableOpacity>
+									<Header
+										fiatValue={this.getFiatBalance()}
+										fiatSymbol={this.props.settings.fiatSymbol}
+										cryptoValue={this.getCryptoBalance()}
+										cryptoUnit={this.props.settings.cryptoUnit}
+										selectedCrypto={this.props.wallet.selectedCrypto}
+										selectedWallet={this.props.wallet.selectedWallet}
+										exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]}
+										isOnline={this.props.user.isOnline}
+										onSelectCoinPress={this.onSelectCoinPress}
+									/>
+								</Animated.View>
+								
+								{this.state.displayReceiveTransaction &&
+								<Animated.View style={[styles.ReceiveTransaction, { opacity: this.state.receiveTransactionOpacity }]}>
+									<ReceiveTransaction address={this.getQrCodeAddress()} amount={0.005} size={200} />
+								</Animated.View>}
+								
+								{this.state.displayTextInput &&
+								<Animated.View style={[styles.textFormContainer, { opacity: this.state.textInputOpacity }]}>
+									
+									<SendTransaction onCameraPress={this.onCameraPress} refreshWallet={this.refreshWallet} onClose={this.resetView} />
+								
+								</Animated.View>}
+								
+								{this.state.displaySweepPrivateKey &&
+								<Animated.View style={[styles.textFormContainer, { opacity: this.state.sweepPrivateKeyOpacity }]}>
+									
+									<SweepPrivateKey privateKey={this.state.privateKey} refreshWallet={this.refreshWallet} onClose={this.resetView} updateXButton={this.updateItem} />
+								
+								</Animated.View>}
+								
+								{this.state.displayCameraRow &&
+								<Animated.View style={[styles.cameraRow, { opacity: this.state.cameraRowOpacity }]}>
+									<CameraRow onSendPress={this.onSendPress} onReceivePress={this.onReceivePress} onCameraPress={this.onCameraPress} />
+								</Animated.View>}
+							</View>
+						</TouchableWithoutFeedback>
 						
 						{this.state.displaySelectCoin &&
 						<Animated.View style={[styles.selectCoin, { opacity: this.state.selectCoinOpacity }]}>
