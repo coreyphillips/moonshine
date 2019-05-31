@@ -580,7 +580,7 @@ class SendTransaction extends PureComponent<Props> {
 			const transaction = await this.createTransaction();
 			await this.setState({ loadingMessage: "Sending Transaction...", loadingProgress: 0.8 });
 			await pauseExecution();
-			const sendTransactionResult = await this.props.sendTransaction({ txHex: transaction.data, selectedCrypto });
+			let sendTransactionResult = await this.props.sendTransaction({ txHex: transaction.data, selectedCrypto, sendTransactionFallback: this.props.settings.sendTransactionFallback });
 			
 			if (sendTransactionResult.error) {
 				await this.setState({

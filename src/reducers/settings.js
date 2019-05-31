@@ -35,7 +35,8 @@ module.exports = (state = {
 	currentPeer: {
 		host: "",
 		port: "", //Default ports for BTC are: "s": "50002" && "t": "50001"
-	}
+	},
+	sendTransactionFallback: true //If electrum fails to broadcast a transaction for any reason the app will attempt to use an api to broadcast instead. Can be toggled on & off in Settings
 }, action) => {
 	switch (action.type) {
 

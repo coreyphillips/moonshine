@@ -198,17 +198,17 @@ const styles = StyleSheet.create({
 		justifyContent: "flex-start"
 	},
 	button: {
-		width: "80%",
-		minHeight: 60,
+		width: "82%",
+		minHeight: 80,
 		flexDirection: "row",
 		backgroundColor: "transparent",
 		marginBottom: 15
 	},
 	deleteButton: {
-		width: "80%",
-		minHeight: 60,
+		width: "82%",
+		minHeight: 80,
 		marginBottom: 15,
-		borderRadius: 10,
+		borderRadius: 22,
 		backgroundColor: colors.red,
 		borderColor: colors.red,
 		alignItems: "center",
@@ -217,26 +217,26 @@ const styles = StyleSheet.create({
 	buttonContent: {
 		flex: 1,
 		alignItems: "center",
-		borderRadius: 10,
+		borderRadius: 40,
 		justifyContent: "center",
 		backgroundColor: colors.white
 	},
 	buttonImage: {
-		width: 40,
-		height: 40,
+		width: 48,
+		height: 48,
 		position: "absolute",
-		bottom: 0,
-		top: 9,
+		alignItems: "center",
+		justifyContent: "center",
 		left: 10
 	},
 	text: {
-		...systemWeights.regular,
+		...systemWeights.semibold,
 		color: colors.purple,
 		fontSize: 18,
 		textAlign: "center"
 	},
 	subText: {
-		...systemWeights.light,
+		...systemWeights.regular,
 		color: colors.purple,
 		fontSize: 18,
 		textAlign: "center"

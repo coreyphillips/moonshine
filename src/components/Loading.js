@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "transparent"
 	},
 	boldText: {
-		...systemWeights.bold,
+		...systemWeights.semibold,
 		color: colors.white,
 		fontSize: 20,
 		textAlign: "center",

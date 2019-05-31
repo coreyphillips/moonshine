@@ -87,22 +87,6 @@ const coinGeckoExchangeRateHelper = async ({ selectedCrypto = "bitcoin", selecte
 	}
 };
 
-const bitupperExchangeRateHelper = async ({ selectedCrypto = "bitcoin" } = {}) => {
-	let exchangeRate = 0;
-	try {
-		let coin = selectedCrypto.toLowerCase();
-		coin = coin.replace("testnet", "");
-
-		const response = await fetch(`https://bitupper.com/api/v0/bitcoin/${coin}`);
-		const jsonResponse = await response.json();
-		exchangeRate = Number(jsonResponse.last_price_in_usd).toFixed(2);
-		if (exchangeRate === 0) return({ error: true, data: "Invalid Exchange Rate Data." });
-		return({ error: false, data: exchangeRate });
-	} catch (e) {
-		return({ error: true, data: "Invalid Exchange Rate Data." });
-	}
-};
-
 const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], changeAddresses = [], selectedCrypto = "bitcoin" } = {}) => {
 	try {
 		//Returns: {error: false, data: [{tx_hash: "", height: ""},{tx_hash: "", height: ""}]
@@ -387,407 +371,139 @@ const electrumUtxoHelper = async ({ addresses = [], changeAddresses = [], curren
 	}
 };
 
+const fallbackBroadcastTransaction = async ({ rawTx = "", selectedCrypto = "bitcoin" } = {}) => {
+	const { fetchData } = require("./helpers");
+	try {
+		let config = {
+			method: "POST",
+			headers: {
+				"Content-Type": "text/plain"
+			},
+			body: rawTx
+		};
+		let response = "";
+		switch(selectedCrypto) {
+			case "bitcoin":
+				response = await fetch(`https://blockstream.info/api/tx`, config);
+				response = await response.text();
+				break;
+			case "bitcoinTestnet":
+				response = await fetch(`https://blockstream.info/testnet/api/tx`, config);
+				response = await response.text();
+				break;
+			case "litecoin":
+				response = await fetch(`https://chain.so/api/v2/send_tx/ltc`, fetchData("POST", { tx_hex: rawTx }));
+				response = await response.json();
+				if (response.status === "success") response = response.data.txid;
+				break;
+			case "litecoinTestnet":
+				response = await fetch(`https://chain.so/api/v2/send_tx/ltctest`, fetchData("POST", { tx_hex: rawTx }));
+				response = await response.json();
+				if (response.status === "success") response = response.data.txid;
+				break;
+		}
+		if (response !== "") return { error: false, data: response };
+		return { error: true, data: "" };
+	} catch (e) {
+		console.log(e);
+		return({ error: true, data: e });
+	}
+};
+
 const walletHelpers = {
 	utxos: {
-		bitcoin: {
-			electrum: async ({ addresses = [], changeAddresses = [], currentBlockHeight = 0, selectedCrypto = "bitcoin" } = {}) => {
-				const utxos = await electrumUtxoHelper({ addresses, changeAddresses, currentBlockHeight, selectedCrypto });
-				if (utxos.error === false) {
-					return ({error: false, data: utxos.data});
-				} else {
-					return utxos;
-				}
-			},
-			default: async ({ addresses = [], changeAddresses = [], currentBlockHeight = 0, service = "electrum"} = {}) => {
-				return await walletHelpers.utxos.bitcoin[service]({ addresses, changeAddresses, currentBlockHeight, selectedCrypto: "bitcoin" });
+		electrum: async ({ addresses = [], changeAddresses = [], currentBlockHeight = 0, selectedCrypto = "bitcoin" } = {}) => {
+			const utxos = await electrumUtxoHelper({ addresses, changeAddresses, currentBlockHeight, selectedCrypto });
+			if (utxos.error === false) {
+				return ({error: false, data: utxos.data});
+			} else {
+				return utxos;
 			}
 		},
-		bitcoinTestnet: {
-			electrum: async ({ addresses = [], changeAddresses = [], currentBlockHeight = 0 } = {}) => {
-				const utxos = await electrumUtxoHelper({ addresses, changeAddresses, currentBlockHeight, selectedCrypto: "bitcoinTestnet" });
-				if (utxos.error === false) {
-					return ({error: false, data: utxos.data});
-				} else {
-					return utxos;
-				}
-			},
-			default: async ({ addresses = [], changeAddresses = [], service = "electrum", currentBlockHeight = 0, selectedCrypto = "bitcoinTestnet"} = {}) => {
-				return await walletHelpers.utxos.bitcoinTestnet[service]({ addresses, changeAddresses, currentBlockHeight, selectedCrypto });
-			}
-		},
-		litecoin: {
-			electrum: async ({ addresses = [], changeAddresses = [], currentBlockHeight = 0, selectedCrypto = "litecoin" } = {}) => {
-				const utxos = await electrumUtxoHelper({ addresses, changeAddresses, currentBlockHeight, selectedCrypto });
-				if (utxos.error === false) {
-					return ({error: false, data: utxos.data});
-				} else {
-					return utxos;
-				}
-			},
-			default: async ({ addresses = [], changeAddresses = [], service = "electrum"} = {}) => {
-				return await walletHelpers.utxos.litecoin[service]({ addresses, changeAddresses });
-			}
-		},
-		litecoinTestnet: {
-			electrum: async ({ addresses = [], changeAddresses = [], currentBlockHeight = 0, selectedCrypto = "litecoinTestnet" } = {}) => {
-				const utxos = await electrumUtxoHelper({ addresses, changeAddresses, currentBlockHeight, selectedCrypto });
-				if (utxos.error === false) {
-					return ({error: false, data: utxos.data});
-				} else {
-					return utxos;
-				}
-			},
-			default: async ({ addresses = [], changeAddresses = [], service = "electrum" } = {}) => {
-				return await walletHelpers.utxos.litecoinTestnet[service]({ addresses, changeAddresses });
-			}
+		default: async ({ addresses = [], changeAddresses = [], currentBlockHeight = 0, service = "electrum", selectedCrypto = "bitcoin" } = {}) => {
+			return await walletHelpers.utxos[service]({ addresses, changeAddresses, currentBlockHeight, selectedCrypto });
 		}
 	},
 	getBlockHeight: {
-		bitcoin: {
-			electrum: async () => {
-				try {
-					const response = await electrum.getNewBlockHeadersSubscribe({ id: Math.random(), coin: "bitcoin" });
-					if (response.error === false) {
-						let blockHeight = 0;
-						try { blockHeight = response.data; } catch (e) {}
-						//Ensure the block height is defined and its value is greater than 1.
-						if (blockHeight !== undefined && blockHeight > 1) return { error: false, data: blockHeight };
-					}
-					return { error: true, data: "Unable to acquire block height." };
-				} catch (e) {
-					return { error: true, data: e };
+		electrum: async ({ selectedCrypto = "bitcoin" } = {}) => {
+			try {
+				const response = await electrum.getNewBlockHeadersSubscribe({ id: Math.random(), coin: selectedCrypto });
+				if (response.error === false) {
+					let blockHeight = 0;
+					try { blockHeight = response.data; } catch (e) {}
+					//Ensure the block height is defined and its value is greater than 1.
+					if (blockHeight !== undefined && blockHeight > 1) return { error: false, data: blockHeight };
 				}
-			},
-			default: async (service = "electrum") => {
-				return await walletHelpers.getBlockHeight.bitcoin[service]();
+				return { error: true, data: "Unable to acquire block height." };
+			} catch (e) {
+				return { error: true, data: e };
 			}
 		},
-		bitcoinTestnet: {
-			electrum: async () => {
-				try {
-					const response = await electrum.getNewBlockHeadersSubscribe({ id: Math.random(), coin: "bitcoinTestnet" });
-					if (response.error === false) {
-						let blockHeight = 0;
-						try { blockHeight = response.data; } catch (e) {}
-						//Ensure the block height is defined and its value is greater than 1.
-						if (blockHeight !== undefined && blockHeight > 1) return { error: false, data: blockHeight };
-					}
-					return { error: true, data: "Unable to acquire block height." };
-				} catch (e) {
-					return { error: true, data: e };
-				}
-			},
-			default: async (service = "electrum") => {
-				return await walletHelpers.getBlockHeight.bitcoinTestnet[service]();
-			}
-		},
-		litecoin: {
-			electrum: async () => {
-				try {
-					const response = await electrum.getNewBlockHeadersSubscribe({ id: Math.random(), coin: "litecoin" });
-					if (response.error === false) {
-						let blockHeight = 0;
-						try { blockHeight = response.data; } catch (e) {}
-						//Ensure the block height is defined and its value is greater than 1.
-						if (blockHeight !== undefined && blockHeight > 1) return { error: false, data: blockHeight };
-					}
-					return { error: true, data: "Unable to acquire block height." };
-				} catch (e) {
-					return { error: true, data: e };
-				}
-			},
-			default: async (service = "electrum") => {
-				return await walletHelpers.getBlockHeight.litecoin[service]();
-			}
-		},
-		litecoinTestnet: {
-			electrum: async () => {
-				try {
-					const response = await electrum.getNewBlockHeadersSubscribe({ id: Math.random(), coin: "litecoinTestnet" });
-					if (response.error === false) {
-						let blockHeight = 0;
-						try { blockHeight = response.data; } catch (e) {}
-						//Ensure the block height is defined and its value is greater than 1.
-						if (blockHeight !== undefined && blockHeight > 1) return { error: false, data: blockHeight };
-					}
-					return { error: true, data: "Unable to acquire block height." };
-				} catch (e) {
-					return { error: true, data: e };
-				}
-			},
-			default: async (service = "electrum") => {
-				return await walletHelpers.getBlockHeight.litecoinTestnet[service]();
-			}
+		default: async ({ service = "electrum", selectedCrypto = "bitcoin" } = {}) => {
+			return await walletHelpers.getBlockHeight[service]({ selectedCrypto });
 		}
 	},
 	history: {
-		bitcoin: {
-			electrum: async ({ allAddresses = [], addresses = [], changeAddresses = [], selectedCrypto = "bitcoin" } = {}) => {
-				try {
-					const transactions = await electrumHistoryHelper({
-						allAddresses,
-						addresses,
-						changeAddresses,
-						selectedCrypto
-					});
-					if (transactions.error === true) return { error: true, data: [] };
-					return transactions;
-				} catch (e) {
-					return { error: true, data: e };
-				}
-			},
-			default: async ({ allAddresses = [], addresses = [], changeAddresses = [], service = "electrum" } = {}) => {
-				return await walletHelpers.history.bitcoin[service]({ allAddresses, addresses, changeAddresses, selectedCrypto: "bitcoin" });
+		electrum: async ({ allAddresses = [], addresses = [], changeAddresses = [], selectedCrypto = "bitcoin" } = {}) => {
+			try {
+				const transactions = await electrumHistoryHelper({
+					allAddresses,
+					addresses,
+					changeAddresses,
+					selectedCrypto
+				});
+				if (transactions.error === true) return { error: true, data: [] };
+				return transactions;
+			} catch (e) {
+				return { error: true, data: e };
 			}
 		},
-		bitcoinTestnet: {
-			electrum: async ({ allAddresses = [], selectedCrypto = "bitcoinTestnet", addresses = [], changeAddresses = [] } = {}) => {
-				try {
-					const transactions = await electrumHistoryHelper({
-						allAddresses,
-						addresses,
-						changeAddresses,
-						selectedCrypto
-					});
-					if (transactions.error === true) return { error: true, data: [] };
-					return transactions;
-				} catch (e) {
-					return { error: true, data: e };
-				}
-			},
-			default: async ({ allAddresses = [], address = "", addresses = [], changeAddresses = [], service = "electrum" } = {}) => {
-				return await walletHelpers.history.bitcoinTestnet[service]({ allAddresses, address, addresses, changeAddresses, selectedCrypto: "bitcoinTestnet" });
-			}
-		},
-		litecoin: {
-			electrum: async ({ allAddresses = [], selectedCrypto = "litecoin", addresses = [], changeAddresses = [] } = {}) => {
-				try {
-					const transactions = await electrumHistoryHelper({
-						allAddresses,
-						addresses,
-						changeAddresses,
-						selectedCrypto
-					});
-					if (transactions.error === true) return { error: true, data: [] };
-					return transactions;
-				} catch (e) {
-					return { error: true, data: e };
-				}
-			},
-			default: async ({ allAddresses = [], address = "", addresses = [], changeAddresses = [],  service = "electrum" }) => {
-				return await walletHelpers.history.litecoin[service]({ allAddresses, address, addresses, changeAddresses, selectedCrypto: "litecoin" });
-			}
-		},
-		litecoinTestnet: {
-			electrum: async ({ allAddresses = [], selectedCrypto = "litecoinTestnet", addresses = [], changeAddresses = [] } = {}) => {
-				try {
-					const transactions = await electrumHistoryHelper({
-						allAddresses,
-						addresses,
-						changeAddresses,
-						selectedCrypto
-					});
-					if (transactions.error === true) return { error: true, data: [] };
-					return transactions;
-				} catch (e) {
-					return { error: true, data: e };
-				}
-			},
-			default: async ({ allAddresses = [], address = "", addresses = [], changeAddresses = [],  service = "electrum" }) => {
-				return await walletHelpers.history.litecoinTestnet[service]({ allAddresses, address, addresses, changeAddresses, selectedCrypto: "litecoinTestnet" });
-			}
+		default: async ({ allAddresses = [], addresses = [], changeAddresses = [], service = "electrum", selectedCrypto = "bitcoin" } = {}) => {
+			return await walletHelpers.history[service]({ allAddresses, addresses, changeAddresses, selectedCrypto });
 		}
 	},
 	pushtx: {
-		bitcoin: {
-			electrum: async(rawTx) => {
-				return await electrum.broadcastTransaction({ id: 1, rawTx, coin: "bitcoin" });
-
-			},
-			default: async (tx = "", service = "electrum") => {
-				return await walletHelpers.pushtx.bitcoin[service](tx);
-			}
+		electrum: async({ rawTx = "", selectedCrypto = "bitcoin" } = {}) => {
+			return await electrum.broadcastTransaction({ id: 1, rawTx, coin: selectedCrypto });
+			
 		},
-		bitcoinTestnet: {
-			electrum: async(rawTx) => {
-				return await electrum.broadcastTransaction({ id: 1, rawTx, coin: "bitcoinTestnet" });
-
-			},
-			default: async (tx = "", service = "electrum") => {
-				return await walletHelpers.pushtx.bitcoinTestnet[service](tx);
-			}
+		fallback: async({ rawTx = "", selectedCrypto = "bitcoin" } = {}) => {
+			return await fallbackBroadcastTransaction({ rawTx, selectedCrypto });
 		},
-		litecoin: {
-			electrum: async(rawTx) => {
-				return await electrum.broadcastTransaction({ id: 1, rawTx, coin: "litecoin" });
-
-			},
-			default: async (tx = "", service = "electrum") => {
-				return await walletHelpers.pushtx.litecoin[service](tx);
-			}
-		},
-		litecoinTestnet: {
-			electrum: async(rawTx) => {
-				return await electrum.broadcastTransaction({ id: 1, rawTx, coin: "litecoinTestnet" });
-			},
-			default: async (tx = "", service = "electrum") => {
-				return await walletHelpers.pushtx.litecoinTestnet[service](tx);
-			}
+		default: async ({ rawTx = "", service = "electrum", selectedCrypto = "bitcoin" } = {}) => {
+			return await walletHelpers.pushtx[service]({ rawTx, selectedCrypto });
 		}
 	},
 	exchangeRate: {
-		bitcoin: {
-			coingecko: async ({ selectedCurrency = "usd" }) => {
-				const exchangeRate = await coinGeckoExchangeRateHelper({ selectedCrypto: "bitcoin", selectedCurrency });
-				if (exchangeRate.error === false) {
-					return ({error: false, data: exchangeRate.data});
-				} else {
-					return ({ error: true, data: "Invalid Exchange Rate Data." });
-				}
-			},
-			coincap: async ({ selectedCurrency = "usd" }) => {
-				const exchangeRate = await coinCapExchangeRateHelper({ selectedCrypto: "bitcoin", selectedCurrency });
-				if (exchangeRate.error === false) {
-					return ({error: false, data: exchangeRate.data});
-				} else {
-					return ({ error: true, data: "Invalid Exchange Rate Data." });
-				}
-			},
-			bitupper: async ({ selectedCurrency = "usd" }) => {
-				const exchangeRate = await bitupperExchangeRateHelper({ selectedCrypto: "bitcoin", selectedCurrency });
-				if (exchangeRate.error === false) {
-					return ({error: false, data: exchangeRate.data});
-				} else {
-					return ({ error: true, data: "Invalid Exchange Rate Data." });
-				}
-			},
-			default: async ({ service = "coingecko", selectedCurrency = "usd" } = {}) => {
-				return await walletHelpers.exchangeRate.bitcoin[service]({ selectedCurrency });
+		coingecko: async ({ selectedCurrency = "usd", selectedCrypto = "bitcoin" } = {}) => {
+			const exchangeRate = await coinGeckoExchangeRateHelper({ selectedCrypto, selectedCurrency });
+			if (exchangeRate.error === false) {
+				return ({error: false, data: exchangeRate.data});
+			} else {
+				return ({ error: true, data: "Invalid Exchange Rate Data." });
 			}
 		},
-		bitcoinTestnet: {
-			coingecko: async ({ selectedCurrency = "usd" }) => {
-				const exchangeRate = await coinGeckoExchangeRateHelper({ selectedCrypto: "bitcoin", selectedCurrency });
-				if (exchangeRate.error === false) {
-					return ({error: false, data: exchangeRate.data});
-				} else {
-					return ({ error: true, data: "Invalid Exchange Rate Data." });
-				}
-			},
-			coincap: async ({ selectedCurrency = "usd" }) => {
-				const exchangeRate = await coinCapExchangeRateHelper({ selectedCrypto: "bitcoin", selectedCurrency });
-				if (exchangeRate.error === false) {
-					return ({error: false, data: exchangeRate.data});
-				} else {
-					return ({ error: true, data: "Invalid Exchange Rate Data." });
-				}
-			},
-			bitupper: async ({ selectedCurrency = "usd" }) => {
-				const exchangeRate = await bitupperExchangeRateHelper({ selectedCrypto: "bitcoin", selectedCurrency });
-				if (exchangeRate.error === false) {
-					return ({error: false, data: exchangeRate.data});
-				} else {
-					return ({ error: true, data: "Invalid Exchange Rate Data." });
-				}
-			},
-			default: async ({ service = "coingecko", selectedCurrency = "usd" } = {}) => {
-				return await walletHelpers.exchangeRate.bitcoin[service]({ selectedCurrency });
+		coincap: async ({ selectedCurrency = "usd", selectedCrypto = "bitcoin" } = {}) => {
+			const exchangeRate = await coinCapExchangeRateHelper({ selectedCrypto, selectedCurrency });
+			if (exchangeRate.error === false) {
+				return ({error: false, data: exchangeRate.data});
+			} else {
+				return ({ error: true, data: "Invalid Exchange Rate Data." });
 			}
 		},
-		litecoin: {
-			coingecko: async ({ selectedCurrency = "usd" }) => {
-				const exchangeRate = await coinGeckoExchangeRateHelper({ selectedCrypto: "litecoin", selectedCurrency });
-				if (exchangeRate.error === false) {
-					return ({error: false, data: exchangeRate.data});
-				} else {
-					return ({ error: true, data: "Invalid Exchange Rate Data." });
-				}
-			},
-			coincap: async ({ selectedCurrency = "usd" }) => {
-				const exchangeRate = await coinCapExchangeRateHelper({ selectedCrypto: "litecoin", selectedCurrency });
-				if (exchangeRate.error === false) {
-					return ({error: false, data: exchangeRate.data});
-				} else {
-					return ({ error: true, data: "Invalid Exchange Rate Data." });
-				}
-			},
-			bitupper: async ({ selectedCurrency = "usd" }) => {
-				const exchangeRate = await bitupperExchangeRateHelper({ selectedCrypto: "litecoin", selectedCurrency });
-				if (exchangeRate.error === false) {
-					return ({error: false, data: exchangeRate.data});
-				} else {
-					return ({ error: true, data: "Invalid Exchange Rate Data." });
-				}
-			},
-			default: async ({ service = "coingecko", selectedCurrency = "usd" } = {}) => {
-				return await walletHelpers.exchangeRate.litecoin[service]({ selectedCurrency });
-			}
-		},
-		litecoinTestnet: {
-			coingecko: async ({ selectedCurrency = "usd" }) => {
-				const exchangeRate = await coinGeckoExchangeRateHelper({ selectedCrypto: "litecoin", selectedCurrency });
-				if (exchangeRate.error === false) {
-					return ({error: false, data: exchangeRate.data});
-				} else {
-					return ({ error: true, data: "Invalid Exchange Rate Data." });
-				}
-			},
-			coincap: async ({ selectedCurrency = "usd" }) => {
-				const exchangeRate = await coinCapExchangeRateHelper({ selectedCrypto: "litecoin", selectedCurrency });
-				if (exchangeRate.error === false) {
-					return ({error: false, data: exchangeRate.data});
-				} else {
-					return ({ error: true, data: "Invalid Exchange Rate Data." });
-				}
-			},
-			bitupper: async ({ selectedCurrency = "usd" }) => {
-				const exchangeRate = await bitupperExchangeRateHelper({ selectedCrypto: "litecoin", selectedCurrency });
-				if (exchangeRate.error === false) {
-					return ({error: false, data: exchangeRate.data});
-				} else {
-					return ({ error: true, data: "Invalid Exchange Rate Data." });
-				}
-			},
-			default: async ({ service = "coingecko", selectedCurrency = "usd" } = {}) => {
-				return await walletHelpers.exchangeRate.litecoinTestnet[service]({ selectedCurrency });
-			}
+		default: async ({ service = "coingecko", selectedCurrency = "usd", selectedCrypto = "bitcoin" } = {}) => {
+			selectedCrypto = selectedCrypto.toLowerCase();
+			selectedCrypto = selectedCrypto.replace("testnet", "");
+			return await walletHelpers.exchangeRate[service]({ selectedCurrency, selectedCrypto });
 		}
 	},
 	feeEstimate :{
-		bitcoin: {
-			electrum: async() => {
-				return await electrum.getFeeEstimate({ coin: "bitcoin" });
-				
-			},
-			default: async (service = "electrum") => {
-				return await walletHelpers.feeEstimate.bitcoin[service]();
-			}
+		electrum: async({ selectedCrypto = "bitcoin" } = {}) => {
+			return await electrum.getFeeEstimate({ coin: selectedCrypto });
+			
 		},
-		bitcoinTestnet: {
-			electrum: async() => {
-				return await electrum.getFeeEstimate({ coin: "bitcoinTestnet" });
-				
-			},
-			default: async (service = "electrum") => {
-				return await walletHelpers.feeEstimate.bitcoinTestnet[service]();
-			}
-		},
-		litecoin: {
-			electrum: async() => {
-				return await electrum.getFeeEstimate({ coin: "litecoin" });
-				
-			},
-			default: async (service = "electrum") => {
-				return await walletHelpers.feeEstimate.litecoin[service]();
-			}
-		},
-		litecoinTestnet: {
-			electrum: async() => {
-				return await electrum.getFeeEstimate({ coin: "litecoinTestnet" });
-			},
-			default: async (service = "electrum") => {
-				return await walletHelpers.feeEstimate.litecoinTestnet[service]();
-			}
+		default: async ({ service = "electrum", selectedCrypto = "bitcoin" } = {}) => {
+			return await walletHelpers.feeEstimate[service]({ selectedCrypto });
 		}
 	}
 };

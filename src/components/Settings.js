@@ -286,6 +286,14 @@ class Settings extends PureComponent<Props> {
 		}
 	};
 	
+	toggleSendTransactionFallback = async () => {
+		try {
+			this.props.updateSettings({ sendTransactionFallback: !this.props.settings.sendTransactionFallback });
+		} catch (e) {
+			console.log(e);
+		}
+	};
+	
 	togglePin = async () => {
 		try {
 			if (this.props.settings.pin) {
@@ -656,7 +664,13 @@ class Settings extends PureComponent<Props> {
 							
 							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
 								<View style={[styles.header, { marginBottom: 5 }]}>
+									
 									<Text style={[styles.title, { color: colors.white, fontWeight: "bold" }]}>General Settings</Text>
+									
+									<TouchableOpacity onPress={() => null} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
+										<MaterialCommunityIcons name={"help-circle-outline"} size={26} color={colors.white} />
+									</TouchableOpacity>
+									
 								</View>
 								<View style={{ height: 1.5, backgroundColor: colors.white, width: "80%" }} />
 							</View>
@@ -668,6 +682,8 @@ class Settings extends PureComponent<Props> {
 							{this.SwitchRow({ setting: "pin", title: "Enable Pin", onPress: this.togglePin })}
 							
 							{this.SwitchRow({ setting: "testnet", title: "Enable Testnet", onPress: this.toggleTestnet })}
+							
+							{this.SwitchRow({ setting: "sendTransactionFallback", title: "Send Transaction Fallback", onPress: this.toggleSendTransactionFallback })}
 							
 							{this.MultiOptionRow({
 								title: "Exchange Rate Source",
@@ -723,8 +739,19 @@ class Settings extends PureComponent<Props> {
 							})}
 							
 							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+								<View style={styles.header}>
+									
+									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{`${walletName}:`}</Text>
+									
+									<TouchableOpacity onPress={() => null} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
+										<MaterialCommunityIcons name={"help-circle-outline"} size={26} color={colors.white} />
+									</TouchableOpacity>
+								
+								</View>
 								<View style={[styles.header, { marginBottom: 5 }]}>
-									<Text style={[styles.title, { color: colors.white, fontWeight: "bold" }]}>{walletName}: {cryptoLabel} Settings</Text>
+									
+									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{`${cryptoLabel} Settings`}</Text>
+									
 								</View>
 								<View style={{ height: 1.5, backgroundColor: colors.white, width: "80%" }} />
 							</View>
@@ -912,6 +939,10 @@ const styles = StyleSheet.create({
 		color: colors.purple,
 		fontSize: 16,
 		textAlign: "left"
+	},
+	header: {
+		flexDirection: "row",
+		alignItems: "center"
 	},
 	headerText: {
 		...systemWeights.regular,

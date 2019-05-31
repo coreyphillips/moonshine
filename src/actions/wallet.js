@@ -44,7 +44,7 @@ const getExchangeRate = ({ selectedCoin = "bitcoin", selectedCurrency = "usd", s
 
 		let exchangeRate = 0;
 		try {
-			exchangeRate = await walletHelpers.exchangeRate[selectedCoin].default({ service: selectedService, selectedCurrency });
+			exchangeRate = await walletHelpers.exchangeRate.default({ service: selectedService, selectedCurrency, selectedCrypto: selectedCoin });
 			if (exchangeRate.error) failure("Invalid Exchange Rate Data");
 			resolve({ error: false, data: exchangeRate.data });
 		} catch (e) {
@@ -214,7 +214,7 @@ const resetUtxos = ({wallet = "wallet0", addresses = [], changeAddresses = [], c
 			
 			
 			//Returns { error: false, data: { utxos, balance } }
-			const utxoResult = await walletHelpers.utxos[selectedCrypto].default({ addresses, changeAddresses, currentBlockHeight });
+			const utxoResult = await walletHelpers.utxos.default({ addresses, changeAddresses, currentBlockHeight, selectedCrypto });
 			if (utxoResult.error === true) {
 				failure(utxoResult);
 				return;
@@ -319,7 +319,7 @@ const updateBlockHeight = ({ selectedCrypto = "bitcoin" } = {}) => async (dispat
 			resolve({ error: true, data });
 		};
 		try {
-			const response = await walletHelpers.getBlockHeight[selectedCrypto].default();
+			const response = await walletHelpers.getBlockHeight.default({ selectedCrypto });
 			try {
 				if (response.error === false && response.data !== undefined && response.data > 0) {
 					const blockHeight = response.data;

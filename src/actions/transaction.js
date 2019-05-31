@@ -45,7 +45,7 @@ export const getRecommendedFee = ({ coin = "bitcoin", transactionSize = 256 } = 
 				const jsonResponse = await response.json();
 				recommendedFee = Math.round(jsonResponse.hourFee/DIVIDE_RECOMMENDED_FEE_BY);
 			} else {
-				const feeResponse = await walletHelpers.feeEstimate[coin].default();
+				const feeResponse = await walletHelpers.feeEstimate.default({ selectedCrypto: coin });
 				if (!feeResponse.data.error && feeResponse.data > 0) {
 					let feeInSats = bitcoinUnits(feeResponse.data, "BTC").to("satoshi").value();
 					feeInSats = Math.round(feeInSats / transactionSize);
@@ -137,13 +137,20 @@ export const sendTransactions = ({ transaction = {}, selectedCrypto = "", select
 };
 */
 
-export const sendTransaction = ({ txHex = "", selectedCrypto = "bitcoin" } = {}) => (dispatch: any) => {
+export const sendTransaction = ({ txHex = "", selectedCrypto = "bitcoin", sendTransactionFallback = true } = {}) => (dispatch: any) => {
 	return new Promise(async (resolve) => {
 		const failure = (data = "") => {
 			resolve({ error: true, data });
 		};
 		try {
-			const response = await walletHelpers.pushtx[selectedCrypto].default(txHex);
+			//Attempt to push transaction via the currently connected electrum server
+			let response = await walletHelpers.pushtx.default({ rawTx: txHex, selectedCrypto });
+			
+			//If an error occurred and sendTransactionFallback is enabled in Settings attempt to broadcast the transaction using either Blockstream or Chain.so's api.
+			if (response.error === true && sendTransactionFallback === true) {
+				response = await walletHelpers.pushtx.fallback({ rawTx: txHex, selectedCrypto });
+			}
+			//Dispatch SEND_TRANSACTION_SUCCESS if error === false
 			if (response.error === false) {
 				dispatch({
 					type: actions.SEND_TRANSACTION_SUCCESS,

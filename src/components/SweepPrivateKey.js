@@ -630,7 +630,7 @@ class SendTransaction extends PureComponent<Props> {
 				await this.setState({ loadingProgress: 0.8 });
 				await pauseExecution();
 				const { selectedCrypto, selectedWallet } = this.props.wallet;
-				const sendTransactionResult = await this.props.sendTransaction({ txHex: rawTx, selectedCrypto });
+				const sendTransactionResult = await this.props.sendTransaction({ txHex: rawTx, selectedCrypto, sendTransactionFallback: this.props.settings.sendTransactionFallback });
 				if (sendTransactionResult.error) {
 					await this.setState({
 						loadingMessage: "There appears to have been an error sending your transaction. Please try again.",

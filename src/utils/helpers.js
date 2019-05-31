@@ -271,7 +271,7 @@ const getExchangeRate = ({ selectedCrypto = "bitcoin", selectedCurrency = "usd",
 
 		let exchangeRate = 0;
 		try {
-			exchangeRate = await walletHelpers.exchangeRate[selectedCrypto].default({ service: selectedService, selectedCurrency });
+			exchangeRate = await walletHelpers.exchangeRate.default({ service: selectedService, selectedCurrency, selectedCrypto });
 			if (exchangeRate.error) failure("Invalid Exchange Rate Data");
 			resolve({ error: false, data: exchangeRate.data });
 		} catch (e) {
@@ -294,7 +294,7 @@ const getAddressTransactions = async ({ address = "", addresses = [], changeAddr
 		}
 
 		try {
-			const response = await walletHelpers.history[selectedCrypto].default({ address, addresses, changeAddresses, currentBlockHeight, selectedCrypto });
+			const response = await walletHelpers.history.default({ address, addresses, changeAddresses, currentBlockHeight, selectedCrypto });
 			if (response.error === true) {
 				failure("No transaction data found.");
 				//failure(response);
@@ -322,7 +322,7 @@ const getAllTransactions = async ({ allAddresses = [], addresses = [], changeAdd
 		}
 
 		try {
-			const response = await walletHelpers.history[selectedCrypto].default({ allAddresses, addresses, changeAddresses, currentBlockHeight, selectedCrypto });
+			const response = await walletHelpers.history.default({ allAddresses, addresses, changeAddresses, currentBlockHeight, selectedCrypto });
 			if (response.error === true) {
 				failure("No transaction data found.");
 				//failure(response);
