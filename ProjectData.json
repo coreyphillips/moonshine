@@ -26,6 +26,8 @@
       "red": "#F15B2A",
       "black": "#1B1A1B",
       "gray": "#f0f0f0",
+      "lightGray": "#efefef",
+      "darkGray": "#6e6e6e",
       "white": "#FFF",
       "purple": "#631e9a",
       "darkPurple": "#57158f",

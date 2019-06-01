@@ -14,13 +14,14 @@ import {
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import ScrollViewModal from "./ScrollViewModal";
 import XButton from "./XButton";
 import Fade from "./Fade";
 import PinPad from "./PinPad";
 import ImportPhrase from "./ImportPhrase";
 import ElectrumOptions from "./ElectrumOptions";
 import * as electrum from "../utils/electrum";
-//import nodejs from "nodejs-mobile-react-native";
+
 const {
 	Constants: {
 		colors
@@ -38,6 +39,60 @@ const {
 	getCoinData
 } = require("../utils/networks");
 const moment = require("moment");
+
+const generalHelpItems = [
+	{
+		title: "Enable Pin:",
+		text: "This option allows you to toggle the Pin on/off as a form of authentication when opening this app. Please be warned, if you enable this option and forget your pin the app's data will be wiped after 5 failed attempts. Make sure to write down your mnemonic phrase prior to enabling this option."
+	},
+	{
+		title: "Enable Testnet:",
+		text: "This option allows you to toggle the Testnet coins on/off from the coin selection menu. If you do not require the use of any Testnet coins feel free to disable this option."
+	},
+	{
+		title: "Send Transaction Fallback:",
+		text: "If Electrum fails to broadcast a transaction for any reason this option, if enabled, will allow the app to use either Blockstream's api for Bitcoin or Chain.so's api for Litecoin to broadcast the transaction instead."
+	},
+	{
+		title: "Exchange Rate Source:",
+		text: `This option allows you to select where the app sources its data to determine the fiat price of Bitcoin & Litecoin.`
+	},
+	{
+		title: "Crypto Units:",
+		text: `This option allows you to select the specific crypto unit used to display the amount of Bitcoin & Litecoin in your wallet. Ex:\n1 BTC = 100,000,000 Satoshi\n1 Satoshi = 0.00000001 BTC`
+	},
+	{
+		title: "Import Mnemonic Phrase:",
+		text: "This option allows you to import a mnemonic seed or phrase. It can be commonly referred to as a seed phrase, seed recovery phrase or backup seed phrase and is usually a series of 12-24 words which store all the information needed to recover your wallet. This phrase is meant to be kept secret and should be written down and stored in a safe place in case you lose access to your wallet and need to recover your funds."
+	},
+	{
+		title: "Electrum Options:",
+		text: "This option allows you to input and connect to an electrum server of your choosing. Once added the app will utilize this server for all electrum related queries and cease using the default random servers."
+	}
+];
+
+const walletHelpItems = [
+	{
+		title: "Connected To:",
+		text: `This option displays the Electrum server that you are currently connected to. At the time of this writing, tapping this option will connect you to a new Electrum server at random. If you have added a custom Electrum server via the "Electrum Options" menu for this coin the app will simply attempt to disconnect and reconnect to the specified server.`
+	},
+	{
+		title: "Address Type:",
+		text: `This option allows you to toggle between multiple address types for Bitcoin & Litecoin. At the time of this writing, the default is "Bech32" which will generate bc1 addresses for Bitcoin, tb1 addresses for Bitcoin Testnet, ltc1 addresses for Litecoin & tltc1 addresses for Litecoin Testnet.`
+	},
+	{
+		title: "Key Derivation Path:",
+		text: "This option allows you to toggle between common derivation paths used by other wallets and is most helpful to those with imported mnemonic phrases from wallets utilizing a different path."
+	},
+	{
+		title: "Wallet Backup:",
+		text: "Tapping this item displays the mnemonic phrase for the currently selected wallet. This phrase is meant to be kept secret and should be written down and stored in a safe place in case you lose access to your wallet and need to recover your funds."
+	},
+	{
+		title: "Rescan Wallet:",
+		text: `Tapping this item prompts the wallet to rescan all addresses based on the selected "Key Derivation Path" starting at 0.`
+	},
+];
 
 class Settings extends PureComponent<Props> {
 	constructor(props) {
@@ -60,7 +115,10 @@ class Settings extends PureComponent<Props> {
 			electrumOptionsOpacity: new Animated.Value(0),
 
 			rescanningWallet: false,
-			connectingToElectrum: false
+			connectingToElectrum: false,
+			
+			displayGeneralHelp: false,
+			displayWalletHelp: false
 		};
 	}
 
@@ -667,7 +725,7 @@ class Settings extends PureComponent<Props> {
 									
 									<Text style={[styles.title, { color: colors.white, fontWeight: "bold" }]}>General Settings</Text>
 									
-									<TouchableOpacity onPress={() => null} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
+									<TouchableOpacity onPress={() => this.setState({ displayGeneralHelp: true })} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
 										<MaterialCommunityIcons name={"help-circle-outline"} size={26} color={colors.white} />
 									</TouchableOpacity>
 									
@@ -743,7 +801,7 @@ class Settings extends PureComponent<Props> {
 									
 									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{`${walletName}:`}</Text>
 									
-									<TouchableOpacity onPress={() => null} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
+									<TouchableOpacity onPress={() => this.setState({ displayWalletHelp: true })} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
 										<MaterialCommunityIcons name={"help-circle-outline"} size={26} color={colors.white} />
 									</TouchableOpacity>
 								
@@ -851,8 +909,39 @@ class Settings extends PureComponent<Props> {
 
 				{!this.state.displayImportPhrase &&
 				<Animated.View style={styles.xButton}>
-					<XButton style={{ borderColor: "transparent" }} onPress={this.onBack} />
+					<XButton style={{ borderColor: "transparent", zIndex: 1000 }} onPress={this.onBack} />
 				</Animated.View>}
+				
+				<ScrollViewModal
+					isVisible={this.state.displayGeneralHelp}
+					onClose={() => this.setState({ displayGeneralHelp: false })}
+				>
+					{this.props.settings.biometricsIsSupported &&
+					<View style={styles.helpRow}>
+						<Text style={styles.helpTitle}>Enable FaceID:</Text>
+						<Text style={styles.helpText}>This option allows you to toggle FaceID on/off as a form of authentication when opening this app.</Text>
+					</View>}
+					{generalHelpItems.map(({ title, text }) => (
+						<View key={title} style={styles.helpRow}>
+							<Text style={styles.helpTitle}>{title}</Text>
+							<Text style={styles.helpText}>{text}</Text>
+						</View>
+					))}
+					<View style={{ paddingVertical: "40%" }} />
+				</ScrollViewModal>
+				
+				<ScrollViewModal
+					isVisible={this.state.displayWalletHelp}
+					onClose={() => this.setState({ displayWalletHelp: false })}
+				>
+					{walletHelpItems.map(({ title, text }) => (
+						<View key={title} style={styles.helpRow}>
+							<Text style={styles.helpTitle}>{title}</Text>
+							<Text style={styles.helpText}>{text}</Text>
+						</View>
+					))}
+					<View style={{ paddingVertical: "40%" }} />
+				</ScrollViewModal>
 
 			</View>
 		);
@@ -921,6 +1010,21 @@ const styles = StyleSheet.create({
 		flex: 0.6,
 		alignItems: "flex-start",
 		justifyContent: "center",
+	},
+	helpRow: {
+		marginBottom: 10,
+	},
+	helpTitle: {
+		...systemWeights.semibold,
+		color: colors.darkPurple,
+		fontSize: 22,
+		textAlign: "left"
+	},
+	helpText: {
+		...systemWeights.regular,
+		color: colors.darkPurple,
+		fontSize: 18,
+		textAlign: "left"
 	},
 	title: {
 		...systemWeights.regular,
