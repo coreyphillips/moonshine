@@ -380,28 +380,50 @@ const getTransactionSize = (numInputs, numOutputs) => {
 	return numInputs*180 + numOutputs*34 + 10 + numInputs;
 };
 
-const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confirmedBalance = 0, utxos = [], blacklistedUtxos = [], changeAddress = "", wallet = "wallet0", selectedCrypto = "bitcoin", message = "", addressType = "bech32" } = {}) => {
+const setReplaceByFee = ({ txb = {}, setRbf = true } = {}) => {
+	try {
+		const defaultSequence = bitcoin.Transaction.DEFAULT_SEQUENCE;
+		//Cannot set replace-by-fee on transaction without inputs.
+		if (txb.__TX.ins.length !== 0) {
+			txb.__TX.ins.forEach(x => {
+				if (setRbf) {
+					if (x.sequence >= defaultSequence - 1) {
+						x.sequence = 0;
+					}
+				} else {
+					if (x.sequence < defaultSequence - 1) {
+						x.sequence = defaultSequence;
+					}
+				}
+			});
+		}
+	} catch (e) {}
+};
+
+//amount = Amount to send to recipient.
+//transactionFee = fee per byte.
+const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confirmedBalance = 0, utxos = [], blacklistedUtxos = [], changeAddress = "", wallet = "wallet0", selectedCrypto = "bitcoin", message = "", addressType = "bech32", setRbf = true } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
 			const network = networks[selectedCrypto];
+			const rbfIsSupported = !selectedCrypto.includes("litecoin"); //Ensure the selected coin is not Litecoin.
 			const totalFee = getTransactionSize(utxos.length, changeAddress ? 2 : 1) * transactionFee;
 			addressType = addressType.toLowerCase();
-
-			//Address and amount to send.
+			
 			let targets = [{ address, value: amount }];
 			//Change address and amount to send back to wallet.
 			if (changeAddress) targets.push({ address: changeAddress, value: confirmedBalance - (amount + totalFee) });
-
+			
+			//Setup rbfData (Replace-By-Fee Data) for later use.
+			let rbfData = undefined;
+			if (rbfIsSupported) rbfData = { address, transactionFee, amount, confirmedBalance, utxos, blacklistedUtxos, changeAddress, wallet, selectedCrypto, message, addressType };
+			
 			//Fetch Keypair
 			const keychainResult = await getKeychainValue({ key: wallet });
 			if (keychainResult.error === true) return;
 			const mnemonic = keychainResult.data.password;
 			const seed = bip39.mnemonicToSeed(mnemonic);
 			const root = bip32.fromSeed(seed, network);
-			//const privKeyWIF = keyPair.toWIF();
-			//const keyPair = bitcoin.ECPair.fromWIF(privKeyWIF, network);
-			//const xprv = root.toBase58();
-			//const xpub = root.neutered().toBase58();
 			let txb = new bitcoin.TransactionBuilder(network);
 
 			//Add Inputs
@@ -430,8 +452,10 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 				const data = Buffer.from(message, "utf8");
 				const embed = bitcoin.payments.embed({data: [data], network});
 				txb.addOutput(embed.output, 0);
-
 			}
+			
+			//Set RBF if supported and prompted via rbf in Settings.
+			try { if (rbfIsSupported && setRbf) setReplaceByFee({ txb, setRbf }); } catch (e) {}
 
 			await Promise.all(
 				targets.map((target) => {
@@ -465,7 +489,9 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 				}
 			}
 			const rawTx = txb.build().toHex();
-			resolve({ error: false, data: rawTx });
+			const data = { error: false, data: rawTx };
+			if (rbfIsSupported && setRbf && rbfData) data["rbfData"] = rbfData;
+			resolve(data);
 		} catch (e) {
 			console.log(e);
 			resolve({ error: true, data: e });

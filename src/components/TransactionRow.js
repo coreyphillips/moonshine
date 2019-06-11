@@ -28,7 +28,6 @@ class TransactionRow extends PureComponent {
 		let { id, coin, address, amount, label, date, transactionBlockHeight, exchangeRate, currentBlockHeight, cryptoUnit, type, onTransactionPress, messages, isBlacklisted } = this.props;
 		getCryptoAmountLabel = () => {
 			try {
-				amount = Number(amount);
 				//This prevents the view from displaying 0 BTC
 				if (amount < 50000 && cryptoUnit === "BTC") {
 					return `${formatNumber(Number((amount * 0.00000001).toFixed(8)))} BTC`;

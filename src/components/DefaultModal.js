@@ -13,7 +13,7 @@ const {
 	}
 } = require("../../ProjectData.json");
 
-class ScrollViewModal extends Component {
+class DefaultModal extends Component {
 	
 	shouldComponentUpdate(nextProps){
 		return nextProps.isVisible !== this.props.isVisible;
@@ -27,24 +27,34 @@ class ScrollViewModal extends Component {
 				backdropOpacity={0.1}
 				propagateSwipe={true}
 			>
-				<View style={styles.modalContainer}>
-					<ScrollView style={styles.modalScrollView}>
+				<View style={[styles.modalContainer, { ...this.props.style }]}>
+					{this.props.type === "ScrollView" &&
+					<ScrollView  style={[styles.modalScrollView, { ...this.props.contentStyle }]}>
 						{this.props.children}
-					</ScrollView>
+					</ScrollView>}
+					{this.props.type !== "ScrollView" &&
+					<View  style={[styles.modalScrollView, { ...this.props.contentStyle }]}>
+						{this.props.children}
+					</View>
+					}
 				</View>
 			</Modal>
 		);
 	}
 }
 
-ScrollViewModal.defaultProps = {
+DefaultModal.defaultProps = {
 	style: {},
+	contentStyle: {},
 	isVisible: false,
+	type: "ScrollView",
 	onClose: () => null
 };
 
-ScrollViewModal.protoTypes = {
+DefaultModal.protoTypes = {
 	style: PropTypes.object,
+	contentStyle: PropTypes.object,
+	type: PropTypes.string,
 	isVisible: PropTypes.bool.isRequired,
 	onClose: PropTypes.func.isRequired
 };
@@ -58,8 +68,6 @@ const styles = StyleSheet.create({
 	},
 	modalScrollView: {
 		flex: 1,
-		borderWidth: 1,
-		borderColor: colors.white,
 		borderRadius: 16,
 		paddingHorizontal: 10,
 		paddingVertical: 5,
@@ -68,4 +76,4 @@ const styles = StyleSheet.create({
 });
 
 
-module.exports = ScrollViewModal;
+module.exports = DefaultModal;

@@ -144,14 +144,43 @@ module.exports = (state = {
 					return obj2Value - obj1Value || obj2.block - obj1.block || obj1.amount - obj2.amount;
 				});
 			} catch (e) {}
-
-			return {
+			
+			const transactionData = {
 				...state,
 				[action.payload.wallet]: {
 					...state[action.payload.wallet],
 					transactions: {
 						...state[action.payload.wallet].transactions,
 						[action.payload.selectedCrypto]: newTransactions
+					}
+				}
+			};
+			
+			//Attempt to add new rbfData
+			let rbfData = {};
+			try {
+				rbfData = action.payload.rbfData;
+				if (Object.entries(rbfData).length !== 0 && rbfData.constructor === Object) {
+					rbfData = state[action.payload.wallet].rbfData[action.payload.selectedCrypto];
+					rbfData[action.payload.rbfData.hash] = action.payload.rbfData || {};
+					
+					transactionData[action.payload.wallet]["rbfData"] = {
+						...state[action.payload.wallet].rbfData,
+						[action.payload.selectedCrypto]: rbfData
+					};
+				}
+			} catch (e) {}
+
+			return transactionData;
+		
+		case actions.UPDATE_RBF_DATA:
+			return {
+				...state,
+				[action.payload.wallet]: {
+					...state[action.payload.wallet],
+					rbfData: {
+						...state[action.payload.wallet].rbfData,
+						[action.payload.selectedCrypto]: action.payload.rbfData
 					}
 				}
 			};
@@ -208,7 +237,7 @@ module.exports = (state = {
 
 			transactions = removeDupsFromArrOfObj(transactions, "hash");
 
-			//TODO: Improve sorting of transactions included in the same block.
+			//TODO: Improve sorting of transactions included in the same block. Add a "firstSeen" id to properly sort the transactions in the order the wallet has first seen them.
 			//Filter transactions by timestamp.
 			try {
 				transactions.sort((obj1, obj2) => {

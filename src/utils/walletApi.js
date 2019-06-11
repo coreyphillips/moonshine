@@ -98,7 +98,6 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 		if (scriptHashMempoolResults.error === true) scriptHashMempoolResults = { error: scriptHashMempoolResults.error, data: [] };
 		if (scriptHashMempoolResults.error === true && addressHistory.error === true) return ({error: true, data: "No transaction data found."});
 		const allTransactions = addressHistory.data.concat(scriptHashMempoolResults.data);
-		
 		//Remove any duplicate transactions
 		//allTransactions = allTransactions.reduce((x, y) => x.findIndex(e=>e.hash===y.hash)<0 ? [...x, y]: x, []);
 
@@ -133,8 +132,8 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 
 				const {error, isChangeAddress, addressIndex} = await getInfoFromAddressPath(tx.path);
 				try {
-					if (isChangeAddress && error === false && lastUsedChangeAddress < addressIndex) lastUsedChangeAddress = addressIndex;
-					if (!isChangeAddress && error === false && lastUsedAddress < addressIndex) lastUsedAddress = addressIndex;
+					if (isChangeAddress && error === false && lastUsedChangeAddress <= addressIndex) lastUsedChangeAddress = addressIndex;
+					if (!isChangeAddress && error === false && lastUsedAddress <= addressIndex) lastUsedAddress = addressIndex;
 				} catch (e) {}
 
 				let decodedTransaction = { error: true, inputs: [], outputs: [], format: "" };
@@ -294,19 +293,15 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 				} catch (e) {
 					//console.log(e);
 				}
-
 				try {
-
-					if (type === "sent") sentAmount =  Number(((inputAmount - receivedAmount) - fee).toFixed(8));
-
 					inputAmount = bitcoinUnits(inputAmount, "BTC").to("satoshi").value();
 					receivedAmount = bitcoinUnits(receivedAmount, "BTC").to("satoshi").value();
 					outputAmount = bitcoinUnits(outputAmount, "BTC").to("satoshi").value();
 					sentAmount = bitcoinUnits(sentAmount, "BTC").to("satoshi").value();
+					fee = inputAmount - outputAmount;
 				} catch (e) {}
-
-				fee = inputAmount - outputAmount;
-				amount = type === "sent" ? sentAmount : receivedAmount;
+				if (type === "sent") sentAmount =  Number((inputAmount - receivedAmount));
+				amount = type === "sent" ? Number((inputAmount - receivedAmount) - fee) : receivedAmount;
 
 				const transaction = {
 					address: tx.address,
@@ -386,20 +381,22 @@ const fallbackBroadcastTransaction = async ({ rawTx = "", selectedCrypto = "bitc
 			case "bitcoin":
 				response = await fetch(`https://blockstream.info/api/tx`, config);
 				response = await response.text();
+				if (response.includes("error")) response = "";
 				break;
 			case "bitcoinTestnet":
 				response = await fetch(`https://blockstream.info/testnet/api/tx`, config);
 				response = await response.text();
+				if (response.includes("error")) response = "";
 				break;
 			case "litecoin":
 				response = await fetch(`https://chain.so/api/v2/send_tx/ltc`, fetchData("POST", { tx_hex: rawTx }));
 				response = await response.json();
-				if (response.status === "success") response = response.data.txid;
+				response = response.status === "success" ? response.data.txid : "";
 				break;
 			case "litecoinTestnet":
 				response = await fetch(`https://chain.so/api/v2/send_tx/ltctest`, fetchData("POST", { tx_hex: rawTx }));
 				response = await response.json();
-				if (response.status === "success") response = response.data.txid;
+				response = response.status === "success" ? response.data.txid : "";
 				break;
 		}
 		if (response !== "") return { error: false, data: response };

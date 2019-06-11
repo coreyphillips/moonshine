@@ -91,27 +91,28 @@ class SendTransaction extends PureComponent<Props> {
 	}
 
 	async componentDidMount() {
+		const setupSendTransaction = () => {
+			//Set user balance information
+			const fiatBalance = this.getFiatBalance();
+			const cryptoBalance = this.getCryptoBalance();
+			this.setState({cryptoBalance, fiatBalance});
+			
+			//Set the transactionSize to accurately determine the transaction fee
+			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto];
+			const transactionSize = getTransactionSize(utxos.length, 2);
+			this.props.updateTransaction({ transactionSize });
+			
+			//Set Maximum Fee (recommendedFee * 4) to prevent any user accidents.
+			//Set Recommended Fee as Starting Fee
+			this.calculateFees();
+		};
+		
 		if (Platform.OS === "ios") {
-			try {
-				const fiatBalance = this.getFiatBalance();
-				const cryptoBalance = this.getCryptoBalance();
-				this.setState({cryptoBalance, fiatBalance});
-
-				//Set Maximum Fee (recommendedFee * 4) to prevent any user accidents.
-				//Set Recommended Fee as Starting Fee
-				this.calculateFees();
-			} catch (e) {}
+			try {setupSendTransaction();} catch (e) {}
 		} else {
 			InteractionManager.runAfterInteractions(() => {
-				try {
-					const fiatBalance = this.getFiatBalance();
-					const cryptoBalance = this.getCryptoBalance();
-					this.setState({cryptoBalance, fiatBalance});
-
-					//Set Maximum Fee to prevent any user accidents.
-					//Set Recommended Fee as Starting Fee
-					this.calculateFees();
-				} catch (e) {}
+				try {setupSendTransaction();} catch (e) {}
 			});
 		}
 	}
@@ -256,25 +257,43 @@ class SendTransaction extends PureComponent<Props> {
 
 	onMaxPress = async () => {
 		try {
+			
+			//"spendMaxAmount" will not send funds back to a changeAddress and thus have one less output so we need to update the transactionSize accordingly.
+			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto];
+			const transactionSize = getTransactionSize(utxos.length, !this.state.spendMaxAmount ? 1 : 2);
+			const recommendedFee = Number(this.props.transaction.recommendedFee);
+			const walletBalance = this.state.cryptoBalance;
+			
 			if (!this.state.spendMaxAmount) {
-				const recommendedFee = Number(this.props.transaction.recommendedFee);
-				let totalFee = this.getTotalFee(recommendedFee);
-				const walletBalance = this.state.cryptoBalance;
+				let totalFee = this.getTotalFee(recommendedFee, transactionSize);
 				let cryptoUnitAmount = 0;
 
 				if (walletBalance > totalFee) {
 					const amount = walletBalance - totalFee;
 					const fiatAmount = this.cryptoToFiat({ amount });
 					cryptoUnitAmount = bitcoinUnits(amount, "satoshi").to(this.props.settings.cryptoUnit).value();
-					this.props.updateTransaction({ fee: parseInt(recommendedFee), amount, fiatAmount });
+					this.props.updateTransaction({ fee: parseInt(recommendedFee), amount, fiatAmount, transactionSize });
 				} else {
 					const difference = totalFee - walletBalance;
 					totalFee = difference / 2;
 					const fiatAmount = this.cryptoToFiat({ amount: totalFee });
 					cryptoUnitAmount = bitcoinUnits(totalFee, "satoshi").to(this.props.settings.cryptoUnit).value();
-					this.props.updateTransaction({ fee: parseInt(recommendedFee/2), amount: totalFee, fiatAmount });
+					this.props.updateTransaction({ fee: parseInt(recommendedFee/2), amount: totalFee, fiatAmount, transactionSize });
 				}
 				this.setState({ cryptoUnitAmount });
+			} else {
+				const amount = this.props.transaction.amount;
+				let totalFee = this.getTotalFee(this.props.transaction.fee, transactionSize);
+				if (walletBalance > totalFee+amount) {
+					this.props.updateTransaction({ transactionSize });
+				} else {
+					//Update the amount to account for the difference between the transaction cost & walletBalance and bring it in line with the walletBalance
+					const difference = Math.abs((totalFee+amount) - walletBalance);
+					let newAmount = 0;
+					if (difference < amount) newAmount = amount - difference;
+					this.props.updateTransaction({ transactionSize, amount: newAmount });
+				}
 			}
 			await this.setState({ spendMaxAmount: !this.state.spendMaxAmount });
 		} catch (e) {
@@ -316,6 +335,8 @@ class SendTransaction extends PureComponent<Props> {
 			let walletBalance = Number(this.state.cryptoBalance);
 
 			if (this.state.spendMaxAmount) {
+				//Not enough funds to support this fee.
+				if (totalFee >= walletBalance) return;
 				const amount = walletBalance - totalFee;
 				const fiatAmount = this.cryptoToFiat({ amount, exchangeRate });
 				const cryptoUnitAmount = bitcoinUnits(amount, "satoshi").to(this.props.settings.cryptoUnit).value();
@@ -491,12 +512,24 @@ class SendTransaction extends PureComponent<Props> {
 	};
 
 	validateTransaction = async () => {
-		//TODO Ensure the user address & amount and that they have enough funds.
 		if (!this.props.transaction.address || !this.props.transaction.amount) {
 			alert("Please make sure you've added both an address and an amount to send.");
 			return;
 		}
-		const { selectedCrypto, selectedWallet } = this.props.wallet;
+		
+		//Ensure the user has enough funds.
+		const fee = Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee);
+		const amount = Number(this.props.transaction.amount);
+		const { selectedWallet, selectedCrypto } = this.props.wallet;
+		const balance = this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto];
+		const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto];
+		const transactionSize = getTransactionSize(utxos.length, this.state.spendMaxAmount ? 1 : 2);
+		const totalTransactionCost = amount+(fee*transactionSize);
+		if (totalTransactionCost > balance) {
+			alert(`It appears that\nyou do not have enough funds\nto cover the transaction.`);
+			return;
+		}
+		
 		const address = this.props.transaction.address;
 		//Validate Address.
 		if (!validateAddress(address, selectedCrypto).isValid) {
@@ -532,6 +565,8 @@ class SendTransaction extends PureComponent<Props> {
 			const amount = Number(this.props.transaction.amount);
 			const message = this.props.transaction.message;
 			const addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];
+			const isRbf = this.props.settings.rbf && !selectedCrypto.includes("litecoin");
+			
 			let changeAddress = "";
 			//Create More Change Addresses as needed
 			//Only add a changeAddress if the user is not spending the max amount.
@@ -552,8 +587,7 @@ class SendTransaction extends PureComponent<Props> {
 				}
 			}
 
-			const result = await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, blacklistedUtxos, changeAddress, wallet: selectedWallet, selectedCrypto, message, addressType });
-			return result;
+			return await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, blacklistedUtxos, changeAddress, wallet: selectedWallet, selectedCrypto, message, addressType, isRbf });
 		} catch (e) {
 			console.log(e);
 		}
@@ -596,25 +630,37 @@ class SendTransaction extends PureComponent<Props> {
 					//Attempt to add the successful transaction to the transaction list
 					const { address, amount, fee, transactionSize } = currentTransactionDetails;
 					const confirmedBalance = this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto];
-					const sentAmount = Number(amount) + (Number(fee) * Number(transactionSize));
+					const totalFee = Number(fee)*Number(transactionSize);
+					const sentAmount = Number(amount) + totalFee;
 					const receivedAmount = confirmedBalance - sentAmount;
 					const successfulTransaction = [{
 						address,
-						amount: sentAmount,
+						amount: Number(amount),
 						block: 0,
 						data: "",
-						fee,
+						fee: totalFee,
 						hash: sendTransactionResult.data,
 						inputAmount: confirmedBalance,
 						messages: [],
-						outputAmount: confirmedBalance - (fee*transactionSize),
+						outputAmount: confirmedBalance - totalFee,
 						receivedAmount,
-						sentAmount,
+						sentAmount, //amount + totalFee
 						timestamp: moment().unix(),
 						type: "sent"
 					}];
+					
+					const transactionData = { wallet: selectedWallet, selectedCrypto, transaction: successfulTransaction };
+					
+					//Add txHash to rbfData
+					let rbfData = undefined;
+					//Ensure RBF is enabled in Settings and that the selected coin is not Litecoin.
+					if (this.props.settings.rbf && !selectedCrypto.includes("litecoin")) {
+						rbfData = transaction.rbfData;
+						rbfData["hash"] = sendTransactionResult.data;
+						transactionData["rbfData"] = rbfData;
+					}
 					//Add Transaction to transaction stack
-					await this.props.addTransaction({ wallet: selectedWallet, selectedCrypto, transaction: successfulTransaction });
+					await this.props.addTransaction(transactionData);
 					
 					//Temporarily update the balance for the user to prevent a delay while electrum syncs the balance from the new transaction
 					try {

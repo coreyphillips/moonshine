@@ -249,7 +249,7 @@ const resetUtxos = ({wallet = "wallet0", addresses = [], changeAddresses = [], c
 	});
 };
 
-const addTransaction = ({ wallet = "wallet0", transaction = {}, selectedCrypto = "bitcoin" } = {}) => async (dispatch: any) => {
+const addTransaction = ({ wallet = "wallet0", transaction = {}, selectedCrypto = "bitcoin", rbfData = {} } = {}) => async (dispatch: any) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({ error: true, data });
@@ -260,7 +260,8 @@ const addTransaction = ({ wallet = "wallet0", transaction = {}, selectedCrypto =
 				payload: {
 					wallet,
 					selectedCrypto,
-					transaction
+					transaction,
+					rbfData
 				},
 			});
 			resolve({ error: false, data: transaction });
@@ -494,6 +495,24 @@ const initialImportSync = ({ wallet = "wallet0", selectedCrypto = "bitcoin", cur
 	});
 };
 
+const updateRbfData = ({ wallet = "wallet0", selectedCrypto = "", rbfData = {} } = {}) => async (dispatch: any) => {
+	return new Promise(async (resolve) => {
+		try {
+			const payload = {
+				wallet,
+				selectedCrypto,
+				rbfData
+			};
+			
+			dispatch({
+				type: actions.UPDATE_RBF_DATA,
+				payload
+			});
+			resolve({error: false, data: payload});
+		} catch (e) {resolve({ error: true, data: e });}
+	});
+};
+
 const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAddresses = [], addressIndex = 0, changeAddressIndex = 0, selectedCrypto = "bitcoin", currentBlockHeight = 0, keyDerivationPath = "84", addressType = "bech32" } = {}) => async (dispatch: any) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
@@ -616,5 +635,6 @@ module.exports = {
 	addTransaction,
 	toggleUtxoBlacklist,
 	addAddresses,
-	initialImportSync
+	initialImportSync,
+	updateRbfData
 };

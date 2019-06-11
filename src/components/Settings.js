@@ -14,7 +14,7 @@ import {
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import ScrollViewModal from "./ScrollViewModal";
+import DefaultModal from "./DefaultModal";
 import XButton from "./XButton";
 import Fade from "./Fade";
 import PinPad from "./PinPad";
@@ -48,6 +48,10 @@ const generalHelpItems = [
 	{
 		title: "Enable Testnet:",
 		text: "This option allows you to toggle the Testnet coins on/off from the coin selection menu. If you do not require the use of any Testnet coins feel free to disable this option."
+	},
+	{
+		title: "Enable RBF (Replace-By-Fee):",
+		text: "This option allows you to toggle RBF (Replace-By-Fee) on/off for Bitcoin & Bitcoin Testnet. By enabling this option you are able to increase the fee of a sent, 0-confirmation transaction. This ultimately allows you to decrease the amount of time you have to wait for the transaction to confirm. Note: You are only able to increase the fee of 0-confirmation transactions that were sent while this option was enabled."
 	},
 	{
 		title: "Send Transaction Fallback:",
@@ -230,7 +234,7 @@ class Settings extends PureComponent<Props> {
 							<Text style={[styles.title, titleStyle]}>{title}</Text>
 						</View>
 						<TouchableOpacity onPress={() => onPress(value)} style={[styles.col2, { flex: 0.4, alignItems: "flex-end" }, col2Style]}>
-							<Switch ios_backgroundColor={colors.gray} thumbColor={colors.purple} trackColor={{false: colors.gray, true: colors.gray}} value={this.props.settings[setting]} onValueChange={() => onPress(setting)} />
+							<Switch ios_backgroundColor={colors.gray} thumbColor={colors.purple} trackColor={{false: colors.lightGray, true: colors.gray}} value={this.props.settings[setting]} onValueChange={() => onPress(setting)} />
 						</TouchableOpacity>
 					</View>
 				</TouchableOpacity>
@@ -339,6 +343,14 @@ class Settings extends PureComponent<Props> {
 	toggleTestnet = async () => {
 		try {
 			this.props.updateSettings({ testnet: !this.props.settings.testnet });
+		} catch (e) {
+			console.log(e);
+		}
+	};
+	
+	toggleRBF = async () => {
+		try {
+			this.props.updateSettings({ rbf: !this.props.settings.rbf });
 		} catch (e) {
 			console.log(e);
 		}
@@ -510,7 +522,6 @@ class Settings extends PureComponent<Props> {
 			await this.updateWallet({ data: [{ key: "keyDerivationPath", value: keyDerivationPath }] });
 			if (rescanWallet) this.rescanWallet();
 		} catch (e) {
-			console.log("Log: There was an error, 2.");
 			console.log(e);
 		}
 	};
@@ -541,7 +552,6 @@ class Settings extends PureComponent<Props> {
 			});
 			if (rescanWallet) this.rescanWallet();
 		} catch (e) {
-			console.log("Log: There was an error, 1.");
 			console.log(e);
 		}
 	};
@@ -741,6 +751,8 @@ class Settings extends PureComponent<Props> {
 							
 							{this.SwitchRow({ setting: "testnet", title: "Enable Testnet", onPress: this.toggleTestnet })}
 							
+							{this.SwitchRow({ setting: "rbf", title: "Enable RBF", onPress: this.toggleRBF })}
+							
 							{this.SwitchRow({ setting: "sendTransactionFallback", title: "Send Transaction Fallback", onPress: this.toggleSendTransactionFallback })}
 							
 							{this.MultiOptionRow({
@@ -912,9 +924,10 @@ class Settings extends PureComponent<Props> {
 					<XButton style={{ borderColor: "transparent", zIndex: 1000 }} onPress={this.onBack} />
 				</Animated.View>}
 				
-				<ScrollViewModal
+				<DefaultModal
 					isVisible={this.state.displayGeneralHelp}
 					onClose={() => this.setState({ displayGeneralHelp: false })}
+					contentStyle={styles.modalContent}
 				>
 					{this.props.settings.biometricsIsSupported &&
 					<View style={styles.helpRow}>
@@ -928,11 +941,12 @@ class Settings extends PureComponent<Props> {
 						</View>
 					))}
 					<View style={{ paddingVertical: "40%" }} />
-				</ScrollViewModal>
+				</DefaultModal>
 				
-				<ScrollViewModal
+				<DefaultModal
 					isVisible={this.state.displayWalletHelp}
 					onClose={() => this.setState({ displayWalletHelp: false })}
+					contentStyle={styles.modalContent}
 				>
 					{walletHelpItems.map(({ title, text }) => (
 						<View key={title} style={styles.helpRow}>
@@ -941,7 +955,7 @@ class Settings extends PureComponent<Props> {
 						</View>
 					))}
 					<View style={{ paddingVertical: "40%" }} />
-				</ScrollViewModal>
+				</DefaultModal>
 
 			</View>
 		);
@@ -1060,6 +1074,11 @@ const styles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		bottom: 10
+	},
+	modalContent: {
+		borderWidth: 5,
+		borderRadius: 20,
+		borderColor: colors.lightGray
 	}
 });
 

@@ -66,6 +66,14 @@ const arrayTypeItems = {
 	timestamp: null
 };
 
+const objectTypeItems = {
+	bitcoin: {},
+	bitcoinTestnet: {},
+	litecoin: {},
+	litecoinTestnet: {},
+	timestamp: null
+};
+
 const defaultWalletShape = {
 	addresses: arrayTypeItems,
 	addressIndex: zeroValueItems,
@@ -90,7 +98,8 @@ const defaultWalletShape = {
 		bitcoinTestnet: "bech32",
 		litecoin: "bech32",
 		litecoinTestnet: "bech32"
-	}
+	},
+	rbfData: objectTypeItems
 };
 
 const getCoinImage = (coin = "bitcoin") => {

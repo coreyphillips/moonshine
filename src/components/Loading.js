@@ -38,6 +38,12 @@ const getAnimation = (name = "book") => {
 				return require(`../assets/lottie/downloading_book.json`);
 			case "threeCircleLoader":
 				return require(`../assets/lottie/strategy_shape`);
+			case "coins":
+				return require(`../assets/lottie/coins`);
+			case "astronaut":
+				return require(`../assets/lottie/astronaut`);
+			case "dino":
+				return require(`../assets/lottie/dino`);
 			default:
 				return getCoinImage(name); //Assume the requested image is a coin
 		}
@@ -88,7 +94,7 @@ class Loading extends PureComponent {
 					</View>
 
 					<View style={{ flex: 1, alignItems: "center", justifyContent: "flex-start", marginTop: 10 }}>
-						<Text style={styles.boldText}>{this.props.loadingMessage}</Text>
+						<Text style={[styles.boldText, { ...this.props.textStyle }]}>{this.props.loadingMessage}</Text>
 					</View>
 
 				</Animated.View>
@@ -107,11 +113,13 @@ Loading.defaultProps = {
 	enableErrorIcon: false,
 	enableSuccessIcon: false,
 	width: 200,
-	style: {}
+	style: {},
+	textStyle: {}
 };
 
 Loading.protoTypes = {
 	style: PropTypes.object,
+	textStyle: PropTypes.object,
 	loadingOpacity: PropTypes.number,
 	loadingMessage: PropTypes.string,
 	loadingProgress: PropTypes.number,

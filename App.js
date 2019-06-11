@@ -191,7 +191,6 @@ export default class App extends PureComponent {
 				this.refreshWallet({reconnectToElectrum: !sameCoin});
 			});
 		} catch (e) {
-			console.log(e);
 			this.resetView();
 		}
 	};
@@ -231,9 +230,7 @@ export default class App extends PureComponent {
 			AppState.addEventListener("change", this._handleAppStateChange);
 			//Setup Layout Animation for Android
 			if (Platform.OS === "android") UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
-		} catch (e) {
-			console.log(e);
-		}
+		} catch (e) {}
 		
 		this.startDate = new Date();
 		clearInterval(this._refreshWallet);
@@ -429,32 +426,77 @@ export default class App extends PureComponent {
 			await Promise.all(this.props.wallet[selectedWallet].transactions[selectedCrypto].map((transaction) => {
 				if (transaction.block <= 0) {
 					needsToRescanTransactions = true;
-					transactionsThatNeedRescanning.push(transaction.address);
+					transactionsThatNeedRescanning.push(transaction);
 				}
 			}));
 			
-			//Push all addresses and changeAddresses into the same array.
-			const allAddresses = this.props.wallet[selectedWallet].addresses[selectedCrypto].concat(this.props.wallet[selectedWallet].changeAddresses[selectedCrypto]);
-			
+			const transactions = this.props.wallet[selectedWallet].transactions[selectedCrypto];
 			//Get lowest index to rescan addresses & changeAddresses with.
 			await Promise.all(
-				transactionsThatNeedRescanning.map(async (transactionAddress) => {
+				transactionsThatNeedRescanning.map(async (transaction) => {
 					try {
-						//Filter for the transaction address
-						const filteredTransactionAddress = allAddresses.filter((address) => address.address === transactionAddress);
-						//Extract the addresses path (Ex: m/49'/1'/0'/1/6)
-						const path = filteredTransactionAddress[0].path;
-						const pathInfo = await getInfoFromAddressPath(path);
 						
-						//Check the path's index and save the lowest value.
-						if (pathInfo.isChangeAddress) {
-							if (Number(pathInfo.addressIndex) < changeAddressIndex) changeAddressIndex = pathInfo.addressIndex;
-						} else {
-							if (Number(pathInfo.addressIndex) < addressIndex) addressIndex = pathInfo.addressIndex;
+						try {
+							const path = transaction.path;
+							const pathInfo = await getInfoFromAddressPath(path);
+							
+							if (!pathInfo.error) {
+								//Check the path's index and save the lowest value.
+								if (pathInfo.isChangeAddress) {
+									if (Number(pathInfo.addressIndex) < changeAddressIndex) changeAddressIndex = pathInfo.addressIndex === 0 ? 0 : pathInfo.addressIndex - 1;
+								} else {
+									if (Number(pathInfo.addressIndex) < addressIndex) addressIndex = pathInfo.addressIndex === 0 ? 0 : pathInfo.addressIndex - 1;
+								}
+							} else {
+								changeAddressIndex = changeAddressIndex === 0 ? 0 : changeAddressIndex - 1;
+								addressIndex = addressIndex === 0 ? 0 : addressIndex - 1;
+							}
+						} catch (e) {
+							changeAddressIndex = changeAddressIndex === 1 ? 0 : changeAddressIndex - 2;
+							addressIndex = addressIndex === 1 ? 0 : addressIndex - 2;
 						}
+						
+						
+						//Check for potentially RBF'd transactions that need removing.
+						const result = await electrum.getTransaction({
+							id: Math.random(),
+							txHash: transaction.hash,
+							coin: selectedCrypto
+						});
+
+						//If error, remove the transaction from the list of transactions
+						if (result.error === true && result.data.code) {
+							try {
+								let rbfData = this.props.wallet[selectedWallet].rbfData[selectedCrypto];
+								const savedTransactions = await Promise.all(transactions.filter((tx) => tx.hash !== transaction.hash));
+								//Delete any RBF data for the given hash if it exists.
+								try {if (rbfData[transaction.hash]) delete rbfData[transaction.hash];} catch (e) {}
+								await this.props.updateWallet({
+									...this.props.wallet,
+									[selectedWallet]: {
+										...this.props.wallet[selectedWallet],
+										transactions: {
+											...this.props.wallet[selectedWallet].transactions,
+											[selectedCrypto]: savedTransactions
+										},
+										rbfData: {
+											...this.props.wallet[selectedWallet].rbfData,
+											[selectedCrypto]: rbfData
+										}
+									}
+								});
+							} catch (e) {console.log(e);}
+						}
+						
 					} catch (e) {}
 				})
 			);
+			//Clear RBF Data if there are no 0-conf sent transactions.
+			try {
+				if (transactionsThatNeedRescanning.length === 0 && Object.entries(this.props.wallet[selectedWallet].rbfData[selectedCrypto]).length !== 0 && this.props.wallet[selectedWallet].rbfData[selectedCrypto].constructor === Object) {
+					this.props.updateRbfData({ wallet: selectedWallet, selectedCrypto });
+				}
+			} catch (e) {}
 			
 			/*
 			 let transactionPathsThatNeedRescanning = [];
@@ -495,7 +537,7 @@ export default class App extends PureComponent {
 					console.log(e);
 				}
 			}
-			
+
 			//Cease the loading state.
 			this.setState({ loadingTransactions: false });
 		} catch (e) {
@@ -613,9 +655,7 @@ export default class App extends PureComponent {
 				this.setState({loadingMessage: "Finished Creating Wallet", loadingProgress: 0.3, loadingAnimationName: "cloudBook"});
 			}
 			this.launchDefaultFuncs({ displayLoading: false });
-		} catch (e) {
-			console.log(e);
-		}
+		} catch (e) {}
 	};
 	
 	_handleAppStateChange = async (nextAppState) => {
@@ -726,9 +766,7 @@ export default class App extends PureComponent {
 			AppState.removeEventListener("change", this._handleAppStateChange);
 			//Clear/Remove Wallet Refresh Timer
 			clearInterval(this._refreshWallet);
-		} catch (e) {
-			console.log(e);
-		}
+		} catch (e) {}
 	}
 	
 	//Handles The "upper" & "lower" Flex Animation
@@ -799,7 +837,7 @@ export default class App extends PureComponent {
 								),
 							);
 							
-						} catch (e) {console.log(e);}
+						} catch (e) {}
 					} catch (e) {}
 				}));
 				
@@ -938,6 +976,10 @@ export default class App extends PureComponent {
 	//Handles the series of animations necessary when the user taps a specific transaction from the TransactionList.
 	onTransactionPress = async (transaction = "") => {
 		try {
+			const {selectedWallet, selectedCrypto} = this.props.wallet;
+			transaction = await this.props.wallet[selectedWallet].transactions[selectedCrypto].filter((tx) => tx.hash === transaction);
+			await this.props.updateWallet({selectedTransaction: transaction[0]});
+			
 			const items = [
 				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true },
 				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
@@ -948,10 +990,6 @@ export default class App extends PureComponent {
 			this.updateItems(items);
 			this.updateFlex({upperContentFlex: 0, lowerContentFlex: 1, duration: 400});
 			this.updateItem({ stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: true });
-			
-			const {selectedWallet, selectedCrypto} = this.props.wallet;
-			transaction = await this.props.wallet[selectedWallet].transactions[selectedCrypto].filter((tx) => tx.hash === transaction);
-			this.props.updateWallet({selectedTransaction: transaction[0]});
 		} catch (e) {}
 	};
 	
@@ -1475,7 +1513,7 @@ export default class App extends PureComponent {
 						
 						{this.state.displayTransactionDetail &&
 						<Animated.View style={[styles.transactionDetail, { opacity: this.state.transactionDetailOpacity }]}>
-							<TransactionDetail />
+							<TransactionDetail refreshWallet={this.refreshWallet} onTransactionPress={this.onTransactionPress} />
 						</Animated.View>}
 					
 					</View>

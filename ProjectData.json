@@ -20,7 +20,8 @@
       "LOGOUT": "LOGOUT",
       "DELETE_WALLET": "DELETE_WALLET",
       "WIPE_DEVICE": "WIPE_DEVICE",
-      "ADD_TRANSACTION": "ADD_TRANSACTION"
+      "ADD_TRANSACTION": "ADD_TRANSACTION",
+      "UPDATE_RBF_DATA": "UPDATE_RBF_DATA"
     },
     "colors": {
       "red": "#F15B2A",

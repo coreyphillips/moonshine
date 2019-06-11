@@ -145,7 +145,6 @@ export const sendTransaction = ({ txHex = "", selectedCrypto = "bitcoin", sendTr
 		try {
 			//Attempt to push transaction via the currently connected electrum server
 			let response = await walletHelpers.pushtx.default({ rawTx: txHex, selectedCrypto });
-			
 			//If an error occurred and sendTransactionFallback is enabled in Settings attempt to broadcast the transaction using either Blockstream or Chain.so's api.
 			if (response.error === true && sendTransactionFallback === true) {
 				response = await walletHelpers.pushtx.fallback({ rawTx: txHex, selectedCrypto });
