@@ -54,6 +54,7 @@ export const wipeDevice = () => (dispatch: any) => {
 			for(let i = 0; i < 100; i++) {
 				const key = `wallet${i}`;
 				await resetKeychainValue({ key });
+				await resetKeychainValue({ key: `${key}passphrase` });
 			}
 			dispatch({
 				type: actions.WIPE_DEVICE

@@ -421,8 +421,17 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 			//Fetch Keypair
 			const keychainResult = await getKeychainValue({ key: wallet });
 			if (keychainResult.error === true) return;
+			
+			//Attempt to acquire the bip39Passphrase if available
+			let bip39Passphrase = "";
+			try {
+				const key = `${wallet}passphrase`;
+				const bip39PassphraseResult = await getKeychainValue({ key });
+				if (bip39PassphraseResult.error === false && bip39PassphraseResult.data.password) bip39Passphrase = bip39PassphraseResult.data.password;
+			} catch (e) {}
+			
 			const mnemonic = keychainResult.data.password;
-			const seed = bip39.mnemonicToSeed(mnemonic);
+			const seed = bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
 			const root = bip32.fromSeed(seed, network);
 			let txb = new bitcoin.TransactionBuilder(network);
 
@@ -540,8 +549,16 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 			addressType = addressType.toLowerCase();
 			if (keychainResult.error === true) return;
 
+			//Attempt to acquire the bip39Passphrase if available
+			let bip39Passphrase = "";
+			try {
+				const key = `${wallet}passphrase`;
+				const bip39PassphraseResult = await getKeychainValue({ key });
+				if (bip39PassphraseResult.error === false && bip39PassphraseResult.data.password) bip39Passphrase = bip39PassphraseResult.data.password;
+			} catch (e) {}
+			
 			const mnemonic = keychainResult.data.password;
-			const seed = bip39.mnemonicToSeed(mnemonic);
+			const seed = bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
 			const root = bip32.fromSeed(seed, network);
 
 			let addresses = [];

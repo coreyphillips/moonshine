@@ -9,7 +9,8 @@ import {
 	ScrollView,
 	Switch,
 	ActivityIndicator,
-	Platform
+	Platform,
+	TextInput
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
@@ -33,10 +34,12 @@ const {
 	getKeychainValue,
 	capitalize,
 	getExchangeRate,
-	openUrl
+	openUrl,
+	setKeychainValue
 } = require("../utils/helpers");
 const {
-	getCoinData
+	getCoinData,
+	defaultWalletShape
 } = require("../utils/networks");
 const moment = require("moment");
 
@@ -89,6 +92,10 @@ const walletHelpItems = [
 		text: "This option allows you to toggle between common derivation paths used by other wallets and is most helpful to those with imported mnemonic phrases from wallets utilizing a different path."
 	},
 	{
+		title: "BIP39 Passphrase:",
+		text: "A BIP39 passphrase is completely optional. When included, the passphrase is mixed with the selected wallet's mnemonic phrase to create a unique master seed. Including a passphrase significantly increases the security of your wallet as an attacker would not only need to know what your mnemonic phrase is they would also need to know the passphrase in order to gain access to your funds. However, this also works the other way around. In order to recover funds you will need both the mnemonic phrase and the passphrase. So long as you understand and are comfortable with this, adding a passphrase is highly recommended."
+	},
+	{
 		title: "Wallet Backup:",
 		text: "Tapping this item displays the mnemonic phrase for the currently selected wallet. This phrase is meant to be kept secret and should be written down and stored in a safe place in case you lose access to your wallet and need to recover your funds."
 	},
@@ -122,8 +129,22 @@ class Settings extends PureComponent<Props> {
 			connectingToElectrum: false,
 			
 			displayGeneralHelp: false,
-			displayWalletHelp: false
+			displayWalletHelp: false,
+			
+			bip39PassphraseIsSet: false,
+			bip39Passphrase: ""
 		};
+	}
+	
+	async componentDidMount() {
+		//Attempt to determine if the bip39Passphrase is set
+		try {
+			const key = `${this.props.wallet.selectedWallet}passphrase`;
+			const bip39PassphraseResult = await getKeychainValue({ key });
+			if (bip39PassphraseResult.error === false && bip39PassphraseResult.data.password) {
+				this.setState({ bip39PassphraseIsSet: true });
+			}
+		} catch (e) {}
 	}
 
 	componentDidUpdate() {
@@ -272,6 +293,36 @@ class Settings extends PureComponent<Props> {
 							</View>
 							<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginHorizontal: 20 }}>
 								{options.map((option) => this._displayOption({ ...option, optionsLength, currentValue}))}
+							</View>
+						</View>
+					</View>
+				</View>
+			);
+		} catch (e) {}
+	}
+	
+	TextInputRow({ title = "", subTitle = "", currentValue = "", onChangeText = () => null, onPress = () => null } = {}) {
+		try {
+			return (
+				<View style={styles.rowContainer}>
+					<View style={styles.row}>
+						<View>
+							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
+								<Text style={styles.title}>{title}</Text>
+								<TextInput
+									style={styles.textInput}
+									secureTextEntry={true}
+									autoCapitalize="none"
+									selectionColor={colors.lightPurple}
+									onChangeText={onChangeText}
+									value={currentValue}
+									placeholder={subTitle}
+									autoCorrect={false}
+									autoCompleteType={false}
+								/>
+							</View>
+							<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginHorizontal: 20 }}>
+								{this._displayOption({ value: "Add Passphrase", optionsLength: 1, currentValue: "Add Passphrase", onPress})}
 							</View>
 						</View>
 					</View>
@@ -512,6 +563,51 @@ class Settings extends PureComponent<Props> {
 				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: !display },
 			];
 			this.updateItems(items);
+		} catch (e) {
+			console.log(e);
+		}
+	};
+	
+	_resetWalletForPassphrase = async () => {
+		try {
+			const { selectedWallet } = this.props.wallet;
+			const { lastUpdated, hasBackedUpWallet, walletBackupTimestamp, keyDerivationPath, addressType } = this.props.wallet[selectedWallet];
+			this.props.updateWallet({
+				[selectedWallet]: {
+					...defaultWalletShape,
+					lastUpdated,
+					hasBackedUpWallet,
+					walletBackupTimestamp,
+					keyDerivationPath,
+					addressType,
+				}
+			});
+		} catch (e) {}
+	};
+	
+	addBip39Passphrase = async () => {
+		try {
+			const passphrase = this.state.bip39Passphrase;
+			if (!passphrase) return;
+			const wallet = this.props.wallet.selectedWallet;
+			const key = `${wallet}passphrase`;
+			await setKeychainValue({ key, value: passphrase });
+			this.setState({ bip39PassphraseIsSet: true });
+			await this._resetWalletForPassphrase();
+			this.rescanWallet();
+		} catch (e) {
+			console.log(e);
+		}
+	};
+	
+	removeBip39Passphrase = async () => {
+		try {
+			const wallet = this.props.wallet.selectedWallet;
+			const key = `${wallet}passphrase`;
+			this.setState({ bip39PassphraseIsSet: false });
+			await resetKeychainValue({ key });
+			await this._resetWalletForPassphrase();
+			this.rescanWallet();
 		} catch (e) {
 			console.log(e);
 		}
@@ -856,6 +952,27 @@ class Settings extends PureComponent<Props> {
 									{value: "84", onPress: () => this.updateKeyDerivationPath({ keyDerivationPath: "84" }) },
 								]
 							})}
+							
+							{!this.state.bip39PassphraseIsSet &&
+							this.TextInputRow({
+								title: "BIP39 Passphrase",
+								subTitle: "Enter your passphrase here...",
+								currentValue: this.state.bip39Passphrase,
+								onChangeText: (bip39Passphrase) => this.setState({bip39Passphrase}),
+								onPress: this.addBip39Passphrase
+							})
+							}
+							
+							{this.state.bip39PassphraseIsSet &&
+							this.MultiOptionRow({
+								title: "BIP39 Passphrase",
+								subTitle: "o-o-o-o",
+								currentValue: "Remove Passphrase",
+								options:[
+									{value: "Remove Passphrase", onPress: this.removeBip39Passphrase }
+								]
+							})
+							}
 
 							{this.Row({
 								title: "Backup Wallet",
@@ -1079,7 +1196,19 @@ const styles = StyleSheet.create({
 		borderWidth: 5,
 		borderRadius: 20,
 		borderColor: colors.lightGray
-	}
+	},
+	textInput: {
+		flex: 1,
+		height: 30,
+		width: "90%",
+		borderRadius: 5,
+		padding: 5,
+		backgroundColor: colors.white,
+		borderColor: colors.lightPurple,
+		borderWidth: 1,
+		color: colors.purple,
+		fontWeight: "bold"
+	},
 });
 
 const connect = require("react-redux").connect;

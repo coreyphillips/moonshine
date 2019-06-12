@@ -325,6 +325,10 @@ class TransactionDetail extends PureComponent <Props> {
 			//Ensure the selected coin is not Litecoin and that RBF is enabled in Settings.
 			if (selectedCrypto.includes("litecoin") || !this.props.settings.rbf) return false;
 			
+			//Ensure this is a sent transaction
+			const { type } = this.props.wallet.selectedTransaction;
+			if (type !== "sent") return false;
+			
 			//Ensure the transaction is still unconfirmed.
 			const confirmations = this.getConfirmations();
 			if (confirmations > 0) return false;

@@ -61,6 +61,7 @@ const deleteWallet = ({ wallet } = {}) => async (dispatch: any) => {
 		};
 
 		await resetKeychainValue({ key: wallet });
+		await resetKeychainValue({ key: `${wallet}passphrase` });
 
 		try {
 			dispatch({
