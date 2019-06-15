@@ -163,6 +163,7 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 				let amount = 0;
 				let fee = 0;
 				let messages = []; //OP_RETURN Messages
+				let userSentFundsToSelf = false;
 
 				let inputAddressMatch = false;
 
@@ -279,6 +280,13 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 									//console.log(e);
 								}
 							}));
+							
+							//Potential RBF, or this means the user tried sending funds back to their wallet.
+							if (inputAddressMatch === true && type === "received") {
+								await Promise.all(addresses.map((addr) => {
+									if (addr.address.includes(tx.address)) userSentFundsToSelf = true;
+								}));
+							}
 
 							try {
 								outputAmount = Number((outputAmount + Number(output.value)).toFixed(8));
@@ -302,6 +310,14 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 				} catch (e) {}
 				if (type === "sent") sentAmount =  Number((inputAmount - receivedAmount));
 				amount = type === "sent" ? Number((inputAmount - receivedAmount) - fee) : receivedAmount;
+				
+				//This looks like a potential RBF, or this means the user tried sending funds back to their wallet.
+				//Instead of listing it as a receive type transaction we will list it as a sent type and display the fee as the sent amount.
+				if (userSentFundsToSelf) {
+					type = "sent";
+					sentAmount = fee;
+					amount = sentAmount - fee;
+				}
 
 				const transaction = {
 					address: tx.address,

@@ -21,11 +21,12 @@ Bitbip's Alpha is available for download here:
 * [Android](https://play.google.com/store/apps/details?id=com.kisswallet)
 
 ## Installation
-* `git clone https://github.com/coreyphillips/bitbip`
-* `cd bitbip`
-* `yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../`
-* `react-native run ios` or `react-native run-android`
-
+```
+git clone https://github.com/coreyphillips/bitbip
+cd bitbip
+yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../
+react-native run ios` or `react-native run-android
+```
 ## Roadmap
 
 * 0.1.0 Alpha - *Complete*
@@ -41,16 +42,18 @@ Bitbip's Alpha is available for download here:
 * 0.2.0 Alpha
     * Add a UTXO selector to create custom transactions
         * This will allow users to select from a list of available utxo's to include in their transaction.
-    * Implement coinselect (https://github.com/bitcoinjs/coinselect)
-    * Implement RBF functionality - *Complete (0.1.1)*
-    * Add support for UTXO blacklisting - *Partially Complete (0.1.1) - Blacklist functionality can be accessed via the Transaction Detail view for now.*
-        * This allows users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo excludes it's amount from the wallet's total balance.
-    * Allow users to manually select which public Electrum servers to randomly use if not connecting to their own node
     * Add support for additional currencies in the settings
-    * Add support for Segwit-compatible & legacy addresses in settings - *Complete (0.1.1)*
-    * Allow users to select the key derivation path in settings - *Complete (0.1.1)*
-    * Support individual private key sweeping functionality - *Complete (0.1.1)*
-
+    * Allow users to manually select which public Electrum servers to randomly use if not connecting to their own node
+    * *Partially Complete (0.1.1)* - Add support for UTXO blacklisting - Blacklist functionality can be accessed via the Transaction Detail view for now.
+        * This allows users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo excludes it's amount from the wallet's total balance.
+    * *Complete (0.1.1)* - Implement RBF functionality
+    * *Complete (0.1.1)* - Add BIP39 Passphrase functionality
+    * *Complete (0.1.1)* - Add support for Segwit-compatible & legacy addresses in settings
+    * *Complete (0.1.1)* - Allow users to select the key derivation path in settings
+    * *Complete (0.1.1)* - Support individual private key sweeping functionality
+* 0.3.0 Alpha
+    * Add support for Lightning via Neutrino
+    * Transition to TypeScript
 ## Contributing
 
 1. Fork it (<https://github.com/coreyphillips/bitbip>)

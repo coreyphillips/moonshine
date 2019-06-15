@@ -28,9 +28,8 @@ class TransactionList extends PureComponent {
 			const status = transaction.item.status;
 			const confirmations = transaction.item.confirmations;
 			const block = transaction.item.block;
-			const fee = transaction.item.fee;
 			//Include the fee in the amount if the user sent the transaction.
-			const amount = type === "sent" ? transaction.item.amount + fee : transaction.item.amount;
+			const amount = type === "sent" ? transaction.item.sentAmount : transaction.item.amount;
 			const messages = transaction.item.messages;
 			//const { amount, confirmations, data, hash, status, timestamp, type } = transaction;
 			return (

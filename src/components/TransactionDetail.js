@@ -5,7 +5,8 @@ import {
 	View,
 	ScrollView,
 	TouchableOpacity,
-	InteractionManager
+	InteractionManager,
+	Alert
 } from "react-native";
 import { systemWeights } from "react-native-typography";
 import bitcoinUnits from "bitcoin-units";
@@ -86,24 +87,30 @@ class TransactionDetail extends PureComponent <Props> {
 	
 	RbfRow = () => {
 		try {
+			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			const nextAvailableAddress = this.props.wallet[selectedWallet].addresses[selectedCrypto][this.props.wallet[selectedWallet].addressIndex[selectedCrypto]].address;
 			return (
 				<View style={{ marginTop: 20, alignItems: "center", justifyContent: "center" }}>
-					<Text style={styles.text}>Increase the fee for a faster transaction:</Text>
+					<Text style={[styles.text, { textAlign: "center" }]}>Transaction taking too long?</Text>
+					<Text style={[styles.text, { textAlign: "center" }]}>Cancel the transaction or increase the fee for a faster transaction:</Text>
 					<View style={[styles.row, { alignItems: "center", justifyContent: "center" }]}>
 						<TouchableOpacity onPressIn={() => this.updateRbfValue("decrease")} onPressOut={this.stopRbfValueTimer} style={styles.icon}>
-							<EvilIcon name={"minus"} size={40} color={colors.darkPurple} />
+							<EvilIcon name={"minus"} size={42} color={colors.darkPurple} />
 						</TouchableOpacity>
-						<View>
+						<View style={{ flex: 1.5 }}>
 							<Text style={[styles.title, { padding: 5, flex: 0.5 }]}>
 								{this.getRbfAmout()}
 							</Text>
 						
 						</View>
 						<TouchableOpacity onPressIn={() => this.updateRbfValue("increase")} onPressOut={this.stopRbfValueTimer} style={styles.icon}>
-							<EvilIcon name={"plus"} size={40} color={colors.darkPurple} />
+							<EvilIcon name={"plus"} size={42} color={colors.darkPurple} />
 						</TouchableOpacity>
 					</View>
-					<Button style={{ ...styles.button, backgroundColor: "#813fb1" }} text="Increase Fee" onPress={this.increaseFee} />
+					<View style={[styles.row, { marginTop: 20 }]}>
+						<Button style={{ ...styles.button, backgroundColor: "#813fb1", width: "50%" }} text={"Cancel Transaction"} onPress={() => this.cancelTransaction(nextAvailableAddress)} />
+						<Button style={{ ...styles.button, backgroundColor: "#813fb1", width: "50%" }} text="Increase Fee" onPress={this.attemptRbf} />
+					</View>
 				</View>
 			);
 		} catch (e) {}
@@ -368,11 +375,35 @@ class TransactionDetail extends PureComponent <Props> {
 		clearTimeout(this.rbfValueTimer);
 	}
 	
-	increaseFee = async (): void => {
+	cancelTransaction = async (address = ""): void => {
 		try {
-			//Set Loading State
+			if (!address) return;
+			Alert.alert(
+				"Cancel Transaction",
+				`Are you sure you wish to cancel this transaction? This action can be seen as malicious by the original recipient of this transaction.`,
+				[
+					{
+						text: "No",
+						onPress: () => {},
+						style: "cancel",
+					},
+					{text: "Yes", onPress: () => this.attemptRbf(address)},
+				]
+			);
+		} catch (e) {}
+	};
+	
+	attemptRbf = async (address = ""): void => {
+		try {
 			let loadingMessage = this.getRbfAmout();
-			loadingMessage = `Updating fee.\nOne moment please.\n\n${loadingMessage}`;
+			if (address) {
+				//Add Cancelling Transaction Message
+				loadingMessage = `Cancelling transaction.\nOne moment please.\n\n${loadingMessage}`;
+			} else {
+				//Add Updating Fee Message
+				loadingMessage = `Updating fee.\nOne moment please.\n\n${loadingMessage}`;
+			}
+			//Set Loading State
 			await this.setState({ loading: true, loadingMessage });
 			
 			InteractionManager.runAfterInteractions(async () => {
@@ -380,6 +411,10 @@ class TransactionDetail extends PureComponent <Props> {
 				const transactionFee = this.state.rbfValue;
 				const hash = this.props.wallet.selectedTransaction.hash;
 				let rbfData = this.props.wallet[selectedWallet].rbfData[selectedCrypto];
+				
+				//User appears to be cancelling/re-routing the transaction so add the new "send to" address.
+				if (address) rbfData[hash]["address"] = address;
+				
 				const transaction = await createTransaction({...rbfData[hash], transactionFee, setRbf: true});
 				let sendTransactionResult = await this.props.sendTransaction({
 					txHex: transaction.data,
@@ -400,6 +435,9 @@ class TransactionDetail extends PureComponent <Props> {
 					newRbfData["hash"] = sendTransactionResult.data;
 					rbfData[newRbfData.hash] = newRbfData;
 					
+					//If cancelling a transaction (by including an address), do not store any new rbfData, remove it.
+					if (address) try {if (rbfData[newRbfData.hash]) delete rbfData[newRbfData.hash];} catch (e) {}
+					
 					await this.props.updateWallet({
 						...this.props.wallet,
 						[selectedWallet]: {
@@ -418,6 +456,10 @@ class TransactionDetail extends PureComponent <Props> {
 					const successfulTransaction = [selectedTransaction];
 					successfulTransaction[0]["hash"] = sendTransactionResult.data;
 					successfulTransaction[0]["fee"] = totalFee;
+					
+					//Since we cancelled this transaction set the sentAmount & amount to 0.
+					if (address) successfulTransaction[0]["sentAmount"] = totalFee;
+					if (address) successfulTransaction[0]["amount"] = 0;
 
 					//Add Transaction to transaction stack
 					const transactionData = {
@@ -430,8 +472,11 @@ class TransactionDetail extends PureComponent <Props> {
 						try {
 							await this.setState({initialFee: this.state.rbfValue, rbfValue: this.state.rbfValue + 1});
 							await this.props.refreshWallet();
+							
+							//Remove the rbfRow if we cancelled the current transaction
+							const rbfIsSupported = address ? false : this.state.rbfIsSupported;
 							//Remove Loading State
-							this.setState({loading: false});
+							this.setState({ loading: false, rbfIsSupported });
 						} catch (e) {}
 					}, 2000);
 				}
@@ -442,8 +487,8 @@ class TransactionDetail extends PureComponent <Props> {
 	render() {
 		if (!this.props.wallet.selectedTransaction) return <View />;
 		const { selectedCrypto } = this.props.wallet;
-		const { block, type, hash, timestamp, fee, address, amount } = this.props.wallet.selectedTransaction;
-		const confirmations = getConfirmations();
+		const { block, type, hash, timestamp, fee, address, amount, sentAmount } = this.props.wallet.selectedTransaction;
+		const confirmations = this.getConfirmations();
 		const status = block === 0 || block === null || confirmations === 0 ? "Pending" : "Confirmed";
 		const blockHeight = block === 0 ? "?" : block;
 		const messagesLength = this.props.wallet.selectedTransaction.messages.length;
@@ -467,10 +512,10 @@ class TransactionDetail extends PureComponent <Props> {
 						<View style={styles.separator} />
 						
 						{this.Row({ title: "Transaction\nFee:", value: this.getAmount(fee) })}
-						{this.state.rbfIsSupported && this.RbfRow()}
+						{this.state.rbfIsSupported && confirmations === 0 && this.RbfRow()}
 						<View style={styles.separator} />
 						
-						{type === "sent" && this.Row({ title: "Total Sent:", value: this.getAmount(amount+fee) })}
+						{type === "sent" && this.Row({ title: "Total Sent:", value: this.getAmount(sentAmount) })}
 						{type === "sent" && <View style={styles.separator} />}
 						
 						{this.Row({ title: "Type:", value: capitalize(type) })}
@@ -496,7 +541,7 @@ class TransactionDetail extends PureComponent <Props> {
 						
 						{this.isActiveUtxo() &&
 						<Button style={{ ...styles.button, backgroundColor: isBlacklisted ? colors.red : "#813fb1" }} text={isBlacklisted ? "Whitelist UTXO" : "Blacklist UTXO"} onPress={this.toggleUtxoBlacklist} />}
-					
+						
 					</View>
 				</ScrollView>
 				

@@ -1,7 +1,17 @@
 {
   "name": "bitbip",
   "version": "0.1.1",
-  "private": true,
+  "description": "An open-source, non-custodial, Bitcoin/Litecoin Electrum wallet for iOS & Android.",
+  "author": "Corey Phillips",
+  "license": "MIT",
+  "homepage": "https://github.com/coreyphillips/bitbip",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coreyphillips/bitbip.git"
+  },
+  "bugs": {
+    "url": "https://github.com/coreyphillips/bitbip/issues"
+  },
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "test": "jest",

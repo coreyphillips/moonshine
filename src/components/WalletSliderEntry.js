@@ -113,11 +113,11 @@ class WalletSliderEntry extends PureComponent {
 				`Are you sure you wish to delete ${selectedWallet}?`,
 				[
 					{
-						text: "NO",
+						text: "No",
 						onPress: () => {},
 						style: "cancel",
 					},
-					{text: "YES", onPress: () => this._deleteWallet({ wallet, walletIndex })},
+					{text: "Yes", onPress: () => this._deleteWallet({ wallet, walletIndex })},
 				]
 			);
 		} catch (e) {

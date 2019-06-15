@@ -628,7 +628,8 @@ class SendTransaction extends PureComponent<Props> {
 				//Success! The transaction completed successfully
 				try {
 					//Attempt to add the successful transaction to the transaction list
-					const { address, amount, fee, transactionSize } = currentTransactionDetails;
+					const { address, amount, transactionSize } = currentTransactionDetails;
+					const fee = currentTransactionDetails.fee || currentTransactionDetails.recommendedFee;
 					const confirmedBalance = this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto];
 					const totalFee = Number(fee)*Number(transactionSize);
 					const sentAmount = Number(amount) + totalFee;
