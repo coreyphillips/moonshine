@@ -159,11 +159,8 @@ module.exports = (state = {
 			//Attempt to add new rbfData
 			let rbfData = {};
 			try {
-				rbfData = action.payload.rbfData;
-				if (Object.entries(rbfData).length !== 0 && rbfData.constructor === Object) {
-					rbfData = state[action.payload.wallet].rbfData[action.payload.selectedCrypto];
+				if (Object.entries(action.payload.rbfData).length !== 0 && action.payload.rbfData.constructor === Object) {
 					rbfData[action.payload.rbfData.hash] = action.payload.rbfData || {};
-					
 					transactionData[action.payload.wallet]["rbfData"] = {
 						...state[action.payload.wallet].rbfData,
 						[action.payload.selectedCrypto]: rbfData
