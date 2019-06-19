@@ -87,9 +87,14 @@ class WalletSliderEntry extends PureComponent {
 	_deleteWallet = async ({ wallet = "", walletIndex = 0 } = {}) => {
 		try {
 			if (this.props.wallet.wallets.length > 1) {
-				await this.props.updateWallet({ selectedWallet: this.props.wallet.wallets[walletIndex]});
+				let newWalletIndex = walletIndex;
+				if (walletIndex === 0) {
+					newWalletIndex = walletIndex + 1;
+				} else {
+					newWalletIndex = walletIndex > 0 ? walletIndex - 1 : walletIndex;
+				}
+				await this.props.updateWallet({ selectedWallet: this.props.wallet.wallets[newWalletIndex]});
 				await this.props.deleteWallet({ wallet });
-				await this.props.updateActiveSlide(walletIndex);
 			}
 		} catch (e) {
 			console.log(e);

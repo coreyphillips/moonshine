@@ -170,7 +170,11 @@ const parsePaymentRequest = (data = "") => {
 				//Determine if we need to parse the data.
 				if (data.includes(":" || "?" || "&")) {
 					try {
-						//const coin = data.match(/.+?(?=:)/);
+						//bip21.decode will throw if anything other than "bitcoin" is passed to it.
+						//Replace any instance of "testnet" or "litecoin" with "bitcoin"
+						const coin = data.substr(0, data.indexOf(':'));
+						if (coin === "testnet") data = data.replace("testnet", "bitcoin");
+						if (coin === "litecoin") data = data.replace("litecoin", "bitcoin");
 						const result = bip21.decode(data);
 						const address = result.address;
 						validateAddressResult = validateAddress(address);
@@ -181,12 +185,8 @@ const parsePaymentRequest = (data = "") => {
 						}
 						let amount = "";
 						let message = "";
-						try {
-							amount = result.options.amount;
-						} catch (e) {}
-						try {
-							message = result.options.message;
-						} catch (e) {}
+						try {amount = result.options.amount || "";} catch (e) {}
+						try {message = result.options.message || "";} catch (e) {}
 						resolve({ error: false, data: { address, coin: validateAddressResult.coin, amount, message, label: message } });
 					} catch (e) {
 						console.log(e);
@@ -199,9 +199,6 @@ const parsePaymentRequest = (data = "") => {
 			} else {
 				failure();
 			}
-			//alert(uri.includes(":" || "?" || "&"));
-			//alert(JSON.stringify(queryString.parse("1DEcJ8mZ68YWvbxwoa8EzNKVuVpg3ik2WE")));
-			//alert(JSON.stringify(data));
 		} catch (e) {
 			console.log(e);
 			failure();
@@ -414,6 +411,13 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 			//Change address and amount to send back to wallet.
 			if (changeAddress) targets.push({ address: changeAddress, value: confirmedBalance - (amount + totalFee) });
 			
+			//Embed any OP_RETURN messages.
+			if (message !== "") {
+				const data = Buffer.from(message, "utf8");
+				const embed = bitcoin.payments.embed({data: [data], network});
+				targets.push({ address: embed.output, value: 0 });
+			}
+			
 			//Setup rbfData (Replace-By-Fee Data) for later use.
 			let rbfData = undefined;
 			if (rbfIsSupported) rbfData = { address, transactionFee, amount, confirmedBalance, utxos, blacklistedUtxos, changeAddress, wallet, selectedCrypto, message, addressType };
@@ -456,16 +460,14 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 					console.log(e);
 				}
 			}
-
-			if (message !== "") {
-				const data = Buffer.from(message, "utf8");
-				const embed = bitcoin.payments.embed({data: [data], network});
-				txb.addOutput(embed.output, 0);
-			}
 			
 			//Set RBF if supported and prompted via rbf in Settings.
 			try { if (rbfIsSupported && setRbf) setReplaceByFee({ txb, setRbf }); } catch (e) {}
-
+			
+			//Shuffle and add outputs.
+			try {
+				targets = shuffleArray(targets);
+			} catch (e) {console.log(e);}
 			await Promise.all(
 				targets.map((target) => {
 					txb.addOutput(target.address, target.value);

@@ -1,4 +1,4 @@
-import React, { PureComponent } from "react";
+import React, { Component } from "react";
 import {
 	StyleSheet,
 	Text,
@@ -51,10 +51,27 @@ const getAnimation = (name = "book") => {
 		return require(`../assets/lottie/snap_loader_white.json`);
 	}
 };
-//const { width, height } = Dimensions.get("window");
 
-class Loading extends PureComponent {
-
+class Loading extends Component {
+	
+	shouldComponentUpdate(nextProps) {
+		try {
+			if (
+				nextProps.loadingOpacity !== this.props.loadingOpacity ||
+				nextProps.loadingMessage !== this.props.loadingMessage ||
+				nextProps.loadingProgress !== this.props.loadingProgress ||
+				nextProps.animationName !== this.props.animationName ||
+				nextProps.enableProgressBar !== this.props.enableProgressBar ||
+				nextProps.enableSpinner !== this.props.enableSpinner ||
+				nextProps.enableErrorIcon !== this.props.enableErrorIcon ||
+				nextProps.enableSuccessIcon !== this.props.enableSuccessIcon
+			) {
+				return true;
+			}
+			return false;
+		} catch (e) {return false;}
+	}
+	
 	Icon() {
 		const animationName = this.props.animationName;
 		if (availableCoins.includes(animationName)) {

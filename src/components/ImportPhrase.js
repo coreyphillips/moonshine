@@ -61,7 +61,8 @@ class ImportPhrase extends PureComponent {
 					this.state.cameraOpacity,
 					{
 						toValue: display ? 1 : 0,
-						duration
+						duration,
+						useNativeDriver: true
 					}
 				).start(async () => {
 					//Perform any other action after the update has been completed.

@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import {
 	Dimensions,
 	StyleSheet,
@@ -27,7 +27,7 @@ const {
 	}
 } = require("../../ProjectData.json");
 
-export default class WalletCarousel extends PureComponent {
+export default class WalletCarousel extends Component {
 
 	constructor(props) {
 		super(props);
@@ -36,62 +36,65 @@ export default class WalletCarousel extends PureComponent {
 		};
 	}
 
-	_renderItem({ item, index, onCoinPress = () => null, onClose = () => null, updateActiveSlide = () => null } = {}) {
+	_renderItem({ item, index, onCoinPress = () => null, onClose = () => null } = {}) {
 		return (
 			<WalletSliderEntry
 				data={item}
 				even={(index + 1) % 2 === 0}
-				//onCoinPress={index === this.state.activeSlide ? onCoinPress : () => null}
 				onCoinPress={onCoinPress}
 				onClose={onClose}
-				updateActiveSlide={updateActiveSlide}
 			/>
 		);
 	}
-
-	carousel() {
-		return (
-			<View style={styles.walletContainer}>
-				<Carousel
-					ref={c => this._slider1Ref = c}
-					data={this.props.wallet.wallets}
-					renderItem={({ item, index }) => this._renderItem({ item, index, onCoinPress: this.props.onCoinPress, onClose: this.props.onClose, updateActiveSlide: (index) => this.setState({ activeSlide: index }) })}
-					sliderWidth={sliderWidth}
-					itemWidth={itemWidth}
-					firstItem={this.state.activeSlide}
-					inactiveSlideScale={0.94}
-					inactiveSlideOpacity={0.7}
-					// inactiveSlideShift={20}
-					containerCustomStyle={styles.slider}
-					contentContainerCustomStyle={styles.sliderContentContainer}
-					loopClonesPerSide={2}
-					onSnapToItem={index => {
-						this.setState({ activeSlide: index });
-					}}
-					enableMomentum={true}
-					decelerationRate={0.9}
-				/>
-				<Pagination
-					dotsLength={this.props.wallet.wallets.length}
-					activeDotIndex={this.state.activeSlide}
-					containerStyle={styles.paginationContainer}
-					dotColor={'rgba(255, 255, 255, 0.92)'}
-					dotStyle={styles.paginationDot}
-					inactiveDotColor={colors.black}
-					inactiveDotOpacity={0.7}
-					inactiveDotScale={0.8}
-					carouselRef={this._slider1Ref}
-					tappableDots={!!this._slider1Ref}
-				/>
-			</View>
-		);
+	
+	shouldComponentUpdate(nextProps, nextState) {
+		try {
+			if (
+				nextProps.wallet !== this.props.wallet ||
+				nextState.activeSlide !== this.state.activeSlide
+			) {
+				return true;
+			}
+			return false;
+		} catch (e) {return false;}
 	}
 
 	render() {
-		const Carousel = this.carousel();
 		return (
 			<View style={styles.container}>
-				{Carousel}
+				<View style={styles.walletContainer}>
+					<Carousel
+						ref={c => this._slider1Ref = c}
+						data={this.props.wallet.wallets}
+						renderItem={({ item, index }) => this._renderItem({ item, index, onCoinPress: this.props.onCoinPress, onClose: this.props.onClose })}
+						sliderWidth={sliderWidth}
+						itemWidth={itemWidth}
+						firstItem={this.state.activeSlide}
+						inactiveSlideScale={0.94}
+						inactiveSlideOpacity={0.7}
+						// inactiveSlideShift={20}
+						containerCustomStyle={styles.slider}
+						contentContainerCustomStyle={styles.sliderContentContainer}
+						loopClonesPerSide={2}
+						onSnapToItem={index => {
+							this.setState({ activeSlide: index });
+						}}
+						enableMomentum={true}
+						decelerationRate={0.9}
+					/>
+					<Pagination
+						dotsLength={this.props.wallet.wallets.length}
+						activeDotIndex={this.state.activeSlide}
+						containerStyle={styles.paginationContainer}
+						dotColor={'rgba(255, 255, 255, 0.92)'}
+						dotStyle={styles.paginationDot}
+						inactiveDotColor={colors.black}
+						inactiveDotOpacity={0.7}
+						inactiveDotScale={0.8}
+						carouselRef={this._slider1Ref}
+						tappableDots={!!this._slider1Ref}
+					/>
+				</View>
 			</View>
 		);
 	}

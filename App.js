@@ -186,7 +186,7 @@ export default class App extends PureComponent {
 				return;
 			}
 			
-			this.setState({ loadingTransactions: true });
+			if (this.state.loadingTransactions !== true) this.setState({ loadingTransactions: true });
 			InteractionManager.runAfterInteractions(() => {
 				this.refreshWallet({reconnectToElectrum: !sameCoin});
 			});
@@ -251,7 +251,7 @@ export default class App extends PureComponent {
 		} else {
 			//Device is offline. Ensure any loading animations are disabled.
 			await pauseExecution();
-			this.setState({ loadingTransactions: false });
+			if (this.state.loadingTransactions !== false) this.setState({ loadingTransactions: false });
 		}
 		
 		//Push user to the default view while the rest of the wallet data loads.
@@ -264,7 +264,7 @@ export default class App extends PureComponent {
 		
 		try {
 			//Enable the loading state
-			this.setState({ loadingTransactions: true });
+			if (this.state.loadingTransactions !== true) this.setState({ loadingTransactions: true });
 			const { selectedWallet, selectedCrypto, selectedCurrency } = this.props.wallet;
 			const { selectedService } = this.props.settings;
 			const keyDerivationPath = this.props.wallet[selectedWallet].keyDerivationPath[selectedCrypto];
@@ -275,7 +275,7 @@ export default class App extends PureComponent {
 			if (!isConnected) {
 				//Device is offline. Ensure any loading animations are disabled.
 				await Promise.all([this.props.updateUser({ isOnline: isConnected })]);
-				this.setState({ loadingTransactions: false });
+				if (this.state.loadingTransactions !== false)  this.setState({ loadingTransactions: false });
 				alert("Your device is currently offline. Please check your network connection and try again.");
 				return;
 			}
@@ -295,7 +295,7 @@ export default class App extends PureComponent {
 				} else {
 					//The device is considered offline if it is unable to connect to an electrum server. Ensure any loading animations are disabled.
 					await Promise.all([this.props.updateUser({isOnline: false})]);
-					this.setState({loadingTransactions: false});
+					if (this.state.loadingTransactions !== false)  this.setState({loadingTransactions: false});
 					alert("Unable to connect to an electrum server at this time. Please check your connection and try again.");
 					return;
 				}
@@ -539,10 +539,10 @@ export default class App extends PureComponent {
 			}
 
 			//Cease the loading state.
-			this.setState({ loadingTransactions: false });
+			if (this.state.loadingTransactions !== false) this.setState({ loadingTransactions: false });
 		} catch (e) {
 			console.log(e);
-			this.setState({ loadingTransactions: false });
+			if (this.state.loadingTransactions !== false)  this.setState({ loadingTransactions: false });
 		}
 	};
 	
@@ -554,7 +554,7 @@ export default class App extends PureComponent {
 			TouchID.authenticate("To open Bitbip", optionalConfigObject)
 				.then(() => {
 					//Hide the retry button on the Biometric Authentication view.
-					this.setState({ displayBiometricAuthenticationRetry: false });
+					if (this.state.displayBiometricAuthenticationRetry !== false)  this.setState({ displayBiometricAuthenticationRetry: false });
 					//Forward the user to the Pin view if they've enabled it. Otherwise, forward them to the app via launchDefaultFuncs.
 					if (this.props.settings.pin) {
 						//Transition to the pin view.
@@ -565,7 +565,7 @@ export default class App extends PureComponent {
 				})
 				.catch(() => {
 					//Display the retry button on the Biometric Authentication view in case they hit cancel or encountered some other error during the authentication process.
-					this.setState({ displayBiometricAuthenticationRetry: true });
+					if (this.state.displayBiometricAuthenticationRetry !== true)  this.setState({ displayBiometricAuthenticationRetry: true });
 				});
 		};
 		//Ensure Biometric authentication via Face or Touch ID is supported.
@@ -664,7 +664,7 @@ export default class App extends PureComponent {
 			electrum.stop({ coin: this.props.wallet.selectedCrypto });
 			//Clear/Remove Wallet Refresh Timer
 			clearInterval(this._refreshWallet);
-			this.setState({appHasLoaded: false});
+			if (this.state.appHasLoaded !== false) this.setState({appHasLoaded: false});
 		}
 		//Background -> Foreground
 		if (this.state.appState.match(/inactive|background/) && nextAppState === "active" && !this.state.displayCamera) {
@@ -721,7 +721,7 @@ export default class App extends PureComponent {
 				this.launchDefaultFuncs({ displayLoading: false, resetView: false });
 			} catch (e) {}
 		}
-		this.setState({appState: nextAppState});
+		if (this.state.appState !== nextAppState) this.setState({appState: nextAppState});
 	};
 	
 	async componentDidMount() {
@@ -820,22 +820,26 @@ export default class App extends PureComponent {
 						try {
 							
 							//Set the items to display and hide in the appropriate object.
-							if (display) {
-								itemsToDisplay = {...itemsToDisplay, [stateId]: display};
-							} else {
-								itemsToHide = {...itemsToHide, [stateId]: display};
+							const isNewValue = this.state[stateId] !== display;
+							if (isNewValue) {
+								if (display) {
+									itemsToDisplay = {...itemsToDisplay, [stateId]: display};
+								} else {
+									itemsToHide = {...itemsToHide, [stateId]: display};
+								}
+								
+								//Construct and push each animation to the animations array.
+								animations.push(
+									Animated.timing(
+										this.state[opacityId],
+										{
+											toValue: display ? 1 : 0,
+											duration,
+											useNativeDriver: true
+										}
+									),
+								);
 							}
-							
-							//Construct and push each animation to the animations array.
-							animations.push(
-								Animated.timing(
-									this.state[opacityId],
-									{
-										toValue: display ? 1 : 0,
-										duration
-									}
-								),
-							);
 							
 						} catch (e) {}
 					} catch (e) {}
@@ -867,20 +871,24 @@ export default class App extends PureComponent {
 		if (this.state[stateId] === display) return;
 		return new Promise(async (resolve) => {
 			try {
-				if (endToEndAnimation) {
-					if (display) this.setState({[stateId]: display});
-				} else {
-					this.setState({[stateId]: display});
+				const isNewValue = this.state[stateId] !== display;
+				if (isNewValue) {
+					if (endToEndAnimation) {
+						if (display) this.setState({[stateId]: display});
+					} else {
+						this.setState({[stateId]: display});
+					}
 				}
 				Animated.timing(
 					this.state[opacityId],
 					{
 						toValue: display ? 1 : 0,
-						duration
+						duration,
+						useNativeDriver: true
 					}
 				).start(async () => {
 					//Perform any other action after the update has been completed.
-					if (!display && endToEndAnimation) this.setState({[stateId]: display});
+					if (!display && endToEndAnimation && isNewValue) this.setState({[stateId]: display});
 					resolve ({error: false});
 				});
 			} catch (e) {
@@ -905,7 +913,7 @@ export default class App extends PureComponent {
 			this.updateFlex({ upperContentFlex: 1, lowerContentFlex: 0 });
 			this.updateItems([{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: true, duration: Platform.OS === "ios" ? 600 : 300 }]);
 			InteractionManager.runAfterInteractions(() => {
-				this.setState({optionSelected: "send"});
+				if (this.state.optionSelected !== "send") this.setState({optionSelected: "send"});
 			});
 		} catch (e) {
 			console.log(e);
@@ -933,7 +941,7 @@ export default class App extends PureComponent {
 			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
 			this.updateItems([{ stateId: "displaySweepPrivateKey", opacityId: "sweepPrivateKeyOpacity", display: true, duration: Platform.OS === "ios" ? 800 : 300 }]);
 			InteractionManager.runAfterInteractions(() => {
-				this.setState({optionSelected: "send"});
+				if (this.state.optionSelected !== "send") this.setState({optionSelected: "send"});
 			});
 		} catch (e) {
 			console.log(e);
@@ -955,11 +963,11 @@ export default class App extends PureComponent {
 			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
 			this.updateItem({ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: true, duration: 800 });
 			InteractionManager.runAfterInteractions(() => {
-				this.setState({optionSelected: "receive"});
+				if (this.state.optionSelected !== "receive") this.setState({optionSelected: "receive"});
 			});
 		} else {
 			//Close Receive State
-			this.setState({optionSelected: ""});
+			if (this.state.optionSelected !== "") this.setState({optionSelected: ""});
 			
 			const items = [
 				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false, duration: 200 },
@@ -1241,6 +1249,7 @@ export default class App extends PureComponent {
 			const qrCodeData = await parsePaymentRequest(data);
 			//Throw error if unable to interpret the qrcode data.
 			if (qrCodeData.error) {
+				await this.updateItem({ stateId: "displayCamera", opacityId: "cameraOpacity", display: false });
 				await this.resetView();
 				alert(`Unable to parse the following data:\n${qrCodeData.data}`);
 				return;

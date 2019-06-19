@@ -1,4 +1,4 @@
-import React, { PureComponent } from "react";
+import React, { Component } from "react";
 import {
 	View,
 	StyleSheet,
@@ -14,7 +14,15 @@ const {
 	}
 } = require("../../ProjectData.json");
 
-class SelectCoin extends PureComponent {
+class SelectCoin extends Component {
+	
+	shouldComponentUpdate(nextProps) {
+		try {
+			if (nextProps.wallet !== this.props.wallet) return true;
+			return false;
+		} catch (e) {return false;}
+	}
+	
 	render () {
 		const walletsLen = this.props.wallet.wallets.length;
 		return (

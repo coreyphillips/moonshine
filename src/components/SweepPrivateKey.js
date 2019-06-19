@@ -171,7 +171,7 @@ class SendTransaction extends PureComponent<Props> {
 	}
 
 	componentDidUpdate() {
-		Platform.OS === "ios" ? LayoutAnimation.easeInEaseOut() : null;
+		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
 	}
 
 	componentWillUnmount() {
@@ -706,7 +706,8 @@ class SendTransaction extends PureComponent<Props> {
 						this.state.loadingOpacity,
 						{
 							toValue: 0,
-							duration: 400
+							duration: 400,
+							useNativeDriver: true
 						}
 					).start(async () => {
 						//Close component after opacity fade-out
@@ -735,7 +736,8 @@ class SendTransaction extends PureComponent<Props> {
 					this.state.loadingOpacity,
 					{
 						toValue: display ? 1 : 0,
-						duration
+						duration,
+						useNativeDriver: true
 					}
 				).start(async () => {
 					//Perform any other action after the update has been completed.

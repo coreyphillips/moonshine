@@ -1,4 +1,4 @@
-import React, { PureComponent } from "react";
+import React, { Component } from "react";
 import {
 	StyleSheet,
 	Text,
@@ -54,7 +54,7 @@ const {
 const moment = require("moment");
 const { width, height } = Dimensions.get("window");
 
-class SendTransaction extends PureComponent<Props> {
+class SendTransaction extends Component<Props> {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -76,8 +76,6 @@ class SendTransaction extends PureComponent<Props> {
 			enableLoadingSuccessIcon: false,
 			enableLoadingErrorIcon: false,
 
-			displayForm: true,
-			formOpacity: new Animated.Value(1),
 			onCameraPress: props.onCameraPress,
 			spendMaxAmount: false,
 			fiatBalance: 0,
@@ -118,7 +116,7 @@ class SendTransaction extends PureComponent<Props> {
 	}
 
 	componentDidUpdate() {
-		Platform.OS === "ios" ? LayoutAnimation.easeInEaseOut() : null;
+		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
 	}
 
 	componentWillUnmount() {
@@ -135,7 +133,7 @@ class SendTransaction extends PureComponent<Props> {
 		return new Promise(async (resolve) => {
 			try {
 				//Perform any other action after the update has been completed.
-				this.setState({ displayXButton: display });
+				if (this.state.displayXButton !== display) this.setState({ displayXButton: display });
 				resolve({error: false});
 			} catch (e) {
 				console.log(e);
@@ -153,7 +151,8 @@ class SendTransaction extends PureComponent<Props> {
 					this.state.loadingOpacity,
 					{
 						toValue: display ? 1 : 0,
-						duration
+						duration,
+						useNativeDriver: true
 					}
 				).start(async () => {
 					//Perform any other action after the update has been completed.
@@ -171,7 +170,7 @@ class SendTransaction extends PureComponent<Props> {
 	updateConfirmationModal = async ({ display = true } = {}) => {
 		return new Promise(async (resolve) => {
 			this.updateXButton({ display });
-			this.setState({ displayConfirmationModal: display });
+			if (this.state.displayConfirmationModal !== display) this.setState({ displayConfirmationModal: display });
 			resolve({ error: false });
 		});
 	};
@@ -281,7 +280,7 @@ class SendTransaction extends PureComponent<Props> {
 					cryptoUnitAmount = bitcoinUnits(totalFee, "satoshi").to(this.props.settings.cryptoUnit).value();
 					this.props.updateTransaction({ fee: parseInt(recommendedFee/2), amount: totalFee, fiatAmount, transactionSize });
 				}
-				this.setState({ cryptoUnitAmount });
+				if (this.state.cryptoUnitAmount !== cryptoUnitAmount) this.setState({ cryptoUnitAmount });
 			} else {
 				const amount = this.props.transaction.amount;
 				let totalFee = this.getTotalFee(this.props.transaction.fee, transactionSize);
@@ -409,7 +408,7 @@ class SendTransaction extends PureComponent<Props> {
 				} else {
 					cryptoUnitAmount = bitcoinUnits(Number(satoshiAmount), "satoshi").to(cryptoUnit).value();
 				}
-				this.setState({ cryptoUnitAmount: cryptoUnitAmount.toString() });
+				if (this.state.cryptoUnitAmount !== cryptoUnitAmount.toString()) this.setState({ cryptoUnitAmount: cryptoUnitAmount.toString() });
 				this.props.updateTransaction({ amount: satoshiAmount, fiatAmount });
 			}
 		}
@@ -758,6 +757,18 @@ class SendTransaction extends PureComponent<Props> {
 			}
 		} catch (e) {}
 	};
+	
+	shouldComponentUpdate(nextProps, nextState) {
+		try {
+			if (
+				nextProps.transaction !== this.props.transaction ||
+				nextState !== this.state
+			) {
+				return true;
+			}
+			return false;
+		} catch (e) {return false;}
+	}
 
 	render() {
 		const { selectedCrypto } = this.props.wallet;
@@ -943,7 +954,7 @@ class SendTransaction extends PureComponent<Props> {
 													rawTx = rawTx.data;
 													await this.setState({ generatingTxHex: false });
 													this.copyRawTx(rawTx);
-													this.setState({ rawTx });
+													if (this.state.rawTx !== rawTx) this.setState({ rawTx });
 												}}
 											/>
 										</View>

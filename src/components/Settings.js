@@ -148,7 +148,7 @@ class Settings extends PureComponent<Props> {
 	}
 
 	componentDidUpdate() {
-		Platform.OS === "ios" ? LayoutAnimation.easeInEaseOut() : null;
+		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
 	}
 
 	HeaderRow({ header = "", title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", onPress = () => null, headerStyle = {}, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) {
