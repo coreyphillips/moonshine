@@ -22,7 +22,8 @@ const moment = require("moment");
 //let coinSelect = require("coinselect");
 const bip21 = require("bip21");
 const {
-	availableCoins
+	availableCoins,
+	supportsRbf
 } = require("../utils/networks");
 
 export const setItem = async (key, value) => {
@@ -403,7 +404,7 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 	return new Promise(async (resolve) => {
 		try {
 			const network = networks[selectedCrypto];
-			const rbfIsSupported = !selectedCrypto.includes("litecoin"); //Ensure the selected coin is not Litecoin.
+			const rbfIsSupported = supportsRbf[selectedCrypto]; //Ensure the selected coin is not Litecoin.
 			const totalFee = getTransactionSize(utxos.length, changeAddress ? 2 : 1) * transactionFee;
 			addressType = addressType.toLowerCase();
 			

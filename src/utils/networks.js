@@ -49,6 +49,12 @@ const networks = {
 //Returns an array of all available coins from the networks object.
 const availableCoins = Object.keys(networks).map(coin => coin);
 
+const supportsRbf = {
+	bitcoin: true,
+	bitcoinTestnet: true,
+	litecoin: false,
+	litecoinTestnet: false
+};
 
 const zeroValueItems = {
 	bitcoin: 0,
@@ -152,6 +158,7 @@ module.exports = {
 	networks,
 	availableCoins,
 	defaultWalletShape,
+	supportsRbf,
 	zeroValueItems,
 	arrayTypeItems,
 	getCoinImage,

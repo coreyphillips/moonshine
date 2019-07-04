@@ -48,7 +48,8 @@ const {
 } = require("../utils/helpers");
 
 const {
-	getCoinData
+	getCoinData,
+	supportsRbf
 } = require("../utils/networks");
 
 const moment = require("moment");
@@ -564,7 +565,7 @@ class SendTransaction extends Component<Props> {
 			const amount = Number(this.props.transaction.amount);
 			const message = this.props.transaction.message;
 			const addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];
-			const isRbf = this.props.settings.rbf && !selectedCrypto.includes("litecoin");
+			const isRbf = this.props.settings.rbf && supportsRbf[selectedCrypto];
 			
 			let changeAddress = "";
 			//Create More Change Addresses as needed
@@ -654,7 +655,7 @@ class SendTransaction extends Component<Props> {
 					//Add txHash to rbfData
 					let rbfData = undefined;
 					//Ensure RBF is enabled in Settings and that the selected coin is not Litecoin.
-					if (this.props.settings.rbf && !selectedCrypto.includes("litecoin")) {
+					if (this.props.settings.rbf && supportsRbf[selectedCrypto]) {
 						rbfData = transaction.rbfData;
 						rbfData["hash"] = sendTransactionResult.data;
 						transactionData["rbfData"] = rbfData;

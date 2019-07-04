@@ -1,0 +1,26 @@
+{
+  "bitcoin": [
+    "MEADS.hopto.org s t",
+    "cashyes.zapto.org s t",
+    "electrumx.nmdps.net s t",
+    "ndnd.selfhost.eu s t",
+    "oneweek.duckdns.org s t"
+  ],
+  "bitcoinTestnet": [
+    "testnet.hsmiths.com t53011 s53012",
+    "testnet.qtornado.com t51001 s51002",
+    "testnet1.bauerj.eu t50001 s50002",
+    "tn.not.fyi t55001 s55002",
+    "bitcoin.cluelessperson.com t51001 s51002"
+  ],
+  "litecoin": [
+    "electrum-ltc.bysh.me t50001 s50002",
+    "electrum-ltc.villocq.com t60001 s60002",
+    "electrum.ltc.xurious.com t50001 s50002",
+    "node.ispol.sk t50003 s50004"
+  ],
+  "litecoinTestnet": [
+    "electrum-ltc.bysh.me s51002 t51001",
+    "electrum.ltc.xurious.com s51002 t51001"
+  ]
+}

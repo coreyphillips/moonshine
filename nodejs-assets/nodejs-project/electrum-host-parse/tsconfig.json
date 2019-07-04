@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "noImplicitAny": false,
+    "sourceMap": false,
+    "removeComments": false,
+    "moduleResolution": "node",
+    "strict": true,
+    "lib": ["es7"],
+    "declaration": true
+  },
+  "exclude": [
+    "node_modules",
+    "src/**/*.spec.*"
+  ],
+  "include": [
+    "src/**/*"
+  ]
+}

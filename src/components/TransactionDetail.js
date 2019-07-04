@@ -30,7 +30,8 @@ const {
 } = require("../utils/helpers");
 
 const {
-	getCoinData
+	getCoinData,
+	supportsRbf
 } = require("../utils/networks");
 
 const moment = require("moment");
@@ -329,8 +330,8 @@ class TransactionDetail extends PureComponent <Props> {
 	canRbf = (): boolean => {
 		try {
 			const { selectedCrypto, selectedWallet } = this.props.wallet;
-			//Ensure the selected coin is not Litecoin and that RBF is enabled in Settings.
-			if (selectedCrypto.includes("litecoin") || !this.props.settings.rbf) return false;
+			//Ensure the selected coin supports RBF and that RBF is enabled in Settings.
+			if (!supportsRbf[selectedCrypto] || !this.props.settings.rbf) return false;
 			
 			//Ensure this is a sent transaction
 			const { type } = this.props.wallet.selectedTransaction;
