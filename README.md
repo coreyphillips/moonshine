@@ -69,6 +69,12 @@ TODOS:
     * Continuous manual refreshes can cause the app to improperly display transaction and balance data and sometimes requires the user to use the "Rescan Wallet" feature in Settings to correct it. This can be frustrating and stressful to the user for obvious reasons.
     * Quickly swapping between coins can cause the nodejs instance to hang, requiring the user restart the app in order to establish a stable connection to the Electrum server.
 
+## Altcoin Support
+Please be aware and take note that my primary focus is on expanding the core functionality of this wallet and not on adding altcoins. However, for those wishing to add a specific altcoin for personal use, I have created the following guide so that you may fork off in a proper fashion:
+[Altcoin Implementation Guide](https://gist.github.com/coreyphillips/91de5d15964797054988522664cc3150)
+ 
+ If you have any questions regarding this guide I'm always happy to help so don't hesitate to reach out.
+
 ## Support
 
 If you have any questions, feature requests, etc., please feel free to create an issue on [Github](https://github.com/coreyphillips/bitbip/issues) or reach out to me on [Twitter](https://twitter.com/coreylphillips).
