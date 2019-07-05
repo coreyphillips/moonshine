@@ -265,18 +265,23 @@ class Settings extends PureComponent<Props> {
 		}
 	}
 	
-	_displayOption({ value = "", currentValue = "", onPress = () => null, optionsLength = 1 } = {}) {
+	_displayOption({ value = "", key = "", currentValue = "", onPress = () => null, optionsLength = 1 } = {}) {
 		let width = 90/(optionsLength).toFixed(0);
 		width = width.toString();
 		width = `${width}%`;
-		const isMatch = currentValue.toLowerCase() === value.toLowerCase();
+		let isMatch = false;
+		if (key) {
+			isMatch = key.toLowerCase() === currentValue.toLowerCase();
+		} else {
+			isMatch = currentValue.toLowerCase() === value.toLowerCase();
+		}
 		return (
 			<TouchableOpacity key={value} onPress={onPress} style={[styles.cryptoUnitButton, { width, backgroundColor: isMatch ? colors.lightPurple : colors.white }]}>
 				<Text style={[styles.text, { color: isMatch ? colors.white : colors.purple}]}>{value}</Text>
 			</TouchableOpacity>
 		);
 	}
-	MultiOptionRow({ title = "", subTitle = "", currentValue = "", options = [{ value: "", onPress: () => null }], subTitleIsLink = false } = {}) {
+	MultiOptionRow({ title = "", subTitle = "", currentValue = "", options = [{ key: "", value: "", onPress: () => null }], subTitleIsLink = false } = {}) {
 		const optionsLength = options.length;
 		try {
 			return (
@@ -861,24 +866,15 @@ class Settings extends PureComponent<Props> {
 									{value: "CoinCap", onPress: () => this.updateExchangeRateService({ selectedService: "coincap" }) }
 								]
 							})}
-
-							<View style={styles.rowContainer}>
-								<View style={styles.row}>
-									<View>
-										<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
-											<Text style={styles.title}>Crypto Units</Text>
-										</View>
-										<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
-											<TouchableOpacity onPress={() => this.updateCryptoUnit("BTC")} style={[styles.cryptoUnitButton, { backgroundColor: this.props.settings.cryptoUnit === "BTC" ? colors.lightPurple : colors.white }]}>
-												<Text style={[styles.text, { color: this.props.settings.cryptoUnit === "BTC" ? colors.white : colors.purple}]}>{coinDataLabel.acronym}</Text>
-											</TouchableOpacity>
-											<TouchableOpacity onPress={() => this.updateCryptoUnit("satoshi")} style={[styles.cryptoUnitButton, { backgroundColor: this.props.settings.cryptoUnit === "satoshi" ? colors.lightPurple : colors.white }]}>
-												<Text style={[styles.text, { color: this.props.settings.cryptoUnit === "satoshi" ? colors.white : colors.purple}]}>{coinDataLabel.satoshi}</Text>
-											</TouchableOpacity>
-										</View>
-									</View>
-								</View>
-							</View>
+							
+							{this.MultiOptionRow({
+								title: "Crypto Units",
+								currentValue: this.props.settings.cryptoUnit,
+								options:[
+									{key: "BTC", value: coinDataLabel.acronym, onPress: () => this.updateCryptoUnit("BTC") },
+									{key: "satoshi", value: coinDataLabel.satoshi, onPress: () => this.updateCryptoUnit("satoshi") }
+								]
+							})}
 							
 							{this.Row({
 								title: "",
