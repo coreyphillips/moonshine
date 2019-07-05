@@ -5,19 +5,22 @@ class API {
 			bitcoin: false,
 			litecoin: false,
 			bitcoinTestnet: false,
-			litecoinTestnet: false
+			litecoinTestnet: false,
+			vertcoin: false
 		};
 		this.peer = {
 			bitcoin: {},
 			litecoin: {},
 			bitcoinTestnet: {},
-			litecoinTestnet: {}
+			litecoinTestnet: {},
+			vertcoin: {}
 		};
 		this.peers = {
 			bitcoin: [],
 			litecoin: [],
 			bitcoinTestnet: [],
-			litecoinTestnet: []
+			litecoinTestnet: [],
+			vertcoin: []
 		};
 	}
 

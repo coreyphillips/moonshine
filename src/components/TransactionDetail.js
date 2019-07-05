@@ -124,6 +124,7 @@ class TransactionDetail extends PureComponent <Props> {
 		if (selectedCrypto === "bitcoinTestnet") url = `https://blockstream.info/testnet/tx/${txid}`;
 		if (selectedCrypto === "litecoin") url = `https://chain.so/tx/LTC/${txid}`;
 		if (selectedCrypto === "litecoinTestnet") url = `https://chain.so/tx/LTCTEST/${txid}`;
+		if (selectedCrypto === "vertcoin") url = `https://insight.vertcoin.org/tx/${txid}`;
 		openUrl(url);
 	};
 	
@@ -134,6 +135,7 @@ class TransactionDetail extends PureComponent <Props> {
 		if (selectedCrypto === "bitcoinTestnet") url = `https://blockstream.info/testnet/block-height/${block}`;
 		if (selectedCrypto === "litecoin") url = `https://chain.so/block/LTC/${block}`;
 		if (selectedCrypto === "litecoinTestnet") url = `https://chain.so/block/LTC/${block}`;
+		if (selectedCrypto === "vertcoin") url = `https://insight.vertcoin.org/block/${block}`;
 		openUrl(url);
 	};
 	
@@ -144,6 +146,7 @@ class TransactionDetail extends PureComponent <Props> {
 		if (selectedCrypto === "bitcoinTestnet") url = `https://blockstream.info/testnet/address/${address}`;
 		if (selectedCrypto === "litecoin") url = `https://chain.so/address/LTC/${address}`;
 		if (selectedCrypto === "litecoinTestnet") url = `https://chain.so/address/LTCTEST/${address}`;
+		if (selectedCrypto === "vertcoin") url = `https://insight.vertcoin.org/address/${address}`;
 		openUrl(url);
 	};
 	
@@ -162,6 +165,9 @@ class TransactionDetail extends PureComponent <Props> {
 				break;
 			case "litecoinTestnet":
 				url = `https://chain.so/tx/LTCTEST/${tx}`;
+				break;
+			case "vertcoin":
+				url = `https://insight.vertcoin.org/tx/${tx}`;
 				break;
 			default:
 				return;

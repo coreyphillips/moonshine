@@ -22,5 +22,16 @@
   "litecoinTestnet": [
     "electrum-ltc.bysh.me s51002 t51001",
     "electrum.ltc.xurious.com s51002 t51001"
+  ],
+  "vertcoin": [
+    "fr1.vtconline.org t55001 s55002",
+    "uk1.vtconline.org t55001 s55002",
+    "vtc.horriblecoders.com t55001 s55002",
+    "vtc.lukechilds.co t55001 s55002",
+    "vtc-cce-1.coinomi.net t55001 s55002",
+    "vtc-cce-2.coinomi.net t55001 s55002",
+    "electrum.catpool.io t55001 s55002",
+    "electrum2.catpool.io t55001 s55002",
+    "www.verters.com t55001 s55002"
   ]
 }

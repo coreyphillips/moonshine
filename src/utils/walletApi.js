@@ -414,6 +414,11 @@ const fallbackBroadcastTransaction = async ({ rawTx = "", selectedCrypto = "bitc
 				response = await response.json();
 				response = response.status === "success" ? response.data.txid : "";
 				break;
+			case "vertcoin":
+				response = await fetch(`https://insight.vertcoin.org/insight-vtc-api/tx/send`, fetchData("POST", { rawtx: rawTx }));
+				response = await response.json();
+				response = response.status === "success" ? response.data.txid : "";
+				break;
 		}
 		if (response !== "") return { error: false, data: response };
 		return { error: true, data: "" };
