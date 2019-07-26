@@ -28,7 +28,7 @@ const {
 	getAddress,
 	validatePrivateKey
 } = require("../utils/helpers");
-const bitcoin = require("rn-bitcoinjs-lib");
+const bitcoin = require("bitcoinjs-lib");
 
 const {
 	createTransaction,

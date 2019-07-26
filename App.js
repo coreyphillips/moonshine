@@ -133,7 +133,9 @@ export default class App extends PureComponent {
 		loadingMessage: "",
 		loadingProgress: 0,
 		loadingTransactions: true,
-		loadingAnimationName: "cloudBook"
+		loadingAnimationName: "cloudBook",
+		fiatBalance: 0,
+		cryptoBalance: 0
 	};
 	
 	setExchangeRate = async ({ selectedCrypto = "bitcoin", selectedCurrency = "usd", selectedService = "coingecko" } = {}) => {
@@ -270,18 +272,27 @@ export default class App extends PureComponent {
 			const keyDerivationPath = this.props.wallet[selectedWallet].keyDerivationPath[selectedCrypto];
 			const addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];
 			
-			//Check if the user is online
+			//Check if the user is online and connected.
 			const isConnected = await isOnline();
-			if (!isConnected) {
-				//Device is offline. Ensure any loading animations are disabled.
-				await Promise.all([this.props.updateUser({ isOnline: isConnected })]);
-				if (this.state.loadingTransactions !== false)  this.setState({ loadingTransactions: false });
-				alert("Your device is currently offline. Please check your network connection and try again.");
-				return;
+			if (this.props.user.isOnline) {
+				//Ensure the user is still online
+				if (!isConnected) {
+					//Device is offline. Ensure any loading animations are disabled.
+					await Promise.all([this.props.updateUser({ isOnline: isConnected })]);
+					if (this.state.loadingTransactions !== false)  this.setState({ loadingTransactions: false });
+					alert("Your device is currently offline. Please check your network connection and try again.");
+					return;
+				}
+			} else {
+				//Check the users connection again and pull them out of offline status if they are back online.
+				if (isConnected) {
+					this.props.updateUser({isOnline: isConnected});
+				} else {
+					this.setState({ loadingTransactions: false });
+					return;
+				}
 			}
 			
-			//Save isConnected state to isOnline.
-			if (this.props.user.isOnline === false) this.props.updateUser({ isOnline: isConnected });
 			this.setExchangeRate({ selectedCrypto, selectedService, selectedCurrency }); //Set the exchange rate for the selected currency
 			//Update status of the user-facing loading message and progress bar
 			if (!ignoreLoading) this.setState({ loadingMessage: "Connecting to Electrum Server...", loadingProgress: 0.4 });
@@ -533,6 +544,10 @@ export default class App extends PureComponent {
 					utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
 					const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
 					await this.props.updateBalance({ utxos, blacklistedUtxos, selectedCrypto, selectedWallet, wallet: selectedWallet });
+					//Set fiat/crypto balance
+					const fiatBalance = this.getFiatBalance();
+					const cryptoBalance = this.getCryptoBalance();
+					this.setState({ fiatBalance, cryptoBalance });
 				} catch (e) {
 					console.log(e);
 				}
@@ -1436,9 +1451,9 @@ export default class App extends PureComponent {
 										<Text style={styles.cryptoValue}>{this.props.wallet.selectedWallet.split('wallet').join('Wallet ')}</Text>
 									</TouchableOpacity>
 									<Header
-										fiatValue={this.getFiatBalance()}
+										fiatValue={this.state.fiatBalance}
 										fiatSymbol={this.props.settings.fiatSymbol}
-										cryptoValue={this.getCryptoBalance()}
+										cryptoValue={this.state.cryptoBalance}
 										cryptoUnit={this.props.settings.cryptoUnit}
 										selectedCrypto={this.props.wallet.selectedCrypto}
 										selectedWallet={this.props.wallet.selectedWallet}

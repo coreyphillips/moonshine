@@ -1,5 +1,4 @@
 import {
-	Platform,
 	Linking,
 	Vibration
 } from "react-native";
@@ -15,7 +14,7 @@ const {
 const {
 	walletHelpers
 } = require("./walletApi");
-const bitcoin = require("rn-bitcoinjs-lib");
+const bitcoin = require("bitcoinjs-lib");
 const bip39 = require("bip39");
 const bip32 = require("bip32");
 const moment = require("moment");
@@ -337,17 +336,7 @@ const getAllTransactions = async ({ allAddresses = [], addresses = [], changeAdd
 const isOnline = async () => {
 	let isConnected = true;
 	try {
-		if (Platform.OS === "ios") {
-			return new Promise((resolve) => {
-				const connectionHandler = connectionInfo => {
-					NetInfo.removeEventListener("connectionChange", connectionHandler);
-					if (connectionInfo.type === "none" || connectionInfo.type === "unknown") isConnected = false;
-					resolve(isConnected);
-				};
-				NetInfo.addEventListener("connectionChange", connectionHandler);
-			});
-		}
-		const connectionInfo = await NetInfo.getConnectionInfo();
+		const connectionInfo = await NetInfo.fetch();
 		if (connectionInfo.type === "none" || connectionInfo.type === "unknown") isConnected = false;
 	} catch (e) {}
 	return isConnected;

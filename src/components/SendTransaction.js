@@ -565,7 +565,7 @@ class SendTransaction extends Component<Props> {
 			const amount = Number(this.props.transaction.amount);
 			const message = this.props.transaction.message;
 			const addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];
-			const isRbf = this.props.settings.rbf && supportsRbf[selectedCrypto];
+			const setRbf = this.props.settings.rbf && supportsRbf[selectedCrypto];
 			
 			let changeAddress = "";
 			//Create More Change Addresses as needed
@@ -587,7 +587,7 @@ class SendTransaction extends Component<Props> {
 				}
 			}
 
-			return await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, blacklistedUtxos, changeAddress, wallet: selectedWallet, selectedCrypto, message, addressType, isRbf });
+			return await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, blacklistedUtxos, changeAddress, wallet: selectedWallet, selectedCrypto, message, addressType, setRbf });
 		} catch (e) {
 			console.log(e);
 		}

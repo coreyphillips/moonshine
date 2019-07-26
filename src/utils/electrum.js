@@ -36,7 +36,7 @@ this.getVersion = {};
 this.getNewBlockHeadersSubscribe = {};
 this.connectToPeer = {};
 
-const bitcoin = require("rn-bitcoinjs-lib");
+const bitcoin = require("bitcoinjs-lib");
 const {
 	networks
 } = require("./networks");
