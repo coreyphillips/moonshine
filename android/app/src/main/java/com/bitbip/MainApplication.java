@@ -46,7 +46,8 @@ public class MainApplication extends Application implements ReactApplication {
             new SvgPackage(),
             new LinearGradientPackage(),
             new RandomBytesPackage(),
-            new KeychainPackage()
+            new KeychainPackage(),
+            new LndNativePackage()
       );
     }
 
