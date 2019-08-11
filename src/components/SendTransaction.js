@@ -98,7 +98,7 @@ class SendTransaction extends Component<Props> {
 			
 			//Set the transactionSize to accurately determine the transaction fee
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto];
+			const utxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto];
 			const transactionSize = getTransactionSize(utxos.length, 2);
 			this.props.updateTransaction({ transactionSize });
 			
@@ -221,7 +221,7 @@ class SendTransaction extends Component<Props> {
 	getFiatBalance = () => {
 		try {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			const confirmedBalance = Number(this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto]);
+			const confirmedBalance = Number(this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto]);
 			bitcoinUnits.setFiat("usd", Number(this.props.wallet.exchangeRate[selectedCrypto]));
 			const fiatBalance = bitcoinUnits(confirmedBalance, "satoshi").to("usd").value().toFixed(2);
 			if (isNaN(fiatBalance)) return 0;
@@ -236,7 +236,7 @@ class SendTransaction extends Component<Props> {
 		let confirmedBalance = 0;
 		try {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			return Number(this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto]) || 0;
+			return Number(this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto]) || 0;
 		} catch (e) {}
 		return confirmedBalance;
 	};
@@ -244,7 +244,7 @@ class SendTransaction extends Component<Props> {
 	hasEnoughFunds = () => {
 		try {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			const walletBalance = this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto];
+			const walletBalance = this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto];
 			const amount = this.props.transaction.amount;
 			const fee = this.props.transaction.fee || this.props.transaction.recommendedFee;
 			const totalFee = this.getTotalFee(fee);
@@ -260,7 +260,7 @@ class SendTransaction extends Component<Props> {
 			
 			//"spendMaxAmount" will not send funds back to a changeAddress and thus have one less output so we need to update the transactionSize accordingly.
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto];
+			const utxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto];
 			const transactionSize = getTransactionSize(utxos.length, !this.state.spendMaxAmount ? 1 : 2);
 			const recommendedFee = Number(this.props.transaction.recommendedFee);
 			const walletBalance = this.state.cryptoBalance;
@@ -466,7 +466,7 @@ class SendTransaction extends Component<Props> {
 			const difference = getDifferenceBetweenDates({ start, end });
 			if (!this.props.transaction.feeTimestamp || difference > 10) {
 				const { selectedWallet, selectedCrypto } = this.props.wallet;
-				const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto];
+				const utxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto];
 				const transactionSize = getTransactionSize(utxos.length, this.state.spendMaxAmount ? 1 : 2);
 				const result = await this.props.getRecommendedFee({coin: selectedCrypto, transactionSize});
 				
@@ -521,8 +521,8 @@ class SendTransaction extends Component<Props> {
 		const fee = Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee);
 		const amount = Number(this.props.transaction.amount);
 		const { selectedWallet, selectedCrypto } = this.props.wallet;
-		const balance = this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto];
-		const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto];
+		const balance = this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto];
+		const utxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto];
 		const transactionSize = getTransactionSize(utxos.length, this.state.spendMaxAmount ? 1 : 2);
 		const totalTransactionCost = amount+(fee*transactionSize);
 		if (totalTransactionCost > balance) {
@@ -538,8 +538,8 @@ class SendTransaction extends Component<Props> {
 		}
 
 		//Ensure that the address they are trying to send to is not our own.
-		const addresses = this.props.wallet[selectedWallet].addresses[selectedCrypto].map(addr => (addr.address));
-		const changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto].map(addr => (addr.address));
+		const addresses = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto].map(addr => (addr.address));
+		const changeAddresses = this.props.wallet.wallets[selectedWallet].changeAddresses[selectedCrypto].map(addr => (addr.address));
 		if ( addresses.includes(address) || changeAddresses.includes(address)) {
 			alert(`It appears that you are attempting to send to your own address:\n\n"${address}"\n\nPlease enter an address that is unaffiliated with this wallet and try again.`);
 			return;
@@ -557,21 +557,22 @@ class SendTransaction extends Component<Props> {
 				alert(`It appears that \n "${address}" \n is not a valid ${capitalize(selectedCrypto)} address. Please attempt to re-enter the address.`);
 				return;
 			}
-			const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
-			const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
-			const confirmedBalance = this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto];
-			const changeAddressIndex = this.props.wallet[selectedWallet].changeAddressIndex[selectedCrypto];
+			const wallet = this.props.wallet.wallets[selectedWallet];
+			const utxos = wallet.utxos[selectedCrypto] || [];
+			const blacklistedUtxos = wallet.blacklistedUtxos[selectedCrypto];
+			const confirmedBalance = wallet.confirmedBalance[selectedCrypto];
+			const changeAddressIndex = wallet.changeAddressIndex[selectedCrypto];
 			const transactionFee = Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee);
 			const amount = Number(this.props.transaction.amount);
 			const message = this.props.transaction.message;
-			const addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];
+			const addressType = wallet.addressType[selectedCrypto];
 			const setRbf = this.props.settings.rbf && supportsRbf[selectedCrypto];
 			
 			let changeAddress = "";
 			//Create More Change Addresses as needed
 			//Only add a changeAddress if the user is not spending the max amount.
 			if (!this.state.spendMaxAmount) {
-				const changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto];
+				const changeAddresses = wallet.changeAddresses[selectedCrypto];
 				if (changeAddresses.length-1 < changeAddressIndex) {
 					//Generate receiving and change addresses.
 					const newChangeAddress = await generateAddresses({
@@ -583,7 +584,7 @@ class SendTransaction extends Component<Props> {
 					});
 					changeAddress = newChangeAddress.data.changeAddresses[0].address;
 				} else {
-					changeAddress = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto][changeAddressIndex].address;
+					changeAddress = wallet.changeAddresses[selectedCrypto][changeAddressIndex].address;
 				}
 			}
 
@@ -602,12 +603,13 @@ class SendTransaction extends Component<Props> {
 			);
 			await this.setState({loadingMessage: "Creating Transaction...", loadingProgress: 0.4});
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			const addresses = this.props.wallet[selectedWallet].addresses[selectedCrypto];
-			const changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto];
+			const wallet = this.props.wallet.wallets[selectedWallet];
+			const addresses = wallet.addresses[selectedCrypto];
+			const changeAddresses = wallet.changeAddresses[selectedCrypto];
 			const currentBlockHeight = this.props.wallet.blockHeight[selectedCrypto];
 			let currentUtxos = [];
 			try {
-				currentUtxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
+				currentUtxos = wallet.utxos[selectedCrypto] || [];
 			} catch (e) {
 			}
 			await pauseExecution();
@@ -665,13 +667,16 @@ class SendTransaction extends Component<Props> {
 					
 					//Temporarily update the balance for the user to prevent a delay while electrum syncs the balance from the new transaction
 					try {
-						const newBalance = Number(this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto]) - sentAmount;
+						const newBalance = Number(wallet.confirmedBalance[selectedCrypto]) - sentAmount;
 						await this.props.updateWallet({
-							[selectedWallet]: {
-								...this.props.wallet[selectedWallet],
-								confirmedBalance: {
-									...this.props.wallet[selectedWallet].confirmedBalance,
-									[selectedCrypto]: newBalance
+							wallets: {
+								...this.props.wallet.wallets,
+								[selectedWallet]: {
+									...this.props.wallet.wallets[selectedWallet],
+									confirmedBalance: {
+										...this.props.wallet.wallets[selectedWallet].confirmedBalance,
+										[selectedCrypto]: newBalance
+									}
 								}
 							}
 						});
@@ -772,7 +777,7 @@ class SendTransaction extends Component<Props> {
 	}
 
 	render() {
-		const { selectedCrypto } = this.props.wallet;
+		const { selectedCrypto, selectedWallet } = this.props.wallet;
 		const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
 		const { crypto: cryptoFeeLabel, fiat: fiatFeeLabel } = this.getFeesToDisplay(exchangeRate);
 
@@ -789,7 +794,7 @@ class SendTransaction extends Component<Props> {
 						cryptoUnit={this.props.settings.cryptoUnit}
 						selectedCrypto={this.props.wallet.selectedCrypto}
 						selectedCryptoStyle={{ fontSize: 30, marginTop: 10 }}
-						selectedWallet={this.props.wallet.selectedWallet}
+						selectedWallet={`Wallet ${Object.keys(this.props.wallet.wallets).indexOf(selectedWallet)}`}
 						exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]}
 						isOnline={this.props.user.isOnline}
 						displayWalletName={true}

@@ -81,6 +81,9 @@ const objectTypeItems = {
 };
 
 const defaultWalletShape = {
+	id: "",
+	name: "",
+	type: "default",
 	addresses: arrayTypeItems,
 	addressIndex: zeroValueItems,
 	changeAddresses: arrayTypeItems,

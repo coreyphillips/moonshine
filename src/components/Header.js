@@ -57,7 +57,7 @@ class Header extends PureComponent {
 		return (
 			<TouchableOpacity style={styles.container} activeOpacity={activeOpacity} onPress={onSelectCoinPress}>
 				{displayWalletName &&
-				<Text style={[styles.cryptoValue, { fontSize: fontSize/2.5 }]}>{selectedWallet.split('wallet').join('Wallet ')}</Text>}
+				<Text style={[styles.cryptoValue, { fontSize: fontSize/2.5 }]}>{selectedWallet}</Text>}
 				<Text style={[styles.cryptoValue, { fontSize: fontSize/2.5, ...selectedCryptoStyle }]}>{getCryptoLabel({selectedCrypto})}</Text>
 				<View style={styles.row}>
 					<View style={{ flexDirection: "row", alignItems: "center", left: -4 }}>

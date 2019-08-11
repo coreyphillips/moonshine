@@ -7,7 +7,6 @@ import {
 	Animated,
 	LayoutAnimation,
 	ScrollView,
-	Switch,
 	ActivityIndicator,
 	Platform,
 	TextInput
@@ -21,6 +20,8 @@ import Fade from "./Fade";
 import PinPad from "./PinPad";
 import ImportPhrase from "./ImportPhrase";
 import ElectrumOptions from "./ElectrumOptions";
+import SettingSwitch from "./SettingSwitch";
+import SettingGeneral from "./SettingGeneral";
 import * as electrum from "../utils/electrum";
 
 const {
@@ -105,26 +106,26 @@ const walletHelpItems = [
 	},
 ];
 
-class Settings extends PureComponent<Props> {
+class Settings extends PureComponent {
 	constructor(props) {
 		super(props);
 		this.state = {
 			displaySettings: true,
 			settingsOpacity: new Animated.Value(1),
-
+			
 			displayPin: false,
 			pinOpacity: new Animated.Value(0),
-
+			
 			displayBackupPhrase: false,
 			backupPhraseOpacity: new Animated.Value(0),
 			backupPhrase: "",
-
+			
 			displayImportPhrase: false,
 			importPhraseOpacity: new Animated.Value(0),
-
+			
 			displayElectrumOptions: false,
 			electrumOptionsOpacity: new Animated.Value(0),
-
+			
 			rescanningWallet: false,
 			connectingToElectrum: false,
 			
@@ -146,17 +147,17 @@ class Settings extends PureComponent<Props> {
 			}
 		} catch (e) {}
 	}
-
+	
 	componentDidUpdate() {
 		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
 	}
-
+	
 	HeaderRow({ header = "", title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", onPress = () => null, headerStyle = {}, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) {
 		try {
 			return (
 				<TouchableOpacity onPress={() => onPress(value)} activeOpacity={1} style={styles.rowContainer}>
 					<View style={styles.row}>
-
+						
 						<View style={{ flex: 1 }}>
 							<View style={{ alignItems: "center", justifyContent: "center" }}>
 								{!col1Loading && col1Image === "" &&
@@ -178,7 +179,7 @@ class Settings extends PureComponent<Props> {
 									<MaterialCommunityIcons name={col1Image} size={50} color={col1ImageColor} />
 								</View>
 								}
-
+								
 								{!col2Loading && col2Image === "" &&
 								<View style={[styles.col2, col2Style]}>
 									<Text style={[styles.text, valueStyle]}>{value}</Text>
@@ -187,7 +188,7 @@ class Settings extends PureComponent<Props> {
 								<View style={[styles.col2, col2Style]}>
 									<ActivityIndicator size="large" color={colors.lightPurple} />
 								</View>}
-
+								
 								{!col2Loading && col2Image !== "" &&
 								<View style={[styles.col2, col2Style]}>
 									<MaterialCommunityIcons name={col2Image} size={50} color={colors.purple} />
@@ -195,68 +196,7 @@ class Settings extends PureComponent<Props> {
 								}
 							</View>
 						</View>
-
-					</View>
-				</TouchableOpacity>
-			);
-		} catch (e) {
-			console.log(e);
-		}
-	}
-
-	Row({ title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", rowStyle = { backgroundColor: colors.white }, onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) {
-		try {
-			return (
-				<TouchableOpacity onPress={() => onPress(value)} activeOpacity={1} style={styles.rowContainer}>
-					<View style={[styles.row, rowStyle]}>
-						{!col1Loading && col1Image === "" &&
-						<View style={[styles.col1, col1Style]}>
-							<Text style={[styles.title, titleStyle]}>{title}</Text>
-						</View>}
-						{col1Loading &&
-						<View style={[styles.col1, col1Style]}>
-							<ActivityIndicator size="large" color={colors.lightPurple} />
-						</View>}
-						{!col1Loading && col1Image !== "" &&
-						<View style={[styles.col1, col1Image]}>
-							<MaterialCommunityIcons name={col1Image} size={50} color={col1ImageColor} />
-						</View>
-						}
-
-						{!col2Loading && col2Image === "" &&
-						<View style={[styles.col2, col2Style]}>
-							<Text style={[styles.text, valueStyle]}>{value}</Text>
-						</View>}
-						{col2Loading &&
-						<View style={[styles.col2, col2Style]}>
-							<ActivityIndicator size="large" color={colors.lightPurple} />
-						</View>}
-
-						{!col2Loading && col2Image !== "" &&
-						<View style={[styles.col2, col2Style]}>
-							<MaterialCommunityIcons name={col2Image} size={50} color={colors.purple} />
-						</View>
-						}
-
-					</View>
-				</TouchableOpacity>
-			);
-		} catch (e) {
-			console.log(e);
-		}
-	}
-
-	SwitchRow({ title = "", value = "", onPress = () => null, setting = "", col1Style = {}, col2Style = {}, titleStyle = {} } = {}) {
-		try {
-			return (
-				<TouchableOpacity onPress={() => onPress(setting)} activeOpacity={1} style={styles.rowContainer}>
-					<View style={[styles.row, { paddingHorizontal: 10 }]}>
-						<View style={[styles.col1, { flex: 0.6, alignItems: "flex-start" }, col1Style]}>
-							<Text style={[styles.title, titleStyle]}>{title}</Text>
-						</View>
-						<TouchableOpacity onPress={() => onPress(value)} style={[styles.col2, { flex: 0.4, alignItems: "flex-end" }, col2Style]}>
-							<Switch ios_backgroundColor={colors.gray} thumbColor={colors.purple} trackColor={{false: colors.lightGray, true: colors.gray}} value={this.props.settings[setting]} onValueChange={() => onPress(setting)} />
-						</TouchableOpacity>
+					
 					</View>
 				</TouchableOpacity>
 			);
@@ -323,7 +263,7 @@ class Settings extends PureComponent<Props> {
 									value={currentValue}
 									placeholder={subTitle}
 									autoCorrect={false}
-									autoCompleteType={false}
+									autoCompleteType={"off"}
 								/>
 							</View>
 							<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginHorizontal: 20 }}>
@@ -434,17 +374,17 @@ class Settings extends PureComponent<Props> {
 					{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false },
 				];
 				this.updateItems(items);
-
+				
 			}
 		} catch (e) {
 			console.log(e);
 		}
 	};
-
+	
 	toggleSetting = (setting = "") => {
 		this.props.updateSettings({ [setting]: !this.props.settings[setting] });
 	};
-
+	
 	onPinSuccess = () => {
 		try {
 			//Hide the PinPad View
@@ -458,7 +398,7 @@ class Settings extends PureComponent<Props> {
 			console.log(e);
 		}
 	};
-
+	
 	onBack = () => {
 		try {
 			//If the user cancels out of the PinPad view
@@ -504,13 +444,14 @@ class Settings extends PureComponent<Props> {
 			this.props.onBack();
 		} catch (e) {}
 	};
-
+	
 	getBackupWalletValue = () => {
 		try {
 			const selectedWallet = this.props.wallet.selectedWallet;
-			const walletName = this.props.wallet.selectedWallet.split('wallet').join('Wallet ');
-			if (this.props.wallet[selectedWallet].hasBackedUpWallet) {
-				return `${walletName} last backed up on\n${moment(this.props.wallet[selectedWallet].walletBackupTimestamp).format('l @ h:mm a')}.`;
+			const walletKey = Object.keys(this.props.wallet.wallets).indexOf(selectedWallet);
+			const walletName = `Wallet ${walletKey}`;
+			if (this.props.wallet.wallets[selectedWallet].hasBackedUpWallet) {
+				return `${walletName} last backed up on\n${moment(this.props.wallet.wallets[selectedWallet].walletBackupTimestamp).format('l @ h:mm a')}.`;
 			} else {
 				return "Wallet has not\nbeen backed up.";
 			}
@@ -518,7 +459,7 @@ class Settings extends PureComponent<Props> {
 			console.log(e);
 		}
 	};
-
+	
 	toggleBackupPhrase = async ({ selectedWallet = "", display = false }) => {
 		try {
 			if (!selectedWallet) return;
@@ -534,10 +475,13 @@ class Settings extends PureComponent<Props> {
 				await this.setState({ backupPhrase: mnemonic });
 				this.updateItems(items);
 				this.props.updateWallet({
-					[selectedWallet]: {
-						...this.props.wallet[selectedWallet],
-						hasBackedUpWallet: true,
-						walletBackupTimestamp: moment()
+					wallets: {
+						...this.props.wallet.wallets,
+						[selectedWallet]: {
+							...this.props.wallet.wallets[selectedWallet],
+							hasBackedUpWallet: true,
+							walletBackupTimestamp: moment()
+						}
 					}
 				});
 			} else {
@@ -548,7 +492,7 @@ class Settings extends PureComponent<Props> {
 			console.log(e);
 		}
 	};
-
+	
 	toggleImportPhrase = async ({ display = false }) => {
 		try {
 			const items = [
@@ -557,10 +501,10 @@ class Settings extends PureComponent<Props> {
 			];
 			this.updateItems(items);
 		} catch (e) {
-
+		
 		}
 	};
-
+	
 	toggleElectrumOptions = async ({ display = false }) => {
 		try {
 			const items = [
@@ -576,15 +520,18 @@ class Settings extends PureComponent<Props> {
 	_resetWalletForPassphrase = async () => {
 		try {
 			const { selectedWallet } = this.props.wallet;
-			const { lastUpdated, hasBackedUpWallet, walletBackupTimestamp, keyDerivationPath, addressType } = this.props.wallet[selectedWallet];
+			const { lastUpdated, hasBackedUpWallet, walletBackupTimestamp, keyDerivationPath, addressType } = this.props.wallet.wallets[selectedWallet];
 			this.props.updateWallet({
-				[selectedWallet]: {
-					...defaultWalletShape,
-					lastUpdated,
-					hasBackedUpWallet,
-					walletBackupTimestamp,
-					keyDerivationPath,
-					addressType,
+				wallets: {
+					...this.props.wallet.wallets,
+					[selectedWallet]: {
+						...defaultWalletShape,
+						lastUpdated,
+						hasBackedUpWallet,
+						walletBackupTimestamp,
+						keyDerivationPath,
+						addressType,
+					}
 				}
 			});
 		} catch (e) {}
@@ -657,28 +604,30 @@ class Settings extends PureComponent<Props> {
 		}
 	};
 	
-	updateWallet = async ({ data = [] } = {}) => {
+	updateWallet = async ({ data = [{ key: "", value: "" }] } = {}) => {
 		try {
 			if (!data) return;
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
 			
 			let newData = {};
 			await Promise.all(data.map(({ key = undefined, value = undefined } = {}) => {
-					if (key && value) newData[key] = {...this.props.wallet[selectedWallet][key], [selectedCrypto]: value};
+					if (key && value) newData[key] = {...this.props.wallet.wallets[selectedWallet][key], [selectedCrypto]: value};
 				})
 			);
 			await this.props.updateWallet({
-				...this.props.wallet,
-				[selectedWallet]: {
-					...this.props.wallet[selectedWallet],
-					...newData
+				wallets: {
+					...this.props.wallet.wallets,
+					[selectedWallet]: {
+						...this.props.wallet.wallets[selectedWallet],
+						...newData
+					}
 				}
 			});
 		} catch (e) {
 			console.log(e);
 		}
 	};
-
+	
 	reconnectToPeer = async () => {
 		try {
 			const selectedCrypto = this.props.wallet.selectedCrypto;
@@ -698,45 +647,49 @@ class Settings extends PureComponent<Props> {
 			console.log(e);
 		}
 	};
-
+	
 	rescanWallet = async () => {
 		try {
 			await this.setState({ rescanningWallet: true });
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			const wallet = this.props.wallet.wallets[selectedWallet];
 			await this.props.updateWallet({
-				[selectedWallet]: {
-					...this.props.wallet[selectedWallet],
-					addressIndex: {
-						...this.props.wallet[selectedWallet].addressIndex,
-						[selectedCrypto]: 0
-					},
-					changeAddressIndex: {
-						...this.props.wallet[selectedWallet].changeAddressIndex,
-						[selectedCrypto]: 0
-					},
-					addresses: {
-						...this.props.wallet[selectedWallet].addresses,
-						[selectedCrypto]: []
-					},
-					changeAddresses: {
-						...this.props.wallet[selectedWallet].changeAddresses,
-						[selectedCrypto]: []
-					},
-					transactions: {
-						...this.props.wallet[selectedWallet].transactions,
-						[selectedCrypto]: []
-					},
-					utxos: {
-						...this.props.wallet[selectedWallet].utxos,
-						[selectedCrypto]: []
-					},
-					confirmedBalance: {
-						...this.props.wallet[selectedWallet].confirmedBalance,
-						[selectedCrypto]: 0
-					},
-					unconfirmedBalance: {
-						...this.props.wallet[selectedWallet].unconfirmedBalance,
-						[selectedCrypto]: 0
+				wallets: {
+					...this.props.wallet.wallets,
+					[selectedWallet]: {
+						...wallet,
+						addressIndex: {
+							...wallet.addressIndex,
+							[selectedCrypto]: 0
+						},
+						changeAddressIndex: {
+							...wallet.changeAddressIndex,
+							[selectedCrypto]: 0
+						},
+						addresses: {
+							...wallet.addresses,
+							[selectedCrypto]: []
+						},
+						changeAddresses: {
+							...wallet.changeAddresses,
+							[selectedCrypto]: []
+						},
+						transactions: {
+							...wallet.transactions,
+							[selectedCrypto]: []
+						},
+						utxos: {
+							...wallet.utxos,
+							[selectedCrypto]: []
+						},
+						confirmedBalance: {
+							...wallet.confirmedBalance,
+							[selectedCrypto]: 0
+						},
+						unconfirmedBalance: {
+							...wallet.unconfirmedBalance,
+							[selectedCrypto]: 0
+						}
 					}
 				}
 			});
@@ -746,7 +699,7 @@ class Settings extends PureComponent<Props> {
 			console.log(e);
 		}
 	};
-
+	
 	getPeerInfo = () => {
 		try {
 			return { host: this.props.settings.currentPeer.host, port: this.props.settings.currentPeer.port };
@@ -754,7 +707,7 @@ class Settings extends PureComponent<Props> {
 			return { host: "No peer connected", port: "" };
 		}
 	};
-
+	
 	updateCryptoUnit = (cryptoUnit = "satoshi") => {
 		try {
 			this.props.updateSettings({ cryptoUnit });
@@ -777,8 +730,8 @@ class Settings extends PureComponent<Props> {
 				});
 				
 				try {
-					const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
-					const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
+					const utxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto] || [];
+					const blacklistedUtxos = this.props.wallet.wallets[selectedWallet].blacklistedUtxos[selectedCrypto];
 					this.props.updateBalance({ utxos, blacklistedUtxos, selectedCrypto, selectedWallet, wallet: selectedWallet });
 				} catch (e) {
 					//console.log(e);
@@ -802,7 +755,7 @@ class Settings extends PureComponent<Props> {
 			return "?";
 		}
 	};
-
+	
 	getBackupPhrase = () => {
 		const backupPhrase = this.state.backupPhrase.split(" ");
 		let phrase = "";
@@ -811,22 +764,22 @@ class Settings extends PureComponent<Props> {
 		}
 		return phrase;
 	};
-
+	
 	render() {
 		const { selectedWallet, selectedCrypto } = this.props.wallet;
 		let coinDataLabel = "?";
 		try {coinDataLabel = getCoinData({ selectedCrypto, cryptoUnit: "BTC" });} catch (e) {}
 		let keyDerivationPath = "84";
-		try {keyDerivationPath = this.props.wallet[selectedWallet].keyDerivationPath[selectedCrypto];} catch (e) {}
+		try {keyDerivationPath = this.props.wallet.wallets[selectedWallet].keyDerivationPath[selectedCrypto];} catch (e) {}
 		let isTestnet = true;
 		try {isTestnet = selectedCrypto.includes("Testnet");} catch (e) {}
 		let addressType = "bech32";
-		try {addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];} catch (e) {}
+		try {addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];} catch (e) {}
 		const walletName = selectedWallet.split('wallet').join('Wallet ');
 		const cryptoLabel = capitalize(selectedCrypto);
 		return (
 			<View style={styles.container}>
-
+				
 				<Animated.View style={{ flex: 1, opacity: this.state.settingsOpacity }}>
 					<ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} contentContainerStyle={{flexGrow:1}} style={{ flex: 1, paddingTop: 20 }}>
 						<TouchableOpacity activeOpacity={1} style={styles.container}>
@@ -839,22 +792,18 @@ class Settings extends PureComponent<Props> {
 									<TouchableOpacity onPress={() => this.setState({ displayGeneralHelp: true })} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
 										<MaterialCommunityIcons name={"help-circle-outline"} size={26} color={colors.white} />
 									</TouchableOpacity>
-									
+								
 								</View>
 								<View style={{ height: 1.5, backgroundColor: colors.white, width: "80%" }} />
 							</View>
 							
 							{this.props.settings.biometricsIsSupported &&
-								this.SwitchRow({ setting: "biometrics", title: `Enable ${this.props.settings.biometricTypeSupported}`, onPress: this.toggleSetting })
+								<SettingSwitch setting="biometrics" value={this.props.settings["biometrics"]} title={`Enable ${this.props.settings.biometricTypeSupported}`} onPress={this.toggleSetting} />
 							}
-							
-							{this.SwitchRow({ setting: "pin", title: "Enable Pin", onPress: this.togglePin })}
-							
-							{this.SwitchRow({ setting: "testnet", title: "Enable Testnet", onPress: this.toggleTestnet })}
-							
-							{this.SwitchRow({ setting: "rbf", title: "Enable RBF", onPress: this.toggleRBF })}
-							
-							{this.SwitchRow({ setting: "sendTransactionFallback", title: "Send Transaction Fallback", onPress: this.toggleSendTransactionFallback })}
+							<SettingSwitch setting="pin" value={this.props.settings["pin"]} title="Enable Pin" onPress={this.togglePin} />
+							<SettingSwitch setting="testnet" value={this.props.settings["testnet"]} title="Enable Testnet" onPress={this.toggleTestnet} />
+							<SettingSwitch setting="rbf" value={this.props.settings["rbf"]} title="Enable RBF" onPress={this.toggleRBF} />
+							<SettingSwitch setting="sendTransactionFallback" value={this.props.settings["sendTransactionFallback"]} title="Send Transaction Fallback" onPress={this.toggleSendTransactionFallback} />
 							
 							{this.MultiOptionRow({
 								title: "Exchange Rate Source",
@@ -876,34 +825,34 @@ class Settings extends PureComponent<Props> {
 								]
 							})}
 							
-							{this.Row({
-								title: "",
-								value: "Import Mnemonic Phrase",
-								onPress: () => this.toggleImportPhrase({ display: true }),
-								col1Image: "import",
-								col1ImageColor: colors.purple,
-								col1Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10 },
-								col2Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 },
-								titleStyle: { color: colors.purple },
-								valueStyle: { color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }
-							})}
+							<SettingGeneral
+								title=""
+								value="Import Mnemonic Phrase"
+								onPress={() => this.toggleImportPhrase({ display: true })}
+								col1Image="import"
+								col1ImageColor={colors.purple}
+								col1Style={{flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10}}
+								col2Style={{flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10}}
+								titleStyle={{color: colors.purple}}
+								valueStyle={{color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold"}}
+							/>
 							
-							{this.Row({
-								title: "",
-								value: "Electrum Options",
-								onPress: () => this.toggleElectrumOptions({ display: true }),
-								col1Image: "alpha-e-box",
-								col1ImageColor: colors.purple,
-								col1Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10 },
-								col2Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 },
-								titleStyle: { color: colors.purple },
-								valueStyle: { color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }
-							})}
+							<SettingGeneral
+								title=""
+								value="Electrum Options"
+								onPress={() => this.toggleElectrumOptions({ display: true })}
+								col1Image="alpha-e-box"
+								col1ImageColor={colors.purple}
+								col1Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10 }}
+								col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 }}
+								titleStyle={{ color: colors.purple }}
+								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
+							/>
 							
 							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
 								<View style={styles.header}>
 									
-									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{`${walletName}:`}</Text>
+									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{`Wallet ${Object.keys(this.props.wallet.wallets).indexOf(walletName)}:`}</Text>
 									
 									<TouchableOpacity onPress={() => this.setState({ displayWalletHelp: true })} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
 										<MaterialCommunityIcons name={"help-circle-outline"} size={26} color={colors.white} />
@@ -913,11 +862,11 @@ class Settings extends PureComponent<Props> {
 								<View style={[styles.header, { marginBottom: 5 }]}>
 									
 									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{`${cryptoLabel} Settings`}</Text>
-									
+								
 								</View>
 								<View style={{ height: 1.5, backgroundColor: colors.white, width: "80%" }} />
 							</View>
-
+							
 							{this.HeaderRow({
 								header: "Connected To:",
 								value: `${this.getPeerInfo().host}:${this.getPeerInfo().port}`,
@@ -969,69 +918,69 @@ class Settings extends PureComponent<Props> {
 								]
 							})
 							}
-
-							{this.Row({
-								title: "Backup Wallet",
-								value: this.getBackupWalletValue(),
-								onPress: () => this.toggleBackupPhrase({ selectedWallet, display: true }),
-								rowStyle: this.props.wallet[selectedWallet].hasBackedUpWallet ? { backgroundColor: colors.white } : { backgroundColor: colors.red },
-								col1Image: "wallet",
-								col1ImageColor: this.props.wallet[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white,
-								col1Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10 },
-								col2Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 },
-								titleStyle: { color: this.props.wallet[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white },
-								valueStyle: { color: this.props.wallet[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white, fontSize: 16, textAlign: "center", fontWeight: this.props.settings.hasBackedUpWallet ? "normal" : "bold" }
-							})}
-
-							{this.Row({
-								value: `Rescan ${walletName}\n${cryptoLabel} Wallet`,
-								col1Loading: this.state.rescanningWallet,
-								col1Image: "radar",
-								onPress: this.rescanWallet,
-								valueStyle: { color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" },
-								col2Style: { flex: 1, alignItems: "center", justifyContent: "center", textAlign: "center" },
-							})}
+							
+							<SettingGeneral
+								title="Backup Wallet"
+								value={this.getBackupWalletValue()}
+								onPress={() => this.toggleBackupPhrase({ selectedWallet, display: true })}
+								rowStyle={this.props.wallet.wallets[selectedWallet].hasBackedUpWallet ? { backgroundColor: colors.white } : { backgroundColor: colors.red }}
+								col1Image="wallet"
+								col1ImageColor={this.props.wallet.wallets[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white}
+								col1Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10 }}
+								col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 }}
+								titleStyle={{ color: this.props.wallet.wallets[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white }}
+								valueStyle={{ color: this.props.wallet.wallets[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white, fontSize: 16, textAlign: "center", fontWeight: this.props.settings.hasBackedUpWallet ? "normal" : "bold" }}
+							/>
+							
+							<SettingGeneral
+								value={`Rescan Wallet ${Object.keys(this.props.wallet.wallets).indexOf(walletName)}\n${cryptoLabel} Wallet`}
+								col1Loading={this.state.rescanningWallet}
+								col1Image="radar"
+								onPress={this.rescanWallet}
+								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
+								col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", textAlign: "center" }}
+							/>
 
 							<View style={{ paddingVertical: 70 }} />
 						</TouchableOpacity>
-
+					
 					</ScrollView>
 					<View style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}>
 						<Fade size={100} />
 					</View>
 				</Animated.View>
-
+				
 				{this.state.displayPin &&
-					<View style={styles.pinPad}>
+					<View style={styles.settingContainer}>
 						<PinPad onSuccess={this.onPinSuccess} pinSetup={true} />
 					</View>
 				}
-
+				
 				{this.state.displayBackupPhrase &&
-				<Animated.View style={[styles.pinPad, { opacity: this.state.backupPhraseOpacity }]}>
-					<Text style={[styles.headerText, { position: "absolute", top: 25, left: 0, right: 0 }]}> {walletName} </Text>
-					{this.Row({
-						value: this.getBackupPhrase(),
-						onPress: () => this.toggleBackupPhrase({ selectedWallet, display: false }),
-						col1Style: { flex: 0.1 },
-						col2Style: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 30 },
-						valueStyle: { color: colors.purple, textAlign: "left", paddingHorizontal: 20, fontWeight: "bold" }
-					})}
+				<Animated.View style={[styles.settingContainer, { opacity: this.state.backupPhraseOpacity }]}>
+					<Text style={[styles.headerText, { position: "absolute", top: 25, left: 0, right: 0 }]}>{`Wallet ${Object.keys(this.props.wallet.wallets).indexOf(selectedWallet)}`}</Text>
+					<SettingGeneral
+						value={this.getBackupPhrase()}
+						onPress={() => this.toggleBackupPhrase({ selectedWallet, display: false })}
+						col1Style={{ flex: 0.1 }}
+						col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 30 }}
+						valueStyle={{ color: colors.purple, textAlign: "left", paddingHorizontal: 20, fontWeight: "bold" }}
+					/>
 				</Animated.View>
 				}
-
+				
 				{this.state.displayImportPhrase &&
-				<Animated.View style={[styles.pinPad, { opacity: this.state.importPhraseOpacity, zIndex: 500 }]}>
+				<Animated.View style={[styles.settingContainer, { opacity: this.state.importPhraseOpacity, zIndex: 500 }]}>
 					<ImportPhrase onBack={this.onBack} createNewWallet={this.props.createNewWallet} />
 				</Animated.View>
 				}
-
+				
 				{this.state.displayElectrumOptions &&
-				<Animated.View style={[styles.pinPad, { opacity: this.state.electrumOptionsOpacity, zIndex: 500 }]}>
+				<Animated.View style={[styles.settingContainer, { opacity: this.state.electrumOptionsOpacity, zIndex: 500 }]}>
 					<ElectrumOptions onBack={this.onBack} />
 				</Animated.View>
 				}
-
+				
 				{!this.state.displayImportPhrase &&
 				<Animated.View style={styles.xButton}>
 					<XButton style={{ borderColor: "transparent", zIndex: 1000 }} onPress={this.onBack} />
@@ -1069,7 +1018,7 @@ class Settings extends PureComponent<Props> {
 					))}
 					<View style={{ paddingVertical: "40%" }} />
 				</DefaultModal>
-
+			
 			</View>
 		);
 	}
@@ -1119,7 +1068,7 @@ const styles = StyleSheet.create({
 		marginHorizontal: 5,
 		paddingVertical: 4
 	},
-	pinPad: {
+	settingContainer: {
 		position: "absolute",
 		top: 0,
 		bottom: 0,

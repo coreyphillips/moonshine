@@ -76,24 +76,24 @@ CoinButton.defaultProps = {
 
 class WalletSliderEntry extends PureComponent {
 
-	Header = () => (
+	Header = (wallet = "") => (
 		<View style={styles.header}>
 			<Text style={styles.headerText}>
-				{this.props.data.split('wallet').join('Wallet ')}
+				{`Wallet ${Object.keys(this.props.wallet.wallets).indexOf(wallet)}`}
 			</Text>
 		</View>
 	);
 
 	_deleteWallet = async ({ wallet = "", walletIndex = 0 } = {}) => {
 		try {
-			if (this.props.wallet.wallets.length > 1) {
+			if (Object.keys(this.props.wallet.wallets).length > 1) {
 				let newWalletIndex = walletIndex;
 				if (walletIndex === 0) {
 					newWalletIndex = walletIndex + 1;
 				} else {
 					newWalletIndex = walletIndex > 0 ? walletIndex - 1 : walletIndex;
 				}
-				await this.props.updateWallet({ selectedWallet: this.props.wallet.wallets[newWalletIndex]});
+				await this.props.updateWallet({ selectedWallet: Object.keys(this.props.wallet.wallets)[newWalletIndex]});
 				await this.props.deleteWallet({ wallet });
 			}
 		} catch (e) {
@@ -103,11 +103,11 @@ class WalletSliderEntry extends PureComponent {
 
 	deleteWallet = async ({ wallet = "" } = {}) => {
 		try {
-			const selectedWallet = wallet.split("wallet").join("Wallet ");
+			const selectedWallet = wallet;
 			let walletIndex = 0;
 			try {
-				const index = this.props.wallet.wallets.indexOf(wallet);
-				if (this.props.wallet.wallets.length - 1 > walletIndex) {
+				const index = Object.keys(this.props.wallet.wallets).indexOf(wallet);
+				if (Object.keys(this.props.wallet.wallets).length - 1 > walletIndex) {
 					walletIndex = index;
 				} else {
 					walletIndex = index - 1;
@@ -115,7 +115,7 @@ class WalletSliderEntry extends PureComponent {
 			} catch (e) {}
 			Alert.alert(
 				"Delete Wallet",
-				`Are you sure you wish to delete ${selectedWallet}?`,
+				`Are you sure you wish to delete Wallet ${Object.keys(this.props.wallet.wallets).indexOf(selectedWallet)}?`,
 				[
 					{
 						text: "No",
@@ -134,7 +134,7 @@ class WalletSliderEntry extends PureComponent {
 		return (
 			<View style={styles.container}>
 				<ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} style={styles.innerContainer}>
-					{this.Header()}
+					{this.Header(this.props.data)}
 					<View style={styles.scrollViewContent}>
 						{this.props.coins.map((coin, i) => {
 							if (!this.props.settings.testnet && coin.toLowerCase().includes("testnet")) return;
@@ -145,12 +145,12 @@ class WalletSliderEntry extends PureComponent {
 									label={capitalize(coin)}
 									onCoinPress={this.props.onCoinPress}
 									wallet={this.props.data}
-									balance={this.props.wallet[this.props.data].confirmedBalance[coin]}
+									balance={this.props.wallet.wallets[this.props.data].confirmedBalance[coin]}
 									cryptoUnit={this.props.settings.cryptoUnit}
 								/>
 							);
 						})}
-						{this.props.wallet.wallets.length > 1 &&
+						{Object.keys(this.props.wallet.wallets).length > 1 &&
 						<TouchableOpacity onPress={() => this.deleteWallet({wallet: this.props.data })} style={styles.deleteButton}>
 							<Text style={[styles.text, { color: colors.white }]}>Delete Wallet</Text>
 						</TouchableOpacity>}

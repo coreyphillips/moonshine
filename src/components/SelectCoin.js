@@ -24,7 +24,7 @@ class SelectCoin extends Component {
 	}
 	
 	render () {
-		const walletsLen = this.props.wallet.wallets.length;
+		const walletsLen = Object.keys(this.props.wallet.wallets).length;
 		return (
 			<View style={styles.container}>
 				{walletsLen < 6 &&

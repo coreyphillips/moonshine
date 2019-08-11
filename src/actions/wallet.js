@@ -77,38 +77,6 @@ const deleteWallet = ({ wallet } = {}) => async (dispatch: any) => {
 	});
 };
 
-const importWallet = ({ wallets = [], mnemonic = "", keyDerivationPath = "84" } = {}) => async () => {
-	return new Promise(async (resolve) => {
-		const failure = (data) => {
-			resolve({error: true, data});
-		};
-		
-		try {
-			//Get highest wallet number
-			let highestNumber = 0;
-			await Promise.all(
-				wallets.map((wallet) => {
-					let walletNumber = wallet.replace("wallet","");
-					walletNumber = Number(walletNumber);
-					if (walletNumber > highestNumber) highestNumber = walletNumber;
-				})
-			);
-			//Add wallet name to wallets array;
-			const walletName = `wallet${highestNumber+1}`;
-			
-			const response = await createWallet({ wallet: walletName, mnemonic, keyDerivationPath });
-			
-			if (response.error === false) {
-				resolve({error: false, data: response.data});
-			} else {
-				failure(response.data);
-			}
-		} catch (e) {
-			failure(e);
-		}
-	});
-};
-
 const createWallet = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressAmount = 2, changeAddressAmount = 2, mnemonic = "", generateAllAddresses = true, keyDerivationPath = "84" } = {}) => async (dispatch: any) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
@@ -123,7 +91,6 @@ const createWallet = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressA
 			if (bip39.validateMnemonic(mnemonic)) {
 				await setKeychainValue({ key: wallet, value: mnemonic });
 			} else {
-				//createWallet({ wallet, mnemonic });
 				//Invalid Mnemonic
 				failure("Invalid Mnemonic");
 				return;
@@ -180,7 +147,7 @@ const createWallet = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressA
 			};
 			
 			await dispatch({
-				type: actions.UPDATE_WALLET,
+				type: actions.CREATE_WALLET,
 				payload
 			});
 			
@@ -624,7 +591,6 @@ const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAdd
 
 module.exports = {
 	deleteWallet,
-	importWallet,
 	updateWallet,
 	getExchangeRate,
 	getAddress,

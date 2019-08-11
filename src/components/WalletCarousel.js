@@ -32,7 +32,7 @@ export default class WalletCarousel extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
-			activeSlide: this.props.wallet.wallets.indexOf(this.props.wallet.selectedWallet)
+			activeSlide: Object.keys(this.props.wallet.wallets).indexOf(this.props.wallet.selectedWallet)
 		};
 	}
 
@@ -65,7 +65,7 @@ export default class WalletCarousel extends Component {
 				<View style={styles.walletContainer}>
 					<Carousel
 						ref={c => this._slider1Ref = c}
-						data={this.props.wallet.wallets}
+						data={Object.keys(this.props.wallet.wallets)}
 						renderItem={({ item, index }) => this._renderItem({ item, index, onCoinPress: this.props.onCoinPress, onClose: this.props.onClose })}
 						sliderWidth={sliderWidth}
 						itemWidth={itemWidth}
@@ -83,7 +83,7 @@ export default class WalletCarousel extends Component {
 						decelerationRate={0.9}
 					/>
 					<Pagination
-						dotsLength={this.props.wallet.wallets.length}
+						dotsLength={Object.keys(this.props.wallet.wallets).length}
 						activeDotIndex={this.state.activeSlide}
 						containerStyle={styles.paginationContainer}
 						dotColor={'rgba(255, 255, 255, 0.92)'}

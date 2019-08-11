@@ -62,11 +62,19 @@
     "redux-persist": "^5.10.0",
     "redux-thunk": "^2.3.0",
     "stream-browserify": "^1.0.0",
+    "uuid": "^3.3.2",
     "vm-browserify": "^1.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",
     "@babel/runtime": "^7.4.3",
+    "@react-native-community/eslint-config": "^0.0.5",
+    "@types/jest": "^24.0.16",
+    "@types/node": "^12.6.9",
+    "@types/react": "^16.8.24",
+    "@types/react-native": "^0.60.3",
+    "@types/react-test-renderer": "^16.8.3",
+    "@types/redux-logger": "^3.0.7",
     "babel-core": "^6.26.3",
     "babel-eslint": "^10.0.1",
     "babel-jest": "^24.7.1",
@@ -79,7 +87,8 @@
     "jest": "^24.7.1",
     "metro-react-native-babel-preset": "^0.53.1",
     "react-test-renderer": "^16.8.6",
-    "rn-nodeify": "^10.0.1"
+    "rn-nodeify": "^10.0.1",
+    "typescript": "^3.5.3"
   },
   "jest": {
     "preset": "react-native"

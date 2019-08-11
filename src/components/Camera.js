@@ -18,6 +18,8 @@ const {
 } = require("../../ProjectData.json");
 
 class Camera extends PureComponent {
+	data = "";
+	
 	render() {
 
 		const notAuthorizedView = (
@@ -36,7 +38,12 @@ class Camera extends PureComponent {
 						this.camera = ref;
 					}}
 					style={styles.container}
-					onBarCodeRead={this.props.onBarCodeRead}
+					onBarCodeRead={({ data }) => {
+						if (this.data !== data) {
+							this.data = data;
+							this.props.onBarCodeRead(data);
+						}
+					}}
 					onMountError={() => {
 						alert("There was an error encountered when loading the camera. Please ensure the app has permission to use this feature in your phone settings.");
 						this.props.onClose();

@@ -1,4 +1,4 @@
-import React, { PureComponent } from "react";
+import React, { Component } from "react";
 import {
 	Platform,
 	StyleSheet,
@@ -44,6 +44,7 @@ import Loading from "./src/components/Loading";
 import * as electrum from "./src/utils/electrum";
 import nodejs from "nodejs-mobile-react-native";
 import bitcoinUnits from "bitcoin-units";
+const uuidv4 = require("uuid/v4");
 
 const {
 	Constants: {
@@ -66,7 +67,7 @@ const { width } = Dimensions.get("window");
 const bip39 = require("bip39");
 const moment = require("moment");
 
-export default class App extends PureComponent {
+export default class App extends Component {
 	
 	state = {
 		upperContentFlex: new Animated.Value(1),
@@ -133,9 +134,7 @@ export default class App extends PureComponent {
 		loadingMessage: "",
 		loadingProgress: 0,
 		loadingTransactions: true,
-		loadingAnimationName: "cloudBook",
-		fiatBalance: 0,
-		cryptoBalance: 0
+		loadingAnimationName: "cloudBook"
 	};
 	
 	setExchangeRate = async ({ selectedCrypto = "bitcoin", selectedCurrency = "usd", selectedService = "coingecko" } = {}) => {
@@ -169,7 +168,7 @@ export default class App extends PureComponent {
 			const network = getNetworkType(coin);
 			await this.props.updateWallet({ selectedCrypto: coin, network, selectedWallet: wallet });
 			
-			if (this.props.wallet[wallet].addresses[coin].length > 0) {
+			if (this.props.wallet.wallets[wallet].addresses[coin].length > 0) {
 				//This condition occurs when the user selects a coin that already has generated addresses from the "SelectCoin" view.
 				this.updateItem({ stateId: "displayLoading", opacityId: "loadingOpacity", display: false });
 				this.resetView();
@@ -178,7 +177,7 @@ export default class App extends PureComponent {
 				if (initialLoadingMessage) {
 					this.setState({ loadingMessage: initialLoadingMessage, loadingProgress: 0.3, loadingAnimationName: coin });
 				} else {
-					this.setState({ loadingMessage: `Switching to ${capitalize(coin)} for ${this.props.wallet.selectedWallet.split('wallet').join('Wallet ')}`, loadingProgress: 0.3, loadingAnimationName: coin });
+					this.setState({ loadingMessage: `Switching to ${capitalize(coin)} for Wallet ${this.props.wallet.wallets[wallet].name || Object.keys(this.props.wallet.wallets).indexOf(wallet)}`, loadingProgress: 0.3, loadingAnimationName: coin });
 				}
 				this.updateItem({ stateId: "displayLoading", opacityId: "loadingOpacity", display: true });
 				InteractionManager.runAfterInteractions(async () => {
@@ -197,10 +196,37 @@ export default class App extends PureComponent {
 		}
 	};
 	
+	//TODO: Remove this in version 0.2.2
+	migrateToNewWalletModel = async () => {
+		try {
+			if (Array.isArray(this.props.wallet.wallets)) {
+				let wallets = {};
+				await Promise.all(
+					this.props.wallet.wallets.map(async (wallet) => {
+						wallets[wallet] = this.props.wallet[wallet];
+					})
+				);
+				await this.props.updateWallet({
+					...this.props.wallet,
+					wallets
+				});
+			}
+		} catch (e) {}
+	};
+	
 	launchDefaultFuncs = async ({ displayLoading = true, resetView = true } = {}) => {
 		
+		//Attempt to migrate any old wallets to the new wallet model
+		await this.migrateToNewWalletModel();
+		
 		//Determine if the user has any existing wallets. Create a new wallet if so.
-		if (this.props.wallet.wallets.length === 0) {
+		let walletKey = "";
+		let walletExists = false;
+		try {
+			walletKey = Object.keys(this.props.wallet.wallets)[0];
+			walletExists = this.props.wallet.wallets[walletKey].addresses["bitcoin"].length > 0;
+		} catch (e) {}
+		if (!walletKey || !walletExists) {
 			this.createWallet("wallet0", true);
 			return;
 		}
@@ -269,8 +295,8 @@ export default class App extends PureComponent {
 			if (this.state.loadingTransactions !== true) this.setState({ loadingTransactions: true });
 			const { selectedWallet, selectedCrypto, selectedCurrency } = this.props.wallet;
 			const { selectedService } = this.props.settings;
-			const keyDerivationPath = this.props.wallet[selectedWallet].keyDerivationPath[selectedCrypto];
-			const addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];
+			const keyDerivationPath = this.props.wallet.wallets[selectedWallet].keyDerivationPath[selectedCrypto];
+			const addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
 			
 			//Check if the user is online and connected.
 			const isConnected = await isOnline();
@@ -320,7 +346,7 @@ export default class App extends PureComponent {
 					let end = moment();
 					let difference = 0;
 					try {
-						end = this.props.wallet[selectedWallet].lastUsedAddress[selectedCrypto];
+						end = this.props.wallet.wallets[selectedWallet].lastUsedAddress[selectedCrypto];
 					} catch (e) {
 					}
 					try {
@@ -339,23 +365,23 @@ export default class App extends PureComponent {
 			//Gather existing addresses, changeAddresses and their respective indexes for use later on
 			let addresses = [];
 			try {
-				addresses = this.props.wallet[selectedWallet].addresses[selectedCrypto];
+				addresses = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto];
 			} catch (e) {}
 			let changeAddresses = [];
 			try {
-				changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto];
+				changeAddresses = this.props.wallet.wallets[selectedWallet].changeAddresses[selectedCrypto];
 			} catch (e) {}
 			
-			let addressIndex = this.props.wallet[selectedWallet].addressIndex[selectedCrypto];
-			let changeAddressIndex = this.props.wallet[selectedWallet].changeAddressIndex[selectedCrypto];
+			let addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
+			let changeAddressIndex = this.props.wallet.wallets[selectedWallet].changeAddressIndex[selectedCrypto];
 			
 			/*
 			 //Rescan Addresses if user is waiting for any pending transactions
-			 await Promise.all(this.props.wallet[selectedWallet].addresses[selectedCrypto].map((add, i) => {
+			 await Promise.all(this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto].map((add, i) => {
 			 if (add.block <= 0 && i < addressIndex) addressIndex = i;
 			 }));
 			 //Rescan Change Addresses if user is waiting for any pending transactions
-			 await Promise.all(this.props.wallet[selectedWallet].changeAddresses[selectedCrypto].map((add, i) => {
+			 await Promise.all(this.props.wallet.wallets[selectedWallet].changeAddresses[selectedCrypto].map((add, i) => {
 			 if (add.block <= 0 && i < changeAddressIndex) changeAddressIndex = i;
 			 }));
 			 */
@@ -363,7 +389,7 @@ export default class App extends PureComponent {
 			//Gather existing utxo's for use later on
 			let utxos = [];
 			try {
-				utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
+				utxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto] || [];
 			} catch (e) {
 			}
 			
@@ -397,19 +423,19 @@ export default class App extends PureComponent {
 			
 			//Fetch any new utxos.
 			//Re-gather all known addresses and changeAddresses in case more were created from the getNextAvailableAddress function.
-			addresses = this.props.wallet[selectedWallet].addresses[selectedCrypto];
-			changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto];
+			addresses = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto];
+			changeAddresses = this.props.wallet.wallets[selectedWallet].changeAddresses[selectedCrypto];
 			
 			//Scan all addresses & changeAddresses for UTXO's and save them.
 			//Note: The app uses the saved UTXO response to verify/update the wallet's balance.
 			const resetUtxosResponse = await this.props.resetUtxos({ addresses, changeAddresses, currentUtxos: utxos, selectedCrypto, selectedWallet, wallet: selectedWallet, currentBlockHeight });
 			//Iterate over the new utxos and rescan the transactions if a utxo with a new hash appears
 			let needsToRescanTransactions = false;
-			addressIndex = this.props.wallet[selectedWallet].addressIndex[selectedCrypto];
-			changeAddressIndex = this.props.wallet[selectedWallet].changeAddressIndex[selectedCrypto];
+			addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
+			changeAddressIndex = this.props.wallet.wallets[selectedWallet].changeAddressIndex[selectedCrypto];
 			await Promise.all(resetUtxosResponse.data.utxos.map(async (newUtxo) => {
 				let noHashMatches = true;
-				await Promise.all(this.props.wallet[selectedWallet].transactions[selectedCrypto].map((transaction) => {
+				await Promise.all(this.props.wallet.wallets[selectedWallet].transactions[selectedCrypto].map((transaction) => {
 					try {
 						if (newUtxo.tx_hash === transaction.hash) {
 							noHashMatches = false;
@@ -434,19 +460,18 @@ export default class App extends PureComponent {
 			
 			//Check if any transactions have <1 confirmations. If so, rescan them by the lowest index.
 			let transactionsThatNeedRescanning = [];
-			await Promise.all(this.props.wallet[selectedWallet].transactions[selectedCrypto].map((transaction) => {
+			await Promise.all(this.props.wallet.wallets[selectedWallet].transactions[selectedCrypto].map((transaction) => {
 				if (transaction.block <= 0) {
 					needsToRescanTransactions = true;
 					transactionsThatNeedRescanning.push(transaction);
 				}
 			}));
 			
-			const transactions = this.props.wallet[selectedWallet].transactions[selectedCrypto];
+			const transactions = this.props.wallet.wallets[selectedWallet].transactions[selectedCrypto];
 			//Get lowest index to rescan addresses & changeAddresses with.
 			await Promise.all(
 				transactionsThatNeedRescanning.map(async (transaction) => {
 					try {
-						
 						try {
 							const path = transaction.path;
 							const pathInfo = await getInfoFromAddressPath(path);
@@ -478,21 +503,25 @@ export default class App extends PureComponent {
 						//If error, remove the transaction from the list of transactions
 						if (result.error === true && result.data.code) {
 							try {
-								let rbfData = this.props.wallet[selectedWallet].rbfData[selectedCrypto];
+								let rbfData = this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto];
 								const savedTransactions = await Promise.all(transactions.filter((tx) => tx.hash !== transaction.hash));
 								//Delete any RBF data for the given hash if it exists.
 								try {if (rbfData[transaction.hash]) delete rbfData[transaction.hash];} catch (e) {}
+								const wallet = this.props.wallet.wallets[selectedWallet];
 								await this.props.updateWallet({
 									...this.props.wallet,
-									[selectedWallet]: {
-										...this.props.wallet[selectedWallet],
-										transactions: {
-											...this.props.wallet[selectedWallet].transactions,
-											[selectedCrypto]: savedTransactions
-										},
-										rbfData: {
-											...this.props.wallet[selectedWallet].rbfData,
-											[selectedCrypto]: rbfData
+									wallets: {
+										...this.props.wallet.wallets,
+										[selectedWallet]: {
+											...wallet,
+											transactions: {
+												...wallet.transactions,
+												[selectedCrypto]: savedTransactions
+											},
+											rbfData: {
+												...wallet.rbfData,
+												[selectedCrypto]: rbfData
+											}
 										}
 									}
 								});
@@ -504,14 +533,14 @@ export default class App extends PureComponent {
 			);
 			//Clear RBF Data if there are no 0-conf sent transactions.
 			try {
-				if (transactionsThatNeedRescanning.length === 0 && Object.entries(this.props.wallet[selectedWallet].rbfData[selectedCrypto]).length !== 0 && this.props.wallet[selectedWallet].rbfData[selectedCrypto].constructor === Object) {
+				if (transactionsThatNeedRescanning.length === 0 && Object.entries(this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto]).length !== 0 && this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto].constructor === Object) {
 					this.props.updateRbfData({ wallet: selectedWallet, selectedCrypto });
 				}
 			} catch (e) {}
 			
 			/*
 			 let transactionPathsThatNeedRescanning = [];
-			 await Promise.all(this.props.wallet[selectedWallet].transactions[selectedCrypto].map((transaction) => {
+			 await Promise.all(this.props.wallet.wallets[selectedWallet].transactions[selectedCrypto].map((transaction) => {
 			 if (transaction.block <= 0) {
 			 needsToRescanTransactions = true;
 			 transactionPathsThatNeedRescanning.push(transaction.path);
@@ -541,13 +570,9 @@ export default class App extends PureComponent {
 			//If there was no issue fetching the UTXO sets or the next available addresses, update the balance using the newly acquired UTXO's.
 			if (resetUtxosResponse.error === false && getNextAvailableAddressResponse.error === false) {
 				try {
-					utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
-					const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
+					utxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto] || [];
+					const blacklistedUtxos = this.props.wallet.wallets[selectedWallet].blacklistedUtxos[selectedCrypto];
 					await this.props.updateBalance({ utxos, blacklistedUtxos, selectedCrypto, selectedWallet, wallet: selectedWallet });
-					//Set fiat/crypto balance
-					const fiatBalance = this.getFiatBalance();
-					const cryptoBalance = this.getCryptoBalance();
-					this.setState({ fiatBalance, cryptoBalance });
 				} catch (e) {
 					console.log(e);
 				}
@@ -631,20 +656,18 @@ export default class App extends PureComponent {
 			//Create Wallet if first timer
 			this.setState({loadingMessage: "Creating Wallet...", loadingProgress: 0.1});
 			await this.props.createWallet({addressAmount: 2, changeAddressAmount: 2, wallet: walletName, generateAllAddresses: true});
-			//Add wallet name to wallets array;
-			const wallets = this.props.wallet.wallets.concat(walletName);
 			//Set the selectedWallet accordingly and update the wallets array.
-			await this.props.updateWallet({ selectedWallet: walletName, wallets });
+			await this.props.updateWallet({ selectedWallet: walletName });
 			const { selectedWallet } = this.props.wallet;
 			this.setState({loadingMessage: "Fetching Current Block Height...", loadingProgress: 0.15});
 			let addresses = [];
 			try {
-				addresses = this.props.wallet[selectedWallet].addresses[selectedCrypto];
+				addresses = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto];
 			} catch (e) {
 			}
 			let changeAddresses = [];
 			try {
-				changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto];
+				changeAddresses = this.props.wallet.wallets[selectedWallet].changeAddresses[selectedCrypto];
 			} catch (e) {
 			}
 			if (ignoreAddressCheck === false) {
@@ -699,7 +722,13 @@ export default class App extends PureComponent {
 				
 				try {
 					//Determine if user is a first timer. Create a new wallet if so.
-					if (this.props.wallet.wallet0.addresses.bitcoin.length === 0) {
+					let walletKey = "";
+					let walletExists = false;
+					try {
+						walletKey = Object.keys(this.props.wallet.wallets)[0];
+						walletExists = this.props.wallet.wallets[walletKey].addresses["bitcoin"].length > 0;
+					} catch (e) {}
+					if (!walletExists) {
 						await this.createWallet("wallet0", true);
 						return;
 					}
@@ -769,6 +798,12 @@ export default class App extends PureComponent {
 	
 	componentDidUpdate() {
 		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
+	}
+	
+	shouldComponentUpdate(nextProps, nextState) {
+		try {
+			return nextProps.wallet !== this.props.wallet || nextState !== this.state;
+		} catch (e) {return false;}
 	}
 	
 	componentWillUnmount() {
@@ -1000,7 +1035,7 @@ export default class App extends PureComponent {
 	onTransactionPress = async (transaction = "") => {
 		try {
 			const {selectedWallet, selectedCrypto} = this.props.wallet;
-			transaction = await this.props.wallet[selectedWallet].transactions[selectedCrypto].filter((tx) => tx.hash === transaction);
+			transaction = await this.props.wallet.wallets[selectedWallet].transactions[selectedCrypto].filter((tx) => tx.hash === transaction);
 			await this.props.updateWallet({selectedTransaction: transaction[0]});
 			
 			const items = [
@@ -1232,7 +1267,7 @@ export default class App extends PureComponent {
 	};
 	
 	//Handles any BarCodeRead action.
-	onBarCodeRead = async ({ data }) => {
+	onBarCodeRead = async (data) => {
 		try {
 			//Determine if we need to import a mnemonic phrase
 			if (bip39.validateMnemonic(data)) {
@@ -1295,7 +1330,7 @@ export default class App extends PureComponent {
 	getFiatBalance = () => {
 		try {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			const confirmedBalance = Number(this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto]);
+			const confirmedBalance = Number(this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto]);
 			bitcoinUnits.setFiat("usd", Number(this.props.wallet.exchangeRate[selectedCrypto]));
 			const fiatBalance = bitcoinUnits(confirmedBalance, "satoshi").to("usd").value().toFixed(2);
 			if (isNaN(fiatBalance)) return 0;
@@ -1310,7 +1345,7 @@ export default class App extends PureComponent {
 		let confirmedBalance = 0;
 		try {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			return Number(this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto]) || 0;
+			return Number(this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto]) || 0;
 		} catch (e) {}
 		return confirmedBalance;
 	};
@@ -1319,7 +1354,8 @@ export default class App extends PureComponent {
 	getQrCodeAddress = () => {
 		try {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			return this.props.wallet[selectedWallet].addresses[selectedCrypto][this.props.wallet[selectedWallet].addressIndex[selectedCrypto]].address;
+			const addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
+			return this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto][addressIndex].address;
 		} catch (e) {
 			//console.log(e);
 			return "";
@@ -1330,7 +1366,7 @@ export default class App extends PureComponent {
 	getTransactions = () => {
 		try {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			const transactions = this.props.wallet[selectedWallet].transactions[selectedCrypto];
+			const transactions = this.props.wallet.wallets[selectedWallet].transactions[selectedCrypto];
 			if (Array.isArray(transactions)) {
 				return transactions;
 			}
@@ -1351,20 +1387,10 @@ export default class App extends PureComponent {
 	
 	createNewWallet = async ({ mnemonic = "" }) => {
 		try {
-			//Get highest wallet number
-			let highestNumber = 0;
-			await Promise.all(
-				this.props.wallet.wallets.map((wallet) => {
-					let walletNumber = wallet.replace("wallet","");
-					walletNumber = Number(walletNumber);
-					if (walletNumber > highestNumber) highestNumber = walletNumber;
-				})
-			);
 			//Add wallet name to wallets array;
-			const walletName = `wallet${highestNumber+1}`;
-			const wallets = this.props.wallet.wallets.concat(walletName);
+			const walletName = await uuidv4();
 			//Set Loading Message
-			await this.setState({loadingMessage: `Creating ${walletName.split('wallet').join('Wallet ')} & Generating Addresses`, loadingProgress: 0.5});
+			await this.setState({loadingMessage: `Creating Wallet ${Object.keys(this.props.wallet.wallets).length + 1} & Generating Addresses`, loadingProgress: 0.5});
 			
 			//Close Receive State
 			const items = [
@@ -1376,7 +1402,7 @@ export default class App extends PureComponent {
 			await this.updateItems(items);
 			
 			//Set the selectedWallet accordingly and update the wallets array.
-			await this.props.updateWallet({ selectedWallet: walletName, wallets });
+			await this.props.updateWallet({ selectedWallet: walletName });
 			
 			const { selectedCrypto } = this.props.wallet;
 
@@ -1448,12 +1474,12 @@ export default class App extends PureComponent {
 								
 								<Animated.View style={[styles.priceHeader, { opacity: this.state.priceHeaderOpacity }]}>
 									<TouchableOpacity onPress={this.onSelectCoinPress} style={{ position: "absolute",top: 0, paddingTop: 10, paddingBottom: 20, paddingHorizontal: 30 }}>
-										<Text style={styles.cryptoValue}>{this.props.wallet.selectedWallet.split('wallet').join('Wallet ')}</Text>
+										<Text style={styles.cryptoValue}>{`Wallet ${Object.keys(this.props.wallet.wallets).indexOf(this.props.wallet.selectedWallet)}`}</Text>
 									</TouchableOpacity>
 									<Header
-										fiatValue={this.state.fiatBalance}
+										fiatValue={this.getFiatBalance()}
 										fiatSymbol={this.props.settings.fiatSymbol}
-										cryptoValue={this.state.cryptoBalance}
+										cryptoValue={this.getCryptoBalance()}
 										cryptoUnit={this.props.settings.cryptoUnit}
 										selectedCrypto={this.props.wallet.selectedCrypto}
 										selectedWallet={this.props.wallet.selectedWallet}

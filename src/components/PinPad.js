@@ -1,5 +1,5 @@
 import React, { PureComponent } from "react";
-import Feather from "react-native-vector-icons/Feather";
+import EvilIcons from "react-native-vector-icons/EvilIcons";
 import PropTypes from "prop-types";
 import {
 	StyleSheet,
@@ -256,7 +256,7 @@ class Pin extends PureComponent {
 					</TouchableOpacity>
 					{this.renderButton(this.state.digits[9])}
 					<TouchableOpacity onPress={this.handleRemove} activeOpacity={ACTIVE_OPACITY} style={[styles.buttonContainer, { borderWidth: 0 }]}>
-						<Feather name={"arrow-left"} size={30} color={colors.white} />
+						<EvilIcons name={"chevron-left"} size={55} color={colors.white} />
 					</TouchableOpacity>
 				</View>
 

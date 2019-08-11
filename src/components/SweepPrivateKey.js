@@ -110,8 +110,8 @@ class SendTransaction extends PureComponent<Props> {
 				const cryptoLabel = this.getCryptoLabel();
 				const cryptoUnitLabel = getCoinData({selectedCrypto, cryptoUnit}).acronym;
 
-				const addressIndex = this.props.wallet[selectedWallet].addressIndex[selectedCrypto];
-				const address = this.props.wallet[selectedWallet].addresses[selectedCrypto][addressIndex].address;
+				const addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
+				const address = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto][addressIndex].address;
 				this.setState({
 					loadingProgress: 0.8,
 					privateKeyData: {
@@ -669,13 +669,16 @@ class SendTransaction extends PureComponent<Props> {
 
 						//Temporarily update the balance for the user to prevent a delay while electrum syncs the balance from the new transaction
 						try {
-							const newBalance = Number(this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto]) + amount;
+							const newBalance = Number(this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto]) + amount;
 							await this.props.updateWallet({
-								[selectedWallet]: {
-									...this.props.wallet[selectedWallet],
-									confirmedBalance: {
-										...this.props.wallet[selectedWallet].confirmedBalance,
-										[selectedCrypto]: newBalance
+								wallets: {
+									...this.props.wallet.wallets,
+									[selectedWallet]: {
+										...this.props.wallet.wallets[selectedWallet],
+										confirmedBalance: {
+											...this.props.wallet.wallets[selectedWallet].confirmedBalance,
+											[selectedCrypto]: newBalance
+										}
 									}
 								}
 							});
@@ -694,11 +697,11 @@ class SendTransaction extends PureComponent<Props> {
 					const currentBlockHeight = this.props.wallet.blockHeight[selectedCrypto];
 					let currentUtxos = [];
 					try {
-						currentUtxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
+						currentUtxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto] || [];
 					} catch (e) {
 					}
-					const addresses = this.props.wallet[selectedWallet].addresses[selectedCrypto];
-					const changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto];
+					const addresses = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto];
+					const changeAddresses = this.props.wallet.wallets[selectedWallet].changeAddresses[selectedCrypto];
 					this.props.resetUtxos({ addresses, changeAddresses, currentBlockHeight, selectedCrypto, selectedWallet, currentUtxos });
 					await pauseExecution(1500);
 					//Fade out the loading view
@@ -826,18 +829,19 @@ class SendTransaction extends PureComponent<Props> {
 				alert(`It appears that \n "${address}" \n is not a valid ${capitalize(selectedCrypto)} address. Please attempt to re-enter the address.`);
 				return;
 			}
-			const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
-			const confirmedBalance = this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto];
-			const changeAddressIndex = this.props.wallet[selectedWallet].changeAddressIndex[selectedCrypto];
+			const wallet = this.props.wallet.wallets[selectedWallet];
+			const utxos = wallet.utxos[selectedCrypto] || [];
+			const confirmedBalance = wallet.confirmedBalance[selectedCrypto];
+			const changeAddressIndex = wallet.changeAddressIndex[selectedCrypto];
 			const transactionFee = Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee);
 			const amount = Number(this.props.transaction.amount);
 			const message = this.props.transaction.message;
-			const addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];
+			const addressType = wallet.addressType[selectedCrypto];
 			let changeAddress = "";
 			//Create More Change Addresses as needed
 			//Only add a changeAddress if the user is not spending the max amount.
 			if (!this.state.spendMaxAmount) {
-				const changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto];
+				const changeAddresses = wallet.changeAddresses[selectedCrypto];
 				if (changeAddresses.length-1 < changeAddressIndex) {
 					//Generate receiving and change addresses.
 					const newChangeAddress = await generateAddresses({
@@ -849,12 +853,11 @@ class SendTransaction extends PureComponent<Props> {
 					});
 					changeAddress = newChangeAddress.data.changeAddresses[0].address;
 				} else {
-					changeAddress = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto][changeAddressIndex].address;
+					changeAddress = wallet.changeAddresses[selectedCrypto][changeAddressIndex].address;
 				}
 			}
 
-			const result = await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, changeAddress, wallet: selectedWallet, selectedCrypto, message, addressType });
-			return result;
+			return await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, changeAddress, wallet: selectedWallet, selectedCrypto, message, addressType });
 		} catch (e) {
 			console.log(e);
 		}
@@ -892,7 +895,7 @@ class SendTransaction extends PureComponent<Props> {
 
 						<View style={styles.row}>
 							<View style={{ flex: 1, justifyContent: "flex-end", alignItems: "flex-start" }}>
-								<Text style={[styles.largeText, { fontWeight: "bold" }]}>Sending To: <Text style={styles.largeText}>{this.props.wallet.selectedWallet.split('wallet').join('Wallet ')}</Text></Text>
+								<Text style={[styles.largeText, { fontWeight: "bold" }]}>Sending To: <Text style={styles.largeText}>{`Wallet ${Object.keys(this.props.wallet.wallets).indexOf(this.props.wallet.selectedWallet)}`}</Text></Text>
 							</View>
 						</View>
 

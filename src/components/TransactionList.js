@@ -81,7 +81,7 @@ class TransactionList extends PureComponent {
 	getTransactions = () => {
 		try {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			const transactions = this.props.wallet[selectedWallet].transactions[selectedCrypto];
+			const transactions = this.props.wallet.wallets[selectedWallet].transactions[selectedCrypto];
 			if (Array.isArray(transactions)) {
 				return transactions;
 			}
@@ -118,7 +118,7 @@ class TransactionList extends PureComponent {
 					renderItem={(transaction) => {
 						const { selectedWallet, selectedCrypto } = this.props.wallet;
 						let isBlacklisted = false;
-						try { isBlacklisted = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto].includes(transaction.item.hash); } catch (e) {}
+						try { isBlacklisted = this.props.wallet.wallets[selectedWallet].blacklistedUtxos[selectedCrypto].includes(transaction.item.hash); } catch (e) {}
 						return (
 							this.displayItem({
 								transaction,
