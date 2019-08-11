@@ -21,12 +21,28 @@ Bitbip's Alpha is available for download here:
 * [Android](https://play.google.com/store/apps/details?id=com.kisswallet)
 
 ## Installation
-```
-git clone https://github.com/coreyphillips/bitbip
-cd bitbip
-yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../
-react-native run ios` or `react-native run-android
-```
+#### Without LND:
+1. LND isn't fully implemented in this app yet so if you do not wish to use Lightning or go through the process of generating any .aar & .framework files you can simply checkout the commit prior to the LND implementation and run the project like so:
+    ```
+    git clone https://github.com/coreyphillips/bitbip
+    cd bitbip
+    git checkout 79d1e65879dac8dc2fd5bcd4401ec8e462100813
+    yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../
+    react-native run ios or react-native run-android
+    ```
+#### With LND:
+1. Generate the Lndmobile.aar & Lndmobile.framework files:
+    * For the most recent build to work you will need to generate the Lndmobile.aar & Lndmobile.framework files and add them to `bitbip/android/Lndmobile\` & `bitbip/ios/lightning` respectively. The instructions to generate these files can be found [here](https://github.com/lightningnetwork/lnd/pull/3282) for now.
+2. Clone and Install Project Dependencies:
+   ```
+    git clone https://github.com/coreyphillips/bitbip
+    cd bitbip
+    yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../
+    ```
+3. Add the Lndmobile.aar file to `bitbip/android/Lndmobile` and Lndmobile.framework file to `bitbip/ios/lightning` and run the project:
+    ```
+    react-native run ios or react-native run-android
+    ```
 ## Roadmap
 
 * 0.1.0 Alpha - *Complete*
