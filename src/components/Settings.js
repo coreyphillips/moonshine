@@ -16,7 +16,6 @@ import { systemWeights } from "react-native-typography";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import DefaultModal from "./DefaultModal";
 import XButton from "./XButton";
-import Fade from "./Fade";
 import PinPad from "./PinPad";
 import ImportPhrase from "./ImportPhrase";
 import ElectrumOptions from "./ElectrumOptions";
@@ -775,7 +774,6 @@ class Settings extends PureComponent {
 		try {isTestnet = selectedCrypto.includes("Testnet");} catch (e) {}
 		let addressType = "bech32";
 		try {addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];} catch (e) {}
-		const walletName = selectedWallet.split('wallet').join('Wallet ');
 		const cryptoLabel = capitalize(selectedCrypto);
 		return (
 			<View style={styles.container}>
@@ -798,7 +796,7 @@ class Settings extends PureComponent {
 							</View>
 							
 							{this.props.settings.biometricsIsSupported &&
-								<SettingSwitch setting="biometrics" value={this.props.settings["biometrics"]} title={`Enable ${this.props.settings.biometricTypeSupported}`} onPress={this.toggleSetting} />
+								<SettingSwitch setting="biometrics" value={this.props.settings["biometrics"]} title={`Enable ${this.props.settings.biometricTypeSupported}`} onPress={() => this.toggleSetting("biometrics")} />
 							}
 							<SettingSwitch setting="pin" value={this.props.settings["pin"]} title="Enable Pin" onPress={this.togglePin} />
 							<SettingSwitch setting="testnet" value={this.props.settings["testnet"]} title="Enable Testnet" onPress={this.toggleTestnet} />
@@ -852,7 +850,7 @@ class Settings extends PureComponent {
 							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
 								<View style={styles.header}>
 									
-									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{`Wallet ${Object.keys(this.props.wallet.wallets).indexOf(walletName)}:`}</Text>
+									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{`Wallet ${Object.keys(this.props.wallet.wallets).indexOf(selectedWallet)}:`}</Text>
 									
 									<TouchableOpacity onPress={() => this.setState({ displayWalletHelp: true })} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
 										<MaterialCommunityIcons name={"help-circle-outline"} size={26} color={colors.white} />
@@ -933,7 +931,7 @@ class Settings extends PureComponent {
 							/>
 							
 							<SettingGeneral
-								value={`Rescan Wallet ${Object.keys(this.props.wallet.wallets).indexOf(walletName)}\n${cryptoLabel} Wallet`}
+								value={`Rescan Wallet ${Object.keys(this.props.wallet.wallets).indexOf(selectedWallet)}\n${cryptoLabel} Wallet`}
 								col1Loading={this.state.rescanningWallet}
 								col1Image="radar"
 								onPress={this.rescanWallet}
@@ -945,9 +943,6 @@ class Settings extends PureComponent {
 						</TouchableOpacity>
 					
 					</ScrollView>
-					<View style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}>
-						<Fade size={100} />
-					</View>
 				</Animated.View>
 				
 				{this.state.displayPin &&

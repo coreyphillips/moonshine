@@ -9,8 +9,6 @@ const {
 	walletHelpers
 } = require("../utils/walletApi");
 const moment = require("moment");
-//const coinSelect = require("coinselect");
-//import * as electrum from "../utils/electrum";
 
 export const updateTransaction = (payload) => ({
 	type: actions.UPDATE_TRANSACTION,

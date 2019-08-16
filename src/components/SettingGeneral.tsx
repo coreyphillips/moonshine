@@ -25,12 +25,7 @@ interface SettingGeneralComponent {
 	titleStyle?: object, //Style for Column One Text
 	valueStyle?: object //Style for Column Two Text
 }
-
-const _SettingGeneral = (
-	{ title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", rowStyle = {}, onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle = {} }:
-		SettingGeneralComponent = {
-		title: "", value: "", col1Loading: false, col2Loading: false, col1Image: "", col1ImageColor: colors.purple, col2Image: "", rowStyle: {}, onPress: () => null, col1Style: {}, col2Style: {}, titleStyle: {}, valueStyle: {}
-	}) => {
+const _SettingGeneral = ({ title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", rowStyle = {}, onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle = {} }: SettingGeneralComponent) => {
 	try {
 		return (
 			<TouchableOpacity onPress={() => onPress(value)} activeOpacity={1} style={styles.rowContainer}>
@@ -70,22 +65,6 @@ const _SettingGeneral = (
 	} catch (e) {
 		return <View />;
 	}
-};
-
-_SettingGeneral.defaultProps = {
-	title: "",
-	value: "",
-	col1Loading: false,
-	col2Loading: false,
-	col1Image: "",
-	col1ImageColor: colors.purple,
-	col2Image: "",
-	rowStyle: {},
-	onPress: () => null,
-	col1Style: {},
-	col2Style: {},
-	titleStyle: {},
-	valueStyle: {}
 };
 
 _SettingGeneral.propTypes = {

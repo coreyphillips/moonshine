@@ -17,11 +17,7 @@ interface SettingSwitchComponent {
 	col2Style?: object, //Style for Column Two Switch View
 	titleStyle?: object //Style for Column One Text
 }
-const _SettingSwitch = (
-	{ title = "", value = false, onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {} }:
-	SettingSwitchComponent  = {
-		title: "", value: false, onPress: () => null, col1Style: {}, col2Style: {}, titleStyle: {}
-	}) => {
+const _SettingSwitch = ({ title = "", value = false, onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {} }: SettingSwitchComponent) => {
 	try {
 		return (
 			<TouchableOpacity onPress={() => onPress(value)} activeOpacity={1} style={styles.rowContainer}>
@@ -44,15 +40,6 @@ const _SettingSwitch = (
 	} catch (e) {
 		return <View />;
 	}
-};
-
-_SettingSwitch.defaultProps = {
-	title: "",
-	value: false,
-	onPress: () => null,
-	col1Style: {},
-	col2Style: {},
-	titleStyle: {}
 };
 
 _SettingSwitch.propTypes = {

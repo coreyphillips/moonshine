@@ -23,21 +23,15 @@ const {
 	getCoinImage
 } = require("../utils/networks");
 
-const getAnimation = (name = "book") => {
+const getAnimation = (name = "astronaut") => {
 	try {
 		switch (name) {
 			case "book":
 				return require(`../assets/lottie/loading_book.json`);
 			case "loader":
 				return require(`../assets/lottie/snap_loader_white.json`);
-			case "bitcoinMoon":
-				return require(`../assets/lottie/bitcoin_to_the_moon.json`);
-			case "rocket":
-				return require(`../assets/lottie/bms-rocket.json`);
 			case "cloudBook":
 				return require(`../assets/lottie/downloading_book.json`);
-			case "threeCircleLoader":
-				return require(`../assets/lottie/strategy_shape`);
 			case "coins":
 				return require(`../assets/lottie/coins`);
 			case "astronaut":
@@ -56,19 +50,14 @@ class Loading extends Component {
 	
 	shouldComponentUpdate(nextProps) {
 		try {
-			if (
-				nextProps.loadingOpacity !== this.props.loadingOpacity ||
+			return nextProps.loadingOpacity !== this.props.loadingOpacity ||
 				nextProps.loadingMessage !== this.props.loadingMessage ||
 				nextProps.loadingProgress !== this.props.loadingProgress ||
 				nextProps.animationName !== this.props.animationName ||
 				nextProps.enableProgressBar !== this.props.enableProgressBar ||
 				nextProps.enableSpinner !== this.props.enableSpinner ||
 				nextProps.enableErrorIcon !== this.props.enableErrorIcon ||
-				nextProps.enableSuccessIcon !== this.props.enableSuccessIcon
-			) {
-				return true;
-			}
-			return false;
+				nextProps.enableSuccessIcon !== this.props.enableSuccessIcon;
 		} catch (e) {return false;}
 	}
 	

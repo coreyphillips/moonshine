@@ -134,7 +134,7 @@ export default class App extends Component {
 		loadingMessage: "",
 		loadingProgress: 0,
 		loadingTransactions: true,
-		loadingAnimationName: "cloudBook"
+		loadingAnimationName: "astronaut"
 	};
 	
 	setExchangeRate = async ({ selectedCrypto = "bitcoin", selectedCurrency = "usd", selectedService = "coingecko" } = {}) => {
@@ -690,7 +690,7 @@ export default class App extends Component {
 					currentBlockHeight,
 					wallet: selectedWallet
 				});
-				this.setState({loadingMessage: "Finished Creating Wallet", loadingProgress: 0.3, loadingAnimationName: "cloudBook"});
+				this.setState({loadingMessage: "Finished Creating Wallet", loadingProgress: 0.3, loadingAnimationName: "astronaut"});
 			}
 			this.launchDefaultFuncs({ displayLoading: false });
 		} catch (e) {}
@@ -1385,7 +1385,7 @@ export default class App extends Component {
 		}
 	};
 	
-	createNewWallet = async ({ mnemonic = "" }) => {
+	createNewWallet = async ({ mnemonic = "" } = {}) => {
 		try {
 			//Add wallet name to wallets array;
 			const walletName = await uuidv4();
@@ -1444,7 +1444,7 @@ export default class App extends Component {
 								<Animated.View style={[styles.settings, { opacity: this.state.biometricsOpacity }]}>
 									<Biometrics
 										biometricTypeSupported={this.props.settings.biometricTypeSupported}
-										retryAuthentication={this.state.displayBiometricAuthenticationRetry ? this.authenticateUserWithBiometrics : null}
+										retryAuthentication={this.state.displayBiometricAuthenticationRetry ? this.authenticateUserWithBiometrics : () => null}
 									/>
 								</Animated.View>}
 								
@@ -1491,7 +1491,7 @@ export default class App extends Component {
 								
 								{this.state.displayReceiveTransaction &&
 								<Animated.View style={[styles.ReceiveTransaction, { opacity: this.state.receiveTransactionOpacity }]}>
-									<ReceiveTransaction address={this.getQrCodeAddress()} amount={0.005} size={200} />
+									<ReceiveTransaction address={this.getQrCodeAddress()} selectedCrypto={this.props.wallet.selectedCrypto} size={200} />
 								</Animated.View>}
 								
 								{this.state.displayTextInput &&

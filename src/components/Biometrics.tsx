@@ -1,6 +1,6 @@
 import Ionicons from "react-native-vector-icons/Ionicons";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import React, { PureComponent } from "react";
+import React, { memo } from "react";
 import PropTypes from "prop-types";
 import {
 	StyleSheet,
@@ -16,44 +16,42 @@ const {
 	}
 } = require("../../ProjectData.json");
 
-retryAuthentication = (retryAuthentication = null) => {
-	if (retryAuthentication === null) return;
-	return (
-		<Text style={styles.smallText}>Retry</Text>
-	);
-};
-
-getIcon = (biometricTypeSupported = "", retryAuthentication = null) => {
+interface General {
+	biometricTypeSupported: string, //FaceID or TouchID
+	retryAuthentication: Function
+}
+const GetIcon = ({ biometricTypeSupported = "", retryAuthentication = () => null }: General) => {
 	try {
+		const _retryAuthentication = () => retryAuthentication();
 		if (biometricTypeSupported === "FaceID") {
 			return (
-				<TouchableOpacity activeOpacity={1} onPress={retryAuthentication} style={styles.container}>
+				<TouchableOpacity activeOpacity={1} onPress={_retryAuthentication} style={styles.container}>
 					<MaterialCommunityIcons name={"face"} size={65} color={colors.white} />
 					<Text style={styles.text}>
 						FaceID Enabled
 					</Text>
-					{this.retryAuthentication(retryAuthentication)}
+					<Text style={styles.smallText}>Retry</Text>
 				</TouchableOpacity>
 			);
 		}
 		if (biometricTypeSupported === "TouchID") {
 			return (
-				<TouchableOpacity activeOpacity={1} onPress={retryAuthentication} style={styles.container}>
+				<TouchableOpacity activeOpacity={1} onPress={_retryAuthentication} style={styles.container}>
 					<Ionicons name={"ios-finger-print"} size={65} color={colors.white} />
 					<Text style={styles.text}>
 						TouchID Enabled
 					</Text>
-					{this.retryAuthentication(retryAuthentication)}
+					<Text style={styles.smallText}>Retry</Text>
 				</TouchableOpacity>
 			);
 		}
 		return(
-			<TouchableOpacity activeOpacity={1} onPress={retryAuthentication} style={styles.container}>
+			<TouchableOpacity activeOpacity={1} onPress={_retryAuthentication} style={styles.container}>
 				<Ionicons name={"ios-finger-print"} size={65} color={colors.white} />
 				<Text style={styles.text}>
 					It appears that your device does not support Biometric security.
 				</Text>
-				{this.retryAuthentication(retryAuthentication)}
+				<Text style={styles.smallText}>Retry</Text>
 			</TouchableOpacity>
 		);
 	} catch (e) {
@@ -68,27 +66,21 @@ getIcon = (biometricTypeSupported = "", retryAuthentication = null) => {
 	}
 };
 
-class Biometrics extends PureComponent {
-	render() {
-		const { style, biometricTypeSupported, retryAuthentication } = this.props;
-		return (
-			<View style={[styles.container, { ...style }]}>
-				{getIcon(biometricTypeSupported, retryAuthentication)}
-			</View>
-		);
-	}
+interface BiometricsComponent extends General {
+	style?: object
 }
-
-Biometrics.defaultProps = {
-	style: {},
-	biometricTypeSupported: "",
-	retryAuthentication: null
+const _Biometrics = ({ style = {}, biometricTypeSupported = "", retryAuthentication = () => null }: BiometricsComponent) => {
+	return (
+		<View style={[styles.container, { ...style }]}>
+			<GetIcon biometricTypeSupported={biometricTypeSupported} retryAuthentication={retryAuthentication} />
+		</View>
+	);
 };
 
-Biometrics.protoTypes = {
-	style: PropTypes.object,
+_Biometrics.protoTypes = {
 	biometricTypeSupported: PropTypes.bool.isRequired,
-	retryAuthentication: PropTypes.func.isRequired
+	retryAuthentication: PropTypes.func.isRequired,
+	style: PropTypes.object
 };
 
 const styles = StyleSheet.create({
@@ -115,5 +107,9 @@ const styles = StyleSheet.create({
 	}
 });
 
-
-module.exports = Biometrics;
+//ComponentShouldNotUpdate
+const Biometrics = memo(
+	_Biometrics,
+	() => true
+);
+export default Biometrics;

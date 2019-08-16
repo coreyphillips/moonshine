@@ -18,7 +18,6 @@ const bitcoin = require("bitcoinjs-lib");
 const bip39 = require("bip39");
 const bip32 = require("bip32");
 const moment = require("moment");
-//let coinSelect = require("coinselect");
 const bip21 = require("bip21");
 const {
 	availableCoins,

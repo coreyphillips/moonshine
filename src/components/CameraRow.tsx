@@ -1,4 +1,4 @@
-import React, { PureComponent } from "react";
+import React, { memo } from "react";
 import {
 	StyleSheet,
 	Text,
@@ -17,32 +17,31 @@ const {
 
 const ROW_HEIGHT = 32;
 
-class CameraRow extends PureComponent {
-	render() {
-		const { onSendPress = () => null, onReceivePress = () => null, onCameraPress = () => null, style = {} }  = this.props;
-		return (
-			<View style={[styles.container, style]}>
-				<TouchableOpacity onPress={onSendPress} style={styles.leftItem}>
-					<Text style={styles.text}>Send</Text>
-				</TouchableOpacity>
-				<View style={styles.centerItem}>
-					<TouchableHighlight onPress={onCameraPress} underlayColor={colors.gray} style={styles.cameraIcon}>
-						<EvilIcon style={{ bottom: -2 }} name={"camera"} size={40} color={colors.darkPurple} />
-					</TouchableHighlight>
-				</View>
-				<TouchableOpacity onPress={onReceivePress} style={styles.rightItem}>
-					<Text style={styles.text}>Receive</Text>
-				</TouchableOpacity>
-			</View>
-		);
-	}
+interface CameraComponent {
+	onSendPress: Function,
+	onReceivePress: Function,
+	onCameraPress: Function,
+	style?: object
 }
-
-CameraRow.defaultProps = {
-	onSendPress: () => null,
-	onReceivePress: () => null,
-	onCameraPress: () => null,
-	style: {}
+const _CameraRow = ({ onSendPress = () => null, onReceivePress = () => null, onCameraPress = () => null, style = {} }: CameraComponent) => {
+	const _onSendPress = () => onSendPress();
+	const _onCameraPress = () => onCameraPress();
+	const _onReceivePress = () => onReceivePress();
+	return (
+		<View style={[styles.container, style]}>
+			<TouchableOpacity onPress={_onSendPress} style={styles.leftItem}>
+				<Text style={styles.text}>Send</Text>
+			</TouchableOpacity>
+			<View style={styles.centerItem}>
+				<TouchableHighlight onPress={_onCameraPress} underlayColor={colors.gray} style={styles.cameraIcon}>
+					<EvilIcon style={{ bottom: -2 }} name={"camera"} size={40} color={colors.darkPurple} />
+				</TouchableHighlight>
+			</View>
+			<TouchableOpacity onPress={_onReceivePress} style={styles.rightItem}>
+				<Text style={styles.text}>Receive</Text>
+			</TouchableOpacity>
+		</View>
+	);
 };
 
 const styles = StyleSheet.create({
@@ -100,5 +99,10 @@ const styles = StyleSheet.create({
 	}
 });
 
+//ComponentShouldNotUpdate
+const CameraRow = memo(
+	_CameraRow,
+	() => true
+);
 
 module.exports = CameraRow;

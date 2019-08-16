@@ -32,7 +32,7 @@ Bitbip's Alpha is available for download here:
     ```
 #### With LND:
 1. Generate the Lndmobile.aar & Lndmobile.framework files:
-    * For the most recent build to work you will need to generate the Lndmobile.aar & Lndmobile.framework files and add them to `bitbip/android/Lndmobile\` & `bitbip/ios/lightning` respectively. The instructions to generate these files can be found [here](https://github.com/lightningnetwork/lnd/pull/3282) for now.
+    * For the most recent build to work you will need to generate the Lndmobile.aar & Lndmobile.framework files and add them to `bitbip/android/Lndmobile` & `bitbip/ios/lightning` respectively. The instructions to generate these files can be found [here](https://github.com/lightningnetwork/lnd/pull/3282) for now.
 2. Clone and Install Project Dependencies:
    ```
     git clone https://github.com/coreyphillips/bitbip
@@ -98,3 +98,12 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
 [https://github.com/coreyphillips/bitbip](https://github.com/coreyphillips/bitbip)
 
 ## License [MIT](https://github.com/coreyphillips/bitbip/blob/master/LICENSE)
+
+## Acknowledgments
+* Giant shoutout to the authors and contributors of the following projects along with everyone who has taken the time to provide feedback and help me through this process of learning and development. You are all awesome:
+    * [bitcoinjs-lib](https://github.com/bitcoinjs/bitcoinjs-lib)
+        * For providing a powerful library with detailed documentation capable of handling all of the necessary client-side, Bitcoin-related heavy-lifting.
+    * [Electrum](https://electrum.org)
+        * For providing a simple and flexible way to interact with the Bitcoin network.
+    * [Lightning-App](https://github.com/lightninglabs/lightning-app)
+        * For providing the initial inspiration for the main UI of this app and for providing a wonderful guide/example of how to implement Lightning via Neutrino.

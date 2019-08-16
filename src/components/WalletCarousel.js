@@ -10,10 +10,10 @@ import WalletSliderEntry from "./WalletSliderEntry";
 
 const { width } = Dimensions.get("window");
 
-function wp (percentage) {
+const wp = (percentage: number): number => {
 	const value = (percentage * width) / 100;
 	return Math.round(value);
-}
+};
 
 const slideWidth = wp(75);
 const itemHorizontalMargin = wp(2);
@@ -28,14 +28,14 @@ const {
 } = require("../../ProjectData.json");
 
 export default class WalletCarousel extends Component {
-
+	
 	constructor(props) {
 		super(props);
 		this.state = {
 			activeSlide: Object.keys(this.props.wallet.wallets).indexOf(this.props.wallet.selectedWallet)
 		};
 	}
-
+	
 	_renderItem({ item, index, onCoinPress = () => null, onClose = () => null } = {}) {
 		return (
 			<WalletSliderEntry
@@ -58,7 +58,7 @@ export default class WalletCarousel extends Component {
 			return false;
 		} catch (e) {return false;}
 	}
-
+	
 	render() {
 		return (
 			<View style={styles.container}>
@@ -72,7 +72,6 @@ export default class WalletCarousel extends Component {
 						firstItem={this.state.activeSlide}
 						inactiveSlideScale={0.94}
 						inactiveSlideOpacity={0.7}
-						// inactiveSlideShift={20}
 						containerCustomStyle={styles.slider}
 						contentContainerCustomStyle={styles.sliderContentContainer}
 						loopClonesPerSide={2}
@@ -115,9 +114,6 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		backgroundColor: "transparent"
-	},
-	gradient: {
-		...StyleSheet.absoluteFillObject
 	},
 	walletContainer: {
 		marginVertical: 20

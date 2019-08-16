@@ -50,15 +50,15 @@ class CoinButton extends PureComponent {
 		return (
 			<TouchableOpacity key={`${coin}${Math.random()}`} onPress={() => onCoinPress({ coin, wallet })} style={styles.button}>
 				<View style={styles.buttonContent}>
-
+					
 					<Image
 						style={styles.buttonImage}
 						source={getCoinImage(coin)}
 					/>
-
+					
 					<Text style={styles.text}>{label}</Text>
 					<Text style={styles.subText}>{formatBalance({ balance, coin, cryptoUnit })}</Text>
-
+				
 				</View>
 			</TouchableOpacity>
 		);
@@ -75,7 +75,7 @@ CoinButton.defaultProps = {
 };
 
 class WalletSliderEntry extends PureComponent {
-
+	
 	Header = (wallet = "") => (
 		<View style={styles.header}>
 			<Text style={styles.headerText}>
@@ -83,7 +83,7 @@ class WalletSliderEntry extends PureComponent {
 			</Text>
 		</View>
 	);
-
+	
 	_deleteWallet = async ({ wallet = "", walletIndex = 0 } = {}) => {
 		try {
 			if (Object.keys(this.props.wallet.wallets).length > 1) {
@@ -100,7 +100,7 @@ class WalletSliderEntry extends PureComponent {
 			console.log(e);
 		}
 	};
-
+	
 	deleteWallet = async ({ wallet = "" } = {}) => {
 		try {
 			const selectedWallet = wallet;
@@ -129,7 +129,7 @@ class WalletSliderEntry extends PureComponent {
 			console.log(e);
 		}
 	};
-
+	
 	render () {
 		return (
 			<View style={styles.container}>
@@ -157,7 +157,7 @@ class WalletSliderEntry extends PureComponent {
 					</View>
 					<View style={{ paddingVertical: 70 }} />
 				</ScrollView>
-
+			
 			</View>
 		);
 	}
