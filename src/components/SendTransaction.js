@@ -17,7 +17,6 @@ import PropTypes from "prop-types";
 import Slider from "@react-native-community/slider";
 import { systemWeights } from "react-native-typography";
 import EvilIcon from "react-native-vector-icons/EvilIcons";
-import FeatherIcon from "react-native-vector-icons/Feather";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Modal from "react-native-modal";
 
@@ -55,7 +54,7 @@ const {
 const moment = require("moment");
 const { width, height } = Dimensions.get("window");
 
-class SendTransaction extends Component<Props> {
+class SendTransaction extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -816,7 +815,7 @@ class SendTransaction extends Component<Props> {
 						>
 						</TextInput>
 						<TouchableOpacity style={styles.leftIconContainer} onPress={this.getClipboardContent}>
-							<FeatherIcon style={styles.featherIcon} name={"clipboard"} size={25} color={colors.purple} />
+							<FontAwesome style={styles.clipboardIcon} name={"clipboard"} size={25} color={colors.purple} />
 						</TouchableOpacity>
 						<TouchableOpacity style={[styles.rightIconContainer, { backgroundColor: colors.white }]} onPress={this.state.onCameraPress}>
 							<EvilIcon style={styles.cameraIcon} name={"camera"} size={40} color={colors.purple} />
@@ -1118,7 +1117,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 		height: 30
 	},
-	featherIcon: {
+	clipboardIcon: {
 		alignItems: "flex-end"
 	},
 	row: {

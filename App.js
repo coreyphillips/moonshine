@@ -1450,7 +1450,13 @@ export default class App extends Component {
 								
 								{this.state.displayPin &&
 								<Animated.View style={[styles.settings, { opacity: this.state.pinOpacity }]}>
-									<PinPad onSuccess={this.launchDefaultFuncs} onFailure={this.onPinFailure} />
+									<PinPad
+										updateSettings={this.props.updateSettings}
+										wipeDevice={this.props.wipeDevice}
+										pinAttemptsRemaining={this.props.settings.pinAttemptsRemaining}
+										onSuccess={this.launchDefaultFuncs}
+										onFailure={this.onPinFailure}
+									/>
 								</Animated.View>}
 								
 								{this.state.displayLoading &&

@@ -1,11 +1,5 @@
-import React, { Component } from "react";
-import {
-	StyleSheet,
-	Text,
-	Animated,
-	View,
-	Image
-} from "react-native";
+import React, {memo} from "react";
+import {Animated, Image, StyleSheet, Text, View} from "react-native";
 import PropTypes from "prop-types";
 import * as Progress from "react-native-progress";
 import { systemWeights } from "react-native-typography";
@@ -46,23 +40,22 @@ const getAnimation = (name = "astronaut") => {
 	}
 };
 
-class Loading extends Component {
+interface LoadingComponent {
+	loadingOpacity: number,
+	loadingMessage: string,
+	loadingProgress: number,
+	animationName: string,
+	enableProgressBar: boolean,
+	enableSpinner: boolean,
+	enableErrorIcon: boolean,
+	enableSuccessIcon: boolean,
+	width: number,
+	style: object,
+	textStyle: object
+}
+const _Loading = ({loadingOpacity = 0, loadingMessage = "Loading State", loadingProgress = 0, animationName = "", enableProgressBar = true, enableSpinner = true, enableErrorIcon = false, enableSuccessIcon = false, width = 200, style = {}, textStyle = {}}: LoadingComponent) => {
 	
-	shouldComponentUpdate(nextProps) {
-		try {
-			return nextProps.loadingOpacity !== this.props.loadingOpacity ||
-				nextProps.loadingMessage !== this.props.loadingMessage ||
-				nextProps.loadingProgress !== this.props.loadingProgress ||
-				nextProps.animationName !== this.props.animationName ||
-				nextProps.enableProgressBar !== this.props.enableProgressBar ||
-				nextProps.enableSpinner !== this.props.enableSpinner ||
-				nextProps.enableErrorIcon !== this.props.enableErrorIcon ||
-				nextProps.enableSuccessIcon !== this.props.enableSuccessIcon;
-		} catch (e) {return false;}
-	}
-	
-	Icon() {
-		const animationName = this.props.animationName;
+	const Icon = () => {
 		if (availableCoins.includes(animationName)) {
 			return (
 				<Image
@@ -79,51 +72,35 @@ class Loading extends Component {
 				style={{ width: 150, height: 150, marginBottom: 10 }}
 			/>
 		);
-	}
+	};
+	
+	return (
+		<Animated.View style={[styles.container, { ...style }]}>
+			<Animated.View style={[styles.loading, { opacity: loadingOpacity }]}>
 
-	render() {
-		return (
-			<Animated.View style={[styles.container, { ...this.props.style }]}>
-				<Animated.View style={[styles.loading, { opacity: this.props.loadingOpacity }]}>
+				<View style={{ flex: 1, alignItems: "center", justifyContent: "flex-end", marginBottom: 10 }}>
+					{enableSpinner && !enableErrorIcon && !enableSuccessIcon &&
+					Icon()}
+					{enableSuccessIcon &&
+					<EvilIcon name={"check"} size={110} color={colors.white} style={{ marginBottom: 10 }} />
+					}
+					{enableErrorIcon &&
+					<EvilIcon name={"exclamation"} size={110} color={colors.white} style={{ marginBottom: 10 }} />
+					}
+					{enableProgressBar &&
+					<Progress.Bar height={10} animated={true} animationType={"spring"} color={colors.white} progress={loadingProgress} width={width} />}
+				</View>
 
-					<View style={{ flex: 1, alignItems: "center", justifyContent: "flex-end", marginBottom: 10 }}>
-						{this.props.enableSpinner && !this.props.enableErrorIcon && !this.props.enableSuccessIcon &&
-						this.Icon()}
-						{this.props.enableSuccessIcon &&
-						<EvilIcon name={"check"} size={110} color={colors.white} style={{ marginBottom: 10 }} />
-						}
-						{this.props.enableErrorIcon &&
-						<EvilIcon name={"exclamation"} size={110} color={colors.white} style={{ marginBottom: 10 }} />
-						}
-						{this.props.enableProgressBar &&
-						<Progress.Bar height={10} animated={true} animationType={"spring"} color={colors.white} progress={this.props.loadingProgress} width={this.props.width} />}
-					</View>
+				<View style={{ flex: 1, alignItems: "center", justifyContent: "flex-start", marginTop: 10 }}>
+					<Text style={[styles.boldText, { ...textStyle }]}>{loadingMessage}</Text>
+				</View>
 
-					<View style={{ flex: 1, alignItems: "center", justifyContent: "flex-start", marginTop: 10 }}>
-						<Text style={[styles.boldText, { ...this.props.textStyle }]}>{this.props.loadingMessage}</Text>
-					</View>
-
-				</Animated.View>
 			</Animated.View>
-		);
-	}
-}
-
-Loading.defaultProps = {
-	loadingOpacity: 0,
-	loadingMessage: "Loading State",
-	loadingProgress: 0,
-	animationName: "",
-	enableProgressBar: true,
-	enableSpinner: true,
-	enableErrorIcon: false,
-	enableSuccessIcon: false,
-	width: 200,
-	style: {},
-	textStyle: {}
+		</Animated.View>
+	);
 };
 
-Loading.protoTypes = {
+_Loading.protoTypes = {
 	style: PropTypes.object,
 	textStyle: PropTypes.object,
 	loadingOpacity: PropTypes.number,
@@ -170,5 +147,20 @@ const styles = StyleSheet.create({
 	}
 });
 
+//ComponentShouldNotUpdate
+const Loading = memo(
+	_Loading,
+	(prevProps, nextProps) => {
+		if (!prevProps || !nextProps) return true;
+		return prevProps.loadingOpacity === nextProps.loadingOpacity &&
+			prevProps.loadingMessage === nextProps.loadingMessage &&
+			prevProps.loadingProgress === nextProps.loadingProgress &&
+			prevProps.animationName === nextProps.animationName &&
+			prevProps.enableProgressBar === nextProps.enableProgressBar &&
+			prevProps.enableSpinner === nextProps.enableSpinner &&
+			prevProps.enableErrorIcon === nextProps.enableErrorIcon &&
+			prevProps.enableSuccessIcon === nextProps.enableSuccessIcon;
+	}
+);
 
-module.exports = Loading;
+export default Loading;

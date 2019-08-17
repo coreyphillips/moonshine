@@ -204,5 +204,4 @@ const ReceiveTransaction = memo(
 	}
 );
 
-
 export default ReceiveTransaction;

@@ -829,7 +829,6 @@ class Settings extends PureComponent {
 								onPress={() => this.toggleImportPhrase({ display: true })}
 								col1Image="import"
 								col1ImageColor={colors.purple}
-								col1Style={{flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10}}
 								col2Style={{flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10}}
 								titleStyle={{color: colors.purple}}
 								valueStyle={{color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold"}}
@@ -841,7 +840,6 @@ class Settings extends PureComponent {
 								onPress={() => this.toggleElectrumOptions({ display: true })}
 								col1Image="alpha-e-box"
 								col1ImageColor={colors.purple}
-								col1Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10 }}
 								col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 }}
 								titleStyle={{ color: colors.purple }}
 								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
@@ -924,7 +922,6 @@ class Settings extends PureComponent {
 								rowStyle={this.props.wallet.wallets[selectedWallet].hasBackedUpWallet ? { backgroundColor: colors.white } : { backgroundColor: colors.red }}
 								col1Image="wallet"
 								col1ImageColor={this.props.wallet.wallets[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white}
-								col1Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingLeft: 10 }}
 								col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 }}
 								titleStyle={{ color: this.props.wallet.wallets[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white }}
 								valueStyle={{ color: this.props.wallet.wallets[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white, fontSize: 16, textAlign: "center", fontWeight: this.props.settings.hasBackedUpWallet ? "normal" : "bold" }}
@@ -947,7 +944,7 @@ class Settings extends PureComponent {
 				
 				{this.state.displayPin &&
 					<View style={styles.settingContainer}>
-						<PinPad onSuccess={this.onPinSuccess} pinSetup={true} />
+						<PinPad onSuccess={this.onPinSuccess} pinSetup={true} updateSettings={this.props.updateSettings} />
 					</View>
 				}
 				

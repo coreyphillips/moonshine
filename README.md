@@ -1,6 +1,10 @@
 # Bitbip
 
-![](header.png)
+<p style="align-items: center">
+  <img src="./src/assets/screenshots/send_transaction.png" width="33%" alt="Send Transaction" />
+  <img src="./src/assets/screenshots/main.png" width="33%" alt="Main"/> 
+  <img src="./src/assets/screenshots/receive_transaction.png" width="33%" alt="Receive Transaction" />
+</p>
 
 > Bitbip is an open-source, non-custodial, Bitcoin/Litecoin Electrum wallet for iOS & Android.
 

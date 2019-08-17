@@ -28,7 +28,7 @@ const _SettingSwitch = ({ title = "", value = false, onPress = () => null, col1S
 					<TouchableOpacity onPress={() => onPress(value)} style={[styles.col2 , col2Style]}>
 						<Switch
 							ios_backgroundColor={colors.gray}
-							thumbColor={colors.purple}
+							thumbColor={value ? colors.purple : colors.darkGray}
 							trackColor={{false: colors.lightGray, true: colors.gray}}
 							value={value}
 							onValueChange={() => onPress(value)}

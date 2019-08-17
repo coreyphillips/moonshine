@@ -19,22 +19,11 @@ interface XButtonComponent {
 	size?: number,
 	style?: object
 }
-const _XButton = ({ onPress = () => null, size = 30, style = {} }: XButtonComponent) => {
-	const [buttonSize, setButtonSize] = useState(30);
-	useEffect(() => {
-		let startSize = 30;
-		try {
-			startSize = size*1.4;
-		} catch (e) {startSize = 20*1.4;}
-		
-		setButtonSize(startSize);
-	}, []);
-	
+const _XButton = ({ onPress = () => null, size = 42, style = {} }: XButtonComponent) => {
 	const _onPress = () => onPress();
-	
 	return (
-		<TouchableOpacity onPress={_onPress} style={[styles.container, { height: buttonSize, width: buttonSize, ...style }]}>
-			<View style={[styles.circle, { height: buttonSize, width: buttonSize }]}>
+		<TouchableOpacity onPress={_onPress} style={[styles.container, { height: size, width: size, ...style }]}>
+			<View style={[styles.circle, { height: size, width: size }]}>
 				<Text style={styles.text}>X</Text>
 			</View>
 		</TouchableOpacity>

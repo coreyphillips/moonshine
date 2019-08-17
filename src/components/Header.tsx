@@ -168,7 +168,8 @@ const Header = memo(
 			nextProps.cryptoValue === prevProps.cryptoValue &&
 			nextProps.isOnline === prevProps.isOnline &&
 			nextProps.selectedWallet === prevProps.selectedWallet &&
-			nextProps.selectedCrypto === prevProps.selectedCrypto
+			nextProps.selectedCrypto === prevProps.selectedCrypto &&
+			nextProps.cryptoUnit === prevProps.cryptoUnit
 		);
 	}
 );
