@@ -1,4 +1,5 @@
 # Bitbip
+Bitbip's alpha is available for testing on [iOS](https://testflight.apple.com/join/yTLqj9Xn) & [Android](https://play.google.com/store/apps/details?id=com.kisswallet)
 
 <p style="align-items: center">
   <img src="./src/assets/screenshots/send_transaction.png" width="33%" alt="Send Transaction" />
@@ -18,11 +19,6 @@ Meaning, your keys are only as safe as the device you install this wallet on.
 As with any hot wallet, please ensure that you keep only a small, responsible amount of Bitcoin/Litecoin on it at any given time.
 
 If you are looking for secure cold storage solutions please consider purchasing a [Trezor](https://wallet.trezor.io) or a [Ledger](https://www.ledger.com/)
-
-Bitbip's Alpha is available for download here:
-
-* [iOS](https://testflight.apple.com/join/yTLqj9Xn)
-* [Android](https://play.google.com/store/apps/details?id=com.kisswallet)
 
 ## Installation
 #### Without LND:

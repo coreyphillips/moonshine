@@ -60,12 +60,16 @@ interface HeaderComponent {
 const _Header = ({fiatSymbol = "$", selectedCrypto = "bitcoin", selectedWallet = "wallet0", onSelectCoinPress = () => null, isOnline = true, exchangeRate = 0, displayWalletName = false, selectedCryptoStyle = {}, activeOpacity = 0.6, fontSize = 60, fiatValue = 0, cryptoValue = 0, cryptoUnit = "satoshi"}: HeaderComponent) => {
 	try {
 		if (isNaN(fiatValue)) fiatValue = 0;
-		//This prevents the view from displaying 0 BTC
-		if (cryptoValue < 50000 && cryptoUnit === "BTC") {
-			if (typeof cryptoValue !== "number") cryptoValue = Number(cryptoValue);
-			cryptoValue = `${(cryptoValue * 0.00000001).toFixed(8)}`;
+		if (cryptoValue === 0 && cryptoUnit === "BTC") {
+			cryptoValue = 0;
 		} else {
-			cryptoValue = bitcoinUnits(cryptoValue, "satoshi").to(cryptoUnit).value();
+			//This prevents the view from displaying 0 for values less than 50000 BTC
+			if (cryptoValue < 50000 && cryptoUnit === "BTC") {
+				if (typeof cryptoValue !== "number") cryptoValue = Number(cryptoValue);
+				cryptoValue = `${(cryptoValue * 0.00000001).toFixed(8)}`;
+			} else {
+				cryptoValue = bitcoinUnits(cryptoValue, "satoshi").to(cryptoUnit).value();
+			}
 		}
 	} catch (e) {}
 	

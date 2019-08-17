@@ -36,28 +36,37 @@ export default class WalletCarousel extends Component {
 		};
 	}
 	
-	_renderItem({ item, index, onCoinPress = () => null, onClose = () => null } = {}) {
-		return (
-			<WalletSliderEntry
-				data={item}
-				even={(index + 1) % 2 === 0}
-				onCoinPress={onCoinPress}
-				onClose={onClose}
-			/>
-		);
+	_renderItem({ walletId, onCoinPress = () => null, onClose = () => null, updateActiveSlide = () => null } = {}) {
+		try {
+			return (
+				<WalletSliderEntry
+					walletId={walletId}
+					onCoinPress={onCoinPress}
+					onClose={onClose}
+					updateActiveSlide={updateActiveSlide}
+					wallet={this.props.wallet}
+					cryptoUnit={this.props.settings.cryptoUnit}
+					updateWallet={this.props.updateWallet}
+					deleteWallet={this.props.deleteWallet}
+					displayTestnet={this.props.settings.testnet}
+				/>
+			);
+		} catch (e) {
+			console.log(e);
+		}
 	}
 	
 	shouldComponentUpdate(nextProps, nextState) {
 		try {
-			if (
-				nextProps.wallet !== this.props.wallet ||
-				nextState.activeSlide !== this.state.activeSlide
-			) {
-				return true;
-			}
-			return false;
+			return nextProps.wallet !== this.props.wallet ||
+				nextState.activeSlide !== this.state.activeSlide;
+			
 		} catch (e) {return false;}
 	}
+	
+	updateActiveSlide = (index = 0) => {
+		this.setState({ activeSlide: index });
+	};
 	
 	render() {
 		return (
@@ -66,7 +75,7 @@ export default class WalletCarousel extends Component {
 					<Carousel
 						ref={c => this._slider1Ref = c}
 						data={Object.keys(this.props.wallet.wallets)}
-						renderItem={({ item, index }) => this._renderItem({ item, index, onCoinPress: this.props.onCoinPress, onClose: this.props.onClose })}
+						renderItem={({ item }) => this._renderItem({walletId: item, onCoinPress: this.props.onCoinPress, onClose: this.props.onClose, updateActiveSlide: this.updateActiveSlide })}
 						sliderWidth={sliderWidth}
 						itemWidth={itemWidth}
 						firstItem={this.state.activeSlide}
@@ -74,10 +83,7 @@ export default class WalletCarousel extends Component {
 						inactiveSlideOpacity={0.7}
 						containerCustomStyle={styles.slider}
 						contentContainerCustomStyle={styles.sliderContentContainer}
-						loopClonesPerSide={2}
-						onSnapToItem={index => {
-							this.setState({ activeSlide: index });
-						}}
+						onSnapToItem={index => this.updateActiveSlide(index)}
 						enableMomentum={true}
 						decelerationRate={0.9}
 					/>

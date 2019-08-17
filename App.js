@@ -154,10 +154,10 @@ export default class App extends Component {
 		//}
 	};
 	
-	onCoinPress = async ({ coin = "bitcoin", wallet = "wallet0", initialLoadingMessage = "" } = {}) => {
+	onCoinPress = async ({ coin = "bitcoin", walletId = "wallet0", initialLoadingMessage = "" } = {}) => {
 		try {
 			const sameCoin = this.props.wallet.selectedCrypto === coin;
-			const sameWallet = this.props.wallet.selectedWallet === wallet;
+			const sameWallet = this.props.wallet.selectedWallet === walletId;
 			if (sameCoin && sameWallet) {
 				this.resetView();
 				return;
@@ -166,9 +166,9 @@ export default class App extends Component {
 			this.updateItem({ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false, duration: 200 });
 			
 			const network = getNetworkType(coin);
-			await this.props.updateWallet({ selectedCrypto: coin, network, selectedWallet: wallet });
+			await this.props.updateWallet({ selectedCrypto: coin, network, selectedWallet: walletId });
 			
-			if (this.props.wallet.wallets[wallet].addresses[coin].length > 0) {
+			if (this.props.wallet.wallets[walletId].addresses[coin].length > 0) {
 				//This condition occurs when the user selects a coin that already has generated addresses from the "SelectCoin" view.
 				this.updateItem({ stateId: "displayLoading", opacityId: "loadingOpacity", display: false });
 				this.resetView();
@@ -177,7 +177,7 @@ export default class App extends Component {
 				if (initialLoadingMessage) {
 					this.setState({ loadingMessage: initialLoadingMessage, loadingProgress: 0.3, loadingAnimationName: coin });
 				} else {
-					this.setState({ loadingMessage: `Switching to ${capitalize(coin)} for Wallet ${this.props.wallet.wallets[wallet].name || Object.keys(this.props.wallet.wallets).indexOf(wallet)}`, loadingProgress: 0.3, loadingAnimationName: coin });
+					this.setState({ loadingMessage: `Switching to ${capitalize(coin)} for Wallet ${this.props.wallet.wallets[walletId].name || Object.keys(this.props.wallet.wallets).indexOf(walletId)}`, loadingProgress: 0.3, loadingAnimationName: coin });
 				}
 				this.updateItem({ stateId: "displayLoading", opacityId: "loadingOpacity", display: true });
 				InteractionManager.runAfterInteractions(async () => {
@@ -1390,7 +1390,7 @@ export default class App extends Component {
 			//Add wallet name to wallets array;
 			const walletName = await uuidv4();
 			//Set Loading Message
-			await this.setState({loadingMessage: `Creating Wallet ${Object.keys(this.props.wallet.wallets).length + 1} & Generating Addresses`, loadingProgress: 0.5});
+			await this.setState({loadingMessage: `Creating Wallet ${Object.keys(this.props.wallet.wallets).length} & Generating Addresses`, loadingProgress: 0.5});
 			
 			//Close Receive State
 			const items = [
