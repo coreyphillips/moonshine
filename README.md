@@ -1,5 +1,5 @@
-# Bitbip
-Bitbip's alpha is available for testing on [iOS](https://testflight.apple.com/join/yTLqj9Xn) & [Android](https://play.google.com/store/apps/details?id=com.kisswallet)
+# Moonshine
+Moonshine's alpha is available for testing on [iOS](https://testflight.apple.com/join/yTLqj9Xn) & [Android](https://play.google.com/store/apps/details?id=com.kisswallet)
 
 <p style="align-items: center">
   <img src="./src/assets/screenshots/send_transaction.png" width="33%" alt="Send Transaction" />
@@ -7,14 +7,14 @@ Bitbip's alpha is available for testing on [iOS](https://testflight.apple.com/jo
   <img src="./src/assets/screenshots/receive_transaction.png" width="33%" alt="Receive Transaction" />
 </p>
 
-> Bitbip is an open-source, non-custodial, Bitcoin/Litecoin Electrum wallet for iOS & Android.
+> Moonshine is a homebrewed, open-source, non-custodial, Bitcoin/Litecoin Electrum wallet for iOS & Android.
 
 CAUTION: **Caution:**
 This app is still heavily in development. I encourage users to only utilize the Testnet chains at this time. Otherwise, please use at your own risk.
 
-Built with React Native, Bitbip utilizes Electrum's JSON-RPC methods to interact with the Bitcoin/Litecoin network.
+Built with React Native, Moonshine utilizes Electrum's JSON-RPC methods to interact with the Bitcoin/Litecoin network.
 
-Bitbip's intended use is as a hot wallet.
+Moonshine's intended use is as a hot wallet.
 Meaning, your keys are only as safe as the device you install this wallet on.
 As with any hot wallet, please ensure that you keep only a small, responsible amount of Bitcoin/Litecoin on it at any given time.
 
@@ -24,22 +24,22 @@ If you are looking for secure cold storage solutions please consider purchasing 
 #### Without LND:
 1. LND isn't fully implemented in this app yet so if you do not wish to use Lightning or go through the process of generating any .aar & .framework files you can simply checkout the commit prior to the LND implementation and run the project like so:
     ```
-    git clone https://github.com/coreyphillips/bitbip
-    cd bitbip
+    git clone https://github.com/coreyphillips/moonshine
+    cd moonshine
     git checkout 79d1e65879dac8dc2fd5bcd4401ec8e462100813
     yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../
     react-native run ios or react-native run-android
     ```
 #### With LND:
 1. Generate the Lndmobile.aar & Lndmobile.framework files:
-    * For the most recent build to work you will need to generate the Lndmobile.aar & Lndmobile.framework files and add them to `bitbip/android/Lndmobile` & `bitbip/ios/lightning` respectively. The instructions to generate these files can be found [here](https://github.com/lightningnetwork/lnd/pull/3282) for now.
+    * For the most recent build to work you will need to generate the Lndmobile.aar & Lndmobile.framework files and add them to `moonshine/android/Lndmobile` & `moonshine/ios/lightning` respectively. The instructions to generate these files can be found [here](https://github.com/lightningnetwork/lnd/pull/3282) for now.
 2. Clone and Install Project Dependencies:
    ```
-    git clone https://github.com/coreyphillips/bitbip
-    cd bitbip
+    git clone https://github.com/coreyphillips/moonshine
+    cd moonshine
     yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../
     ```
-3. Add the Lndmobile.aar file to `bitbip/android/Lndmobile` and Lndmobile.framework file to `bitbip/ios/lightning` and run the project:
+3. Add the Lndmobile.aar file to `moonshine/android/Lndmobile` and Lndmobile.framework file to `moonshine/ios/lightning` and run the project:
     ```
     react-native run ios or react-native run-android
     ```
@@ -73,7 +73,7 @@ If you are looking for secure cold storage solutions please consider purchasing 
     
 ## Contributing
 
-1. Fork it (<https://github.com/coreyphillips/bitbip>)
+1. Fork it (<https://github.com/coreyphillips/moonshine>)
 2. Create your feature branch (`git checkout -b feature/fooBar`)
 3. Commit your changes (`git commit -am 'Add some fooBar'`)
 4. Push to the branch (`git push origin feature/fooBar`)
@@ -87,7 +87,7 @@ Please be aware and take note that my primary focus is on expanding the core fun
 
 ## Support
 
-If you have any questions, feature requests, etc., please feel free to create an issue on [Github](https://github.com/coreyphillips/bitbip/issues) or reach out to me on [Twitter](https://twitter.com/coreylphillips).
+If you have any questions, feature requests, etc., please feel free to create an issue on [Github](https://github.com/coreyphillips/moonshine/issues) or reach out to me on [Twitter](https://twitter.com/coreylphillips).
 
 ## Meta
 
@@ -95,9 +95,9 @@ Corey Phillips – [@coreylphillips](https://twitter.com/coreylphillips)
 
 Distributed under the MIT license. See ``LICENSE`` for more information.
 
-[https://github.com/coreyphillips/bitbip](https://github.com/coreyphillips/bitbip)
+[https://github.com/coreyphillips/moonshine](https://github.com/coreyphillips/moonshine)
 
-## License [MIT](https://github.com/coreyphillips/bitbip/blob/master/LICENSE)
+## License [MIT](https://github.com/coreyphillips/moonshine/blob/master/LICENSE)
 
 ## Acknowledgments
 * Giant shoutout to the authors and contributors of the following projects along with everyone who has taken the time to provide feedback and help me through this process of learning and development. You are all awesome:

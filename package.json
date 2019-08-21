@@ -16,7 +16,8 @@
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "test": "jest",
     "lint": "eslint '**/*.{js,jsx}' --quiet",
-    "postinstall": "rn-nodeify --install buffer,stream,assert,events,crypto,vm --hack"
+    "postinstall": "rn-nodeify --install buffer,stream,assert,events,crypto,vm --hack",
+    "bundle": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.jsbundle --assets-dest android/app/build/intermediates/res/merged/release/ && cd android && ./gradlew assembleRelease --no-daemon"
   },
   "dependencies": {
     "@react-native-community/async-storage": "^1.3.3",

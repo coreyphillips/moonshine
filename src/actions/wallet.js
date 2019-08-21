@@ -165,22 +165,6 @@ const resetUtxos = ({wallet = "wallet0", addresses = [], changeAddresses = [], c
 			resolve({error: true, data});
 		};
 		try {
-			/*
-			//Add existing utxos to addresses
-			let currentUtxos = [];
-			await Promise.all(
-				currentUtxos.map(async (utxo) => {
-					let match = false;
-					await Promise.all(
-						addresses.map((address) => address === utxo.address ? match = true : null),
-						changeAddresses.map((changeAddress) => changeAddress === utxo.address ? match = true : null),
-					);
-					if (match === false) addresses = addresses.push(utxo.address);
-				}
-			));
-			*/
-			
-			
 			//Returns { error: false, data: { utxos, balance } }
 			const utxoResult = await walletHelpers.utxos.default({ addresses, changeAddresses, currentBlockHeight, selectedCrypto });
 			if (utxoResult.error === true) {
@@ -202,7 +186,6 @@ const resetUtxos = ({wallet = "wallet0", addresses = [], changeAddresses = [], c
 						wallet,
 						selectedCrypto,
 						utxos,
-						//confirmedBalance: utxoResult.data.balance,
 						timestamp: moment()
 					},
 				});

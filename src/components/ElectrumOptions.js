@@ -32,11 +32,11 @@ class ElectrumInput extends PureComponent {
 	testConnection = () => {
 		this.props.testConnection(this.props.coin);
 	};
-
+	
 	savePeer = () => {
 		this.props.savePeer(this.props.coin);
 	};
-
+	
 	render() {
 		let savedHost = "";
 		let savedPort = "";
@@ -108,7 +108,7 @@ ElectrumInput.defaultProps = {
 };
 
 class ElectrumOptions extends PureComponent {
-
+	
 	constructor(props) {
 		super(props);
 		let coins = {};
@@ -127,17 +127,17 @@ class ElectrumOptions extends PureComponent {
 			loading: ""
 		};
 	}
-
+	
 	updateState = ({ coin, value }) => {
 		this.setState({ [coin]: value });
 	};
-
+	
 	testConnection = async (coin) => {
 		try {
 			await this.setState({ loading: coin });
 			const host = this.state[coin].host.trim();
 			const port = this.state[coin].port.trim();
-
+			
 			//Ensure the user passed in a host & port to test.
 			if (host === "" || port === "") {
 				if (host === "" && port === "") {
@@ -152,7 +152,7 @@ class ElectrumOptions extends PureComponent {
 				await this.setState({ loading: "" });
 				return;
 			}
-
+			
 			await electrum.stop({ coin });
 			const result = await electrum.start({ coin, customPeers: [{ host, port }]});
 			if (result.error === false) {
@@ -165,7 +165,7 @@ class ElectrumOptions extends PureComponent {
 			this.setState({ loading: "" });
 		}
 	};
-
+	
 	savePeer = async (coin) => {
 		try {
 			try {
@@ -180,7 +180,7 @@ class ElectrumOptions extends PureComponent {
 					await this.setState({ saving: "", loading: "" });
 					return;
 				}
-
+				
 				//Ensure the user passed in a host & port to test.
 				if (host === "" || port === "") {
 					if (host === "") {
@@ -191,7 +191,7 @@ class ElectrumOptions extends PureComponent {
 					await this.setState({ saving: "", loading: "" });
 					return;
 				}
-
+				
 				//Attempt to connect to the customPeer before saving.
 				await electrum.stop({ coin });
 				const result = await electrum.start({ coin, customPeers: [{ host, port }]});
@@ -201,7 +201,7 @@ class ElectrumOptions extends PureComponent {
 				} else {
 					alert(`Failure\nUnable to connect to:\n${host}:${port}`);
 				}
-
+				
 				this.setState({ saving: "" });
 			} catch (e) {
 				console.log(e);
@@ -211,13 +211,13 @@ class ElectrumOptions extends PureComponent {
 			console.log(e);
 		}
 	};
-
+	
 	render() {
 		return (
 			<TouchableOpacity activeOpacity={1} style={styles.container}>
 				<ScrollView style={styles.container} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
 					<TouchableOpacity activeOpacity={1} style={styles.container}>
-
+						
 						<FlatList
 							data={this.state.availableCoins}
 							extraData={this.state}
@@ -241,10 +241,10 @@ class ElectrumOptions extends PureComponent {
 								);
 							}}
 						/>
-
+						
 						<View style={{ marginVertical: height*0.3 }} />
 					</TouchableOpacity>
-
+				
 				</ScrollView>
 				<Animated.View style={styles.xButton}>
 					<XButton style={{ borderColor: "transparent" }} onPress={this.props.onBack} />

@@ -631,7 +631,7 @@ class SendTransaction extends Component {
 					//Attempt to add the successful transaction to the transaction list
 					const { address, amount, transactionSize } = currentTransactionDetails;
 					const fee = currentTransactionDetails.fee || currentTransactionDetails.recommendedFee;
-					const confirmedBalance = this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto];
+					const confirmedBalance = this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto];
 					const totalFee = Number(fee)*Number(transactionSize);
 					const sentAmount = Number(amount) + totalFee;
 					const receivedAmount = confirmedBalance - sentAmount;
@@ -793,7 +793,7 @@ class SendTransaction extends Component {
 						cryptoUnit={this.props.settings.cryptoUnit}
 						selectedCrypto={this.props.wallet.selectedCrypto}
 						selectedCryptoStyle={{ fontSize: 30, marginTop: 10 }}
-						selectedWallet={`Wallet ${Object.keys(this.props.wallet.wallets).indexOf(selectedWallet)}`}
+						selectedWallet={`Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}`}
 						exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]}
 						isOnline={this.props.user.isOnline}
 						displayWalletName={true}

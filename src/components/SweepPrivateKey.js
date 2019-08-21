@@ -47,7 +47,7 @@ const {
 const moment = require("moment");
 const { width } = Dimensions.get("window");
 
-class SendTransaction extends PureComponent<Props> {
+class SendTransaction extends PureComponent {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -895,7 +895,7 @@ class SendTransaction extends PureComponent<Props> {
 
 						<View style={styles.row}>
 							<View style={{ flex: 1, justifyContent: "flex-end", alignItems: "flex-start" }}>
-								<Text style={[styles.largeText, { fontWeight: "bold" }]}>Sending To: <Text style={styles.largeText}>{`Wallet ${Object.keys(this.props.wallet.wallets).indexOf(this.props.wallet.selectedWallet)}`}</Text></Text>
+								<Text style={[styles.largeText, { fontWeight: "bold" }]}>Sending To: <Text style={styles.largeText}>{`Wallet ${this.props.wallet.walletOrder.indexOf(this.props.wallet.selectedWallet)}`}</Text></Text>
 							</View>
 						</View>
 

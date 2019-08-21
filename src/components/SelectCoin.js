@@ -31,7 +31,14 @@ class SelectCoin extends Component {
 				<TouchableOpacity onPress={this.props.createNewWallet} style={styles.plusIcon}>
 					<EvilIcon name={"plus"} size={40} color={colors.white} />
 				</TouchableOpacity>}
-				<WalletCarousel itemToRender="wallet" onCoinPress={this.props.onCoinPress} onClose={this.props.onClose} />
+				<WalletCarousel
+					wallet={this.props.wallet}
+					onCoinPress={this.props.onCoinPress}
+					cryptoUnit={this.props.settings.cryptoUnit}
+					updateWallet={this.props.updateWallet}
+					deleteWallet={this.props.deleteWallet}
+					displayTestnet={this.props.settings.testnet}
+				/>
 			</View>
 		);
 	}

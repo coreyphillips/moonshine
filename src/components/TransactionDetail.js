@@ -36,7 +36,7 @@ const {
 
 const moment = require("moment");
 
-class TransactionDetail extends PureComponent <Props> {
+class TransactionDetail extends PureComponent {
 	
 	constructor(props){
 		super(props);

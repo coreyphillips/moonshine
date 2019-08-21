@@ -25,6 +25,7 @@ module.exports = (state = {
 	selectedCrypto: "bitcoin",
 	selectedCurrency: "usd",
 	selectedWallet: "wallet0",
+	walletOrder: [],
 	wallets: {
 		wallet0: defaultWalletShape
 	},
@@ -186,7 +187,7 @@ module.exports = (state = {
 			try {
 				if (Object.entries(action.payload.rbfData).length !== 0 && action.payload.rbfData.constructor === Object) {
 					rbfData[action.payload.rbfData.hash] = action.payload.rbfData || {};
-					transactionData[action.payload.wallet]["rbfData"] = {
+					transactionData.wallets[action.payload.wallet]["rbfData"] = {
 						...state.wallets[action.payload.wallet].rbfData,
 						[action.payload.selectedCrypto]: rbfData
 					};
@@ -346,9 +347,15 @@ module.exports = (state = {
 
 		case actions.DELETE_WALLET:
 			const wallets = state.wallets;
+			const walletOrder = state.walletOrder;
+			//Remove wallet id from walletOrder
+			const index = walletOrder.indexOf(action.payload.wallet);
+			if (index > -1) walletOrder.splice(index, 1);
+			//Delete wallet from wallets object
 			delete wallets[action.payload.wallet];
 			return {
 				...state,
+				walletOrder,
 				wallets
 			};
 
@@ -360,14 +367,16 @@ module.exports = (state = {
 				errorMsg: "",
 				network: "mainnet",
 				selectedCrypto: "bitcoin",
-				selectedWallet: "wallet0",
 				selectedCurrency: "usd",
-				wallets: [],
+				selectedWallet: "wallet0",
+				walletOrder: [],
+				wallets: {
+					wallet0: defaultWalletShape
+				},
 				selectedTransaction: "",
 				availableCoins,
 				exchangeRate: zeroValueItems,
-				blockHeight: { ...zeroValueItems, timestamp: null },
-				wallet0: defaultWalletShape
+				blockHeight: { ...zeroValueItems, timestamp: null }
 			};
 
 		default:

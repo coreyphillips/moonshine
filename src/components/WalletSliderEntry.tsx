@@ -82,7 +82,7 @@ const CoinButton = ({ onCoinPress, cryptoUnit = "satoshi", coin = "bitcoin", lab
 
 interface WalletSliderEntryComponent {
 	walletId: string,
-	wallet: { wallets: [], selectedWallet: string },
+	wallet: { wallets: {}, selectedWallet: string, walletOrder: string[] },
 	cryptoUnit: string,
 	updateWallet: Function,
 	deleteWallet: Function,
@@ -90,11 +90,11 @@ interface WalletSliderEntryComponent {
 	onCoinPress: Function,
 	updateActiveSlide: Function
 }
-const _WalletSliderEntry = ({ walletId = "bitcoin", wallet = { wallets: [], selectedWallet: "wallet0" }, cryptoUnit = "satoshi", updateWallet = () => null, deleteWallet = () => null, displayTestnet = true, onCoinPress = () => null, updateActiveSlide }: WalletSliderEntryComponent) => {
+const _WalletSliderEntry = ({ walletId = "bitcoin", wallet = { wallets: {}, selectedWallet: "wallet0", walletOrder: [] }, cryptoUnit = "satoshi", updateWallet = () => null, deleteWallet = () => null, displayTestnet = true, onCoinPress = () => null, updateActiveSlide }: WalletSliderEntryComponent) => {
 	const Header = () => (
 		<View style={styles.header}>
 			<Text style={styles.headerText}>
-				{`Wallet ${Object.keys(wallet.wallets).indexOf(walletId)}`}
+				{`Wallet ${wallet.walletOrder.indexOf(walletId)}`}
 			</Text>
 		</View>
 	);

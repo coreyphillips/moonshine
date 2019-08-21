@@ -31,7 +31,7 @@ interface TransactionRowComponent {
 	label: string,
 	date: number,
 	transactionBlockHeight: number,
-	exchangeRate: string,
+	exchangeRate: number | string,
 	currentBlockHeight: number,
 	cryptoUnit: string,
 	type: string,

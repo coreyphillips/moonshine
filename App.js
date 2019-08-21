@@ -177,7 +177,7 @@ export default class App extends Component {
 				if (initialLoadingMessage) {
 					this.setState({ loadingMessage: initialLoadingMessage, loadingProgress: 0.3, loadingAnimationName: coin });
 				} else {
-					this.setState({ loadingMessage: `Switching to ${capitalize(coin)} for Wallet ${this.props.wallet.wallets[walletId].name || Object.keys(this.props.wallet.wallets).indexOf(walletId)}`, loadingProgress: 0.3, loadingAnimationName: coin });
+					this.setState({ loadingMessage: `Switching to ${capitalize(coin)} for Wallet ${this.props.wallet.wallets[walletId].name || this.props.wallet.walletOrder.indexOf(walletId)}`, loadingProgress: 0.3, loadingAnimationName: coin });
 				}
 				this.updateItem({ stateId: "displayLoading", opacityId: "loadingOpacity", display: true });
 				InteractionManager.runAfterInteractions(async () => {
@@ -199,6 +199,7 @@ export default class App extends Component {
 	//TODO: Remove this in version 0.2.2
 	migrateToNewWalletModel = async () => {
 		try {
+			//Update to the new wallet model and add walletOrder
 			if (Array.isArray(this.props.wallet.wallets)) {
 				let wallets = {};
 				await Promise.all(
@@ -208,8 +209,20 @@ export default class App extends Component {
 				);
 				await this.props.updateWallet({
 					...this.props.wallet,
+					walletOrder: this.props.wallet.wallets,
 					wallets
 				});
+			} else {
+				//The app has already switched to the new wallet model.
+				//Check if walletOrder exists and create it if necessary.
+				let walletOrderExists = false;
+				try {if (Array.isArray(this.props.wallet.walletOrder)) walletOrderExists = true;} catch (e) {}
+				if (!walletOrderExists) {
+					await this.props.updateWallet({
+						...this.props.wallet,
+						walletOrder: Object.keys(this.props.wallet.wallets)
+					});
+				}
 			}
 		} catch (e) {}
 	};
@@ -656,8 +669,10 @@ export default class App extends Component {
 			//Create Wallet if first timer
 			this.setState({loadingMessage: "Creating Wallet...", loadingProgress: 0.1});
 			await this.props.createWallet({addressAmount: 2, changeAddressAmount: 2, wallet: walletName, generateAllAddresses: true});
+			//Add wallet name to the walletOrder array;
+			const walletOrder = this.props.wallet.walletOrder.concat(walletName);
 			//Set the selectedWallet accordingly and update the wallets array.
-			await this.props.updateWallet({ selectedWallet: walletName });
+			await this.props.updateWallet({ selectedWallet: walletName, walletOrder });
 			const { selectedWallet } = this.props.wallet;
 			this.setState({loadingMessage: "Fetching Current Block Height...", loadingProgress: 0.15});
 			let addresses = [];
@@ -1389,6 +1404,7 @@ export default class App extends Component {
 		try {
 			//Add wallet name to wallets array;
 			const walletName = await uuidv4();
+			const walletOrder = this.props.wallet.walletOrder.concat(walletName);
 			//Set Loading Message
 			await this.setState({loadingMessage: `Creating Wallet ${Object.keys(this.props.wallet.wallets).length} & Generating Addresses`, loadingProgress: 0.5});
 			
@@ -1402,7 +1418,7 @@ export default class App extends Component {
 			await this.updateItems(items);
 			
 			//Set the selectedWallet accordingly and update the wallets array.
-			await this.props.updateWallet({ selectedWallet: walletName });
+			await this.props.updateWallet({ selectedWallet: walletName, walletOrder });
 			
 			const { selectedCrypto } = this.props.wallet;
 
@@ -1421,6 +1437,12 @@ export default class App extends Component {
 		} catch (e) {
 			console.log(e);
 		}
+	};
+	
+	getBlacklistedUtxos = () => {
+		let blacklistedUtxos = [];
+		try { blacklistedUtxos = this.props.wallet.wallets[this.props.wallet.selectedWallet].blacklistedUtxos[this.props.wallet.selectedCrypto];} catch (e) {}
+		return blacklistedUtxos;
 	};
 	
 	render() {
@@ -1480,7 +1502,7 @@ export default class App extends Component {
 								
 								<Animated.View style={[styles.priceHeader, { opacity: this.state.priceHeaderOpacity }]}>
 									<TouchableOpacity onPress={this.onSelectCoinPress} style={{ position: "absolute",top: 0, paddingTop: 10, paddingBottom: 20, paddingHorizontal: 30 }}>
-										<Text style={styles.cryptoValue}>{`Wallet ${Object.keys(this.props.wallet.wallets).indexOf(this.props.wallet.selectedWallet)}`}</Text>
+										<Text style={styles.cryptoValue}>{`Wallet ${this.props.wallet.walletOrder.indexOf(this.props.wallet.selectedWallet)}`}</Text>
 									</TouchableOpacity>
 									<Header
 										fiatValue={this.getFiatBalance()}
@@ -1540,7 +1562,6 @@ export default class App extends Component {
 					
 					<View style={{ flex: 1 }}>
 						
-						{this.state.displayTransactionList &&
 						<View style={{ flex: 1 }}>
 							<Animated.View style={{ flex: 1, opacity: this.state.transactionListOpacity }}>
 								<View style={styles.transactionListHeader}>
@@ -1563,9 +1584,18 @@ export default class App extends Component {
 										<EvilIcon name={"chevron-up"} size={30} color={colors.darkPurple} />}
 									</TouchableOpacity>
 								</View>
-								<TransactionList onTransactionPress={this.onTransactionPress} onRefresh={this.resetView} />
+								<TransactionList
+									exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]}
+									blockHeight={this.props.wallet.blockHeight[this.props.wallet.selectedCrypto]}
+									blacklistedUtxos={this.getBlacklistedUtxos()}
+									selectedCrypto={this.props.wallet.selectedCrypto}
+									transactions={this.getTransactions()}
+									cryptoUnit={this.props.settings.cryptoUnit}
+									onTransactionPress={this.onTransactionPress}
+									onRefresh={this.resetView}
+								/>
 							</Animated.View>
-						</View>}
+						</View>
 						
 						{this.state.displayTransactionDetail &&
 						<Animated.View style={[styles.transactionDetail, { opacity: this.state.transactionDetailOpacity }]}>

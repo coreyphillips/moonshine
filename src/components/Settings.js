@@ -447,8 +447,8 @@ class Settings extends PureComponent {
 	getBackupWalletValue = () => {
 		try {
 			const selectedWallet = this.props.wallet.selectedWallet;
-			const walletKey = Object.keys(this.props.wallet.wallets).indexOf(selectedWallet);
-			const walletName = `Wallet ${walletKey}`;
+			const walletIndex = this.props.wallet.walletOrder.indexOf(selectedWallet);
+			const walletName = `Wallet ${walletIndex}`;
 			if (this.props.wallet.wallets[selectedWallet].hasBackedUpWallet) {
 				return `${walletName} last backed up on\n${moment(this.props.wallet.wallets[selectedWallet].walletBackupTimestamp).format('l @ h:mm a')}.`;
 			} else {
@@ -848,7 +848,7 @@ class Settings extends PureComponent {
 							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
 								<View style={styles.header}>
 									
-									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{`Wallet ${Object.keys(this.props.wallet.wallets).indexOf(selectedWallet)}:`}</Text>
+									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{`Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}:`}</Text>
 									
 									<TouchableOpacity onPress={() => this.setState({ displayWalletHelp: true })} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
 										<MaterialCommunityIcons name={"help-circle-outline"} size={26} color={colors.white} />
@@ -928,7 +928,7 @@ class Settings extends PureComponent {
 							/>
 							
 							<SettingGeneral
-								value={`Rescan Wallet ${Object.keys(this.props.wallet.wallets).indexOf(selectedWallet)}\n${cryptoLabel} Wallet`}
+								value={`Rescan Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}\n${cryptoLabel} Wallet`}
 								col1Loading={this.state.rescanningWallet}
 								col1Image="radar"
 								onPress={this.rescanWallet}
@@ -950,7 +950,7 @@ class Settings extends PureComponent {
 				
 				{this.state.displayBackupPhrase &&
 				<Animated.View style={[styles.settingContainer, { opacity: this.state.backupPhraseOpacity }]}>
-					<Text style={[styles.headerText, { position: "absolute", top: 25, left: 0, right: 0 }]}>{`Wallet ${Object.keys(this.props.wallet.wallets).indexOf(selectedWallet)}`}</Text>
+					<Text style={[styles.headerText, { position: "absolute", top: 25, left: 0, right: 0 }]}>{`Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}`}</Text>
 					<SettingGeneral
 						value={this.getBackupPhrase()}
 						onPress={() => this.toggleBackupPhrase({ selectedWallet, display: false })}
