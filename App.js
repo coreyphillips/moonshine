@@ -177,7 +177,7 @@ export default class App extends Component {
 				if (initialLoadingMessage) {
 					this.setState({ loadingMessage: initialLoadingMessage, loadingProgress: 0.3, loadingAnimationName: coin });
 				} else {
-					this.setState({ loadingMessage: `Switching to ${capitalize(coin)} for Wallet ${this.props.wallet.wallets[walletId].name || this.props.wallet.walletOrder.indexOf(walletId)}`, loadingProgress: 0.3, loadingAnimationName: coin });
+					this.setState({ loadingMessage: `Switching to ${capitalize(coin)} for Wallet ${this.props.wallet.wallets[walletId].name || this.getWalletName()}`, loadingProgress: 0.3, loadingAnimationName: coin });
 				}
 				this.updateItem({ stateId: "displayLoading", opacityId: "loadingOpacity", display: true });
 				InteractionManager.runAfterInteractions(async () => {
@@ -196,35 +196,50 @@ export default class App extends Component {
 		}
 	};
 	
-	//TODO: Remove this in version 0.2.2
+	//TODO: Remove this in version 1.0.0
 	migrateToNewWalletModel = async () => {
-		try {
-			//Update to the new wallet model and add walletOrder
-			if (Array.isArray(this.props.wallet.wallets)) {
-				let wallets = {};
-				await Promise.all(
-					this.props.wallet.wallets.map(async (wallet) => {
-						wallets[wallet] = this.props.wallet[wallet];
-					})
-				);
-				await this.props.updateWallet({
-					...this.props.wallet,
-					walletOrder: this.props.wallet.wallets,
-					wallets
-				});
-			} else {
-				//The app has already switched to the new wallet model.
-				//Check if walletOrder exists and create it if necessary.
-				let walletOrderExists = false;
-				try {if (Array.isArray(this.props.wallet.walletOrder)) walletOrderExists = true;} catch (e) {}
-				if (!walletOrderExists) {
+		return new Promise(async (resolve) => {
+			try {
+				const items = [
+					{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false },
+					{ stateId: "displayPin", opacityId: "pinOpacity", display: false },
+					{ stateId: "displayLoading", opacityId: "loadingOpacity", display: true }
+				];
+				await this.updateItems(items);
+				this.setState({loadingMessage: "Brewing...", loadingProgress: 0.1});
+				//Update to the new wallet model and add walletOrder
+				if (Array.isArray(this.props.wallet.wallets)) {
+					let wallets = {};
+					await Promise.all(
+						this.props.wallet.wallets.map(async (wallet) => {
+							wallets[wallet] = this.props.wallet[wallet];
+						})
+					);
 					await this.props.updateWallet({
 						...this.props.wallet,
-						walletOrder: Object.keys(this.props.wallet.wallets)
+						walletOrder: this.props.wallet.wallets,
+						wallets
 					});
+					resolve({ error: false });
+				} else {
+					//The app has already switched to the new wallet model.
+					//Check if walletOrder exists and create it if necessary.
+					let walletOrderExists = false;
+					try {
+						if (Array.isArray(this.props.wallet.walletOrder)) walletOrderExists = true;
+					} catch (e) {
+					}
+					if (!walletOrderExists) {
+						await this.props.updateWallet({
+							...this.props.wallet,
+							walletOrder: Object.keys(this.props.wallet.wallets)
+						});
+						resolve({ error: false });
+					}
+					resolve({ error: false });
 				}
-			}
-		} catch (e) {}
+			} catch (e) { resolve({ error: true }); }
+		});
 	};
 	
 	launchDefaultFuncs = async ({ displayLoading = true, resetView = true } = {}) => {
@@ -670,7 +685,12 @@ export default class App extends Component {
 			this.setState({loadingMessage: "Creating Wallet...", loadingProgress: 0.1});
 			await this.props.createWallet({addressAmount: 2, changeAddressAmount: 2, wallet: walletName, generateAllAddresses: true});
 			//Add wallet name to the walletOrder array;
-			const walletOrder = this.props.wallet.walletOrder.concat(walletName);
+			let walletOrder = [];
+			try {
+				walletOrder = this.props.wallet.walletOrder.concat(walletName);
+			} catch (e) {
+				walletOrder = [walletName];
+			}
 			//Set the selectedWallet accordingly and update the wallets array.
 			await this.props.updateWallet({ selectedWallet: walletName, walletOrder });
 			const { selectedWallet } = this.props.wallet;
@@ -1404,7 +1424,12 @@ export default class App extends Component {
 		try {
 			//Add wallet name to wallets array;
 			const walletName = await uuidv4();
-			const walletOrder = this.props.wallet.walletOrder.concat(walletName);
+			let walletOrder = [];
+			try {
+				walletOrder = this.props.wallet.walletOrder.concat(walletName);
+			} catch (e) {
+				walletOrder = [walletName];
+			}
 			//Set Loading Message
 			await this.setState({loadingMessage: `Creating Wallet ${Object.keys(this.props.wallet.wallets).length} & Generating Addresses`, loadingProgress: 0.5});
 			
@@ -1421,7 +1446,7 @@ export default class App extends Component {
 			await this.props.updateWallet({ selectedWallet: walletName, walletOrder });
 			
 			const { selectedCrypto } = this.props.wallet;
-
+			
 			await this.props.createWallet({ wallet: walletName, mnemonic, generateAllAddresses: mnemonic === "" });
 			
 			await this.restartElectrum({ coin: selectedCrypto });
@@ -1443,6 +1468,12 @@ export default class App extends Component {
 		let blacklistedUtxos = [];
 		try { blacklistedUtxos = this.props.wallet.wallets[this.props.wallet.selectedWallet].blacklistedUtxos[this.props.wallet.selectedCrypto];} catch (e) {}
 		return blacklistedUtxos;
+	};
+	
+	getWalletName = () => {
+		let name = "0";
+		try {name = this.props.wallet.walletOrder.indexOf(this.props.wallet.selectedWallet);} catch (e) {}
+		return name;
 	};
 	
 	render() {
@@ -1502,7 +1533,7 @@ export default class App extends Component {
 								
 								<Animated.View style={[styles.priceHeader, { opacity: this.state.priceHeaderOpacity }]}>
 									<TouchableOpacity onPress={this.onSelectCoinPress} style={{ position: "absolute",top: 0, paddingTop: 10, paddingBottom: 20, paddingHorizontal: 30 }}>
-										<Text style={styles.cryptoValue}>{`Wallet ${this.props.wallet.walletOrder.indexOf(this.props.wallet.selectedWallet)}`}</Text>
+										<Text style={styles.cryptoValue}>{`Wallet ${this.getWalletName()}`}</Text>
 									</TouchableOpacity>
 									<Header
 										fiatValue={this.getFiatBalance()}
