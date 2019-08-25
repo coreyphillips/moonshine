@@ -202,13 +202,6 @@ export default class App extends Component {
 	migrateToNewWalletModel = async () => {
 		return new Promise(async (resolve) => {
 			try {
-				const items = [
-					{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false },
-					{ stateId: "displayPin", opacityId: "pinOpacity", display: false },
-					{ stateId: "displayLoading", opacityId: "loadingOpacity", display: true }
-				];
-				await this.updateItems(items);
-				this.setState({loadingMessage: "Brewing...", loadingProgress: 0.1});
 				//Update to the new wallet model and add walletOrder
 				if (Array.isArray(this.props.wallet.wallets)) {
 					let wallets = {};
@@ -246,6 +239,13 @@ export default class App extends Component {
 	
 	launchDefaultFuncs = async ({ displayLoading = true, resetView = true } = {}) => {
 		
+		const items = [
+			{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false },
+			{ stateId: "displayPin", opacityId: "pinOpacity", display: false },
+			{ stateId: "displayLoading", opacityId: "loadingOpacity", display: displayLoading }
+		];
+		this.updateItems(items);
+		
 		//Attempt to migrate any old wallets to the new wallet model
 		await this.migrateToNewWalletModel();
 		
@@ -260,16 +260,6 @@ export default class App extends Component {
 			this.createWallet("wallet0", true);
 			return;
 		}
-		
-		const items = [
-			{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false },
-			{ stateId: "displayPin", opacityId: "pinOpacity", display: false }
-		];
-		if (displayLoading) items.push({ stateId: "displayLoading", opacityId: "loadingOpacity", display: true });
-		this.updateItems(items);
-		
-		//Push user to the default view while the rest of the wallet data loads.
-		//this.resetView();
 		
 		try {
 			const onBack = () => {
@@ -304,7 +294,7 @@ export default class App extends Component {
 		
 		//If online, connect to an electrum server.
 		if (isConnected) {
-			this.refreshWallet();
+			this.refreshWallet({ ignoreLoading: !displayLoading });
 			await pauseExecution();
 		} else {
 			//Device is offline. Ensure any loading animations are disabled.
@@ -988,8 +978,8 @@ export default class App extends Component {
 	//Handles the series of animations necessary when the user taps "Send"
 	onSendPress = async () => {
 		try {
+			if (this.state.isAnimating || !this.state.appHasLoaded) return;
 			//Open Send State
-			
 			const items = [
 				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
 				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
@@ -1038,6 +1028,7 @@ export default class App extends Component {
 	
 	//Handles the series of animations necessary when the user taps "Receive"
 	onReceivePress = async () => {
+		if (this.state.isAnimating || !this.state.appHasLoaded) return;
 		if (this.state.optionSelected !== "receive") {
 			//Open Receive State
 			const items = [
@@ -1072,6 +1063,7 @@ export default class App extends Component {
 	//Handles the series of animations necessary when the user taps a specific transaction from the TransactionList.
 	onTransactionPress = async (transaction = "") => {
 		try {
+			if (this.state.isAnimating || !this.state.appHasLoaded) return;
 			const {selectedWallet, selectedCrypto} = this.props.wallet;
 			transaction = await this.props.wallet.wallets[selectedWallet].transactions[selectedCrypto].filter((tx) => tx.hash === transaction);
 			await this.props.updateWallet({selectedTransaction: transaction[0]});
@@ -1092,7 +1084,7 @@ export default class App extends Component {
 	//Handles the series of animations necessary when the user taps the selected crypto symbol
 	onSelectCoinPress = async () => {
 		//This prevents any possibility of the user tapping into the view without prior authorization.
-		if (this.state.displayLoading || this.state.displayPin || this.state.displayBiometrics || this.state.displayBiometricAuthenticationRetry || this.state.appHasLoaded === false) return;
+		if (this.state.displayLoading || this.state.displayPin || this.state.displayBiometrics || this.state.displayBiometricAuthenticationRetry || this.state.isAnimating || this.state.appHasLoaded === false) return;
 		if (!this.state.displaySelectCoin) {
 			//Open SelectCoin State
 			const items = [
@@ -1127,6 +1119,7 @@ export default class App extends Component {
 	//Handles the series of animations necessary when the user taps the Camera icon.
 	onCameraPress = async () => {
 		try {
+			if (this.state.isAnimating || !this.state.appHasLoaded) return;
 			//Open Receive State
 			const items = [
 				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
@@ -1147,6 +1140,7 @@ export default class App extends Component {
 	//Handles the series of animations necessary when the user taps the Settings icon.
 	onSettingsPress = async () => {
 		try {
+			if (this.state.isAnimating || !this.state.appHasLoaded) return;
 			//Open Receive State
 			const items = [
 				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
