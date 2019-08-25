@@ -89,7 +89,7 @@ Please be aware and take note that my primary focus is on expanding the core fun
 
 ## Support
 
-If you have any questions, feature requests, etc., please feel free to create an issue on [Github](https://github.com/coreyphillips/moonshine/issues) or reach out to me on [Twitter](https://twitter.com/coreylphillips).
+If you have any questions, feature requests, etc., please feel free to create an issue on [Github](https://github.com/coreyphillips/moonshine/issues), reach out to me on [Twitter](https://twitter.com/coreylphillips) or send an email to corey@ferrymanfin.com.
 
 ## Meta
 

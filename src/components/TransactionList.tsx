@@ -236,6 +236,7 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.white
 	}
 });
+
 //ComponentShouldNotUpdate
 const TransactionList = memo(
 	_TransactionList,
@@ -244,4 +245,5 @@ const TransactionList = memo(
 		return prevProps === nextProps;
 	}
 );
+
 export default TransactionList;
