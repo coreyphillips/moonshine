@@ -27,9 +27,7 @@ interface CameraComponent {
 }
 const _CameraRow = ({ onSendPress = () => null, onReceivePress = () => null, onCameraPress = () => null, style = {} }: CameraComponent) => {
 	
-	useEffect(() => {
-		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
-	});
+	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
 	
 	const _onSendPress = () => onSendPress();
 	const _onCameraPress = () => onCameraPress();

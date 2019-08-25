@@ -43,9 +43,7 @@ interface TransactionRowComponent {
 }
 const _TransactionRow = ({ id = "", coin = "bitcoin", address = "", amount = 0, label = "", date = 0, transactionBlockHeight = 0, exchangeRate = "0", currentBlockHeight = 0, cryptoUnit = "satoshi", type = "received", onTransactionPress = () => null, messages = [], isBlacklisted = false}: TransactionRowComponent) => {
 	
-	useEffect(() => {
-		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
-	});
+	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
 	
 	const getCryptoAmountLabel = () => {
 		try {

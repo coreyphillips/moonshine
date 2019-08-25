@@ -52,9 +52,7 @@ const _TransactionList = (
 		onTransactionPress = () => null
 	}: TransactionListComponent) => {
 	
-	useEffect(() => {
-		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
-	});
+	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
 
 	interface DisplayItemComponent {
 		transaction: {

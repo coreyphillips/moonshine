@@ -64,9 +64,7 @@ interface ReceiveTransactionComponent extends Default, FormatUri {
 }
 const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", address = "aaaaaaa", amount = 0, label = "", size = 200, disabled = false }: ReceiveTransactionComponent) => {
 	
-	useEffect(() => {
-		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
-	});
+	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
 	
 	const [addressOpacity] = useState(new Animated.Value(0));
 	let uri = "";

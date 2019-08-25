@@ -63,9 +63,7 @@ const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice 
 		}
 	}, []);
 	
-	useEffect(() => {
-		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
-	});
+	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
 
 	const _wipeDevice = async () => {
 		await wipeDevice();

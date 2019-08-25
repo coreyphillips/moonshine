@@ -27,9 +27,7 @@ interface SelectCoinComponent {
 }
 const _SelectCoin = ({ wallet = { wallets: {}, selectedWallet: "wallet0", walletOrder: [] }, createNewWallet = () => null, onCoinPress = () => null, cryptoUnit = "satoshi", updateWallet = () => null, deleteWallet = () => null, displayTestnet = true }: SelectCoinComponent) => {
 	
-	useEffect(() => {
-		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
-	});
+	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
 	
 	const walletsLen = Object.keys(wallet.wallets).length;
 	return (
