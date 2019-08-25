@@ -10,13 +10,13 @@ import {
 	StatusBar,
 	Keyboard,
 	BackHandler,
-	UIManager,
 	ActivityIndicator,
 	Dimensions,
 	LayoutAnimation,
 	AppState,
 	InteractionManager,
-	TouchableWithoutFeedback
+	TouchableWithoutFeedback,
+	NativeModules
 } from "react-native";
 import { systemWeights } from "react-native-typography";
 import EvilIcon from "react-native-vector-icons/EvilIcons";
@@ -45,6 +45,7 @@ import * as electrum from "./src/utils/electrum";
 import nodejs from "nodejs-mobile-react-native";
 import bitcoinUnits from "bitcoin-units";
 const uuidv4 = require("uuid/v4");
+const { UIManager } = NativeModules;
 
 const {
 	Constants: {
@@ -134,7 +135,8 @@ export default class App extends Component {
 		loadingMessage: "",
 		loadingProgress: 0,
 		loadingTransactions: true,
-		loadingAnimationName: "astronaut"
+		loadingAnimationName: "astronaut",
+		isAnimating: false
 	};
 	
 	setExchangeRate = async ({ selectedCrypto = "bitcoin", selectedCurrency = "usd", selectedService = "coingecko" } = {}) => {
@@ -888,8 +890,8 @@ export default class App extends Component {
 		//items = [{ stateId: "", opacityId: "", display: false, duration: 400, onComplete: null }]
 		return new Promise(async (resolve) => {
 			try {
-				let itemsToDisplay = {};
-				let itemsToHide = {};
+				let itemsToDisplay = {isAnimating: true};
+				let itemsToHide = {isAnimating: false};
 				let animations = [];
 				let onCompleteFuncs = [];
 				
@@ -978,6 +980,7 @@ export default class App extends Component {
 				});
 			} catch (e) {
 				console.log(e);
+				resolve ({error: true});
 			}
 		});
 	};
@@ -992,11 +995,11 @@ export default class App extends Component {
 				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
 				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 250 },
 				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 },
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true }
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true },
+				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: true, duration: 600 }
 			];
 			this.updateItems(items);
 			this.updateFlex({ upperContentFlex: 1, lowerContentFlex: 0 });
-			this.updateItems([{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: true, duration: Platform.OS === "ios" ? 600 : 300 }]);
 			InteractionManager.runAfterInteractions(() => {
 				if (this.state.optionSelected !== "send") this.setState({optionSelected: "send"});
 			});
@@ -1042,11 +1045,11 @@ export default class App extends Component {
 				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true },
 				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 250 },
 				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
-				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 }
+				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 },
+				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: true, duration: 800 }
 			];
 			this.updateItems(items);
 			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			this.updateItem({ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: true, duration: 800 });
 			InteractionManager.runAfterInteractions(() => {
 				if (this.state.optionSelected !== "receive") this.setState({optionSelected: "receive"});
 			});
@@ -1078,11 +1081,11 @@ export default class App extends Component {
 				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
 				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 350 },
 				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
-				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 400 }
+				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 400 },
+				{ stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: true }
 			];
 			this.updateItems(items);
 			this.updateFlex({upperContentFlex: 0, lowerContentFlex: 1, duration: 400});
-			this.updateItem({ stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: true });
 		} catch (e) {}
 	};
 	
@@ -1101,20 +1104,23 @@ export default class App extends Component {
 				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false },
 				{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: true, duration: 600 }
 			];
-			this.updateItems(items);
-			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			//this.updateItem({ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: true, duration: 400 });
+			await Promise.all([
+				this.updateItems(items),
+				this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0})
+			]);
 		} else {
 			//Close SelectCoin State
 			const items = [
 				{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false },
 				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false, duration: 200 },
 				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100 }
+				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100 },
+				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 350 }
 			];
-			this.updateItems(items);
-			await this.updateFlex();
-			this.updateItem({ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 350 });
+			await Promise.all([
+				this.updateItems(items),
+				this.updateFlex()
+			]);
 		}
 	};
 	
@@ -1150,11 +1156,12 @@ export default class App extends Component {
 				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false },
 				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
 				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 },
-				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: true, duration: 800 }
+				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: true, duration: 600 }
 			];
-			this.updateItems(items);
-			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			//this.updateItem({ stateId: "displaySettings", opacityId: "settingsOpacity", display: true, duration: 50 });
+			await Promise.all([
+				this.updateItems(items),
+				this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0})
+			]);
 		} catch (e) {
 			console.log(e);
 		}
@@ -1211,6 +1218,7 @@ export default class App extends Component {
 	
 	//Handles the series of animations necessary to revert the view back to it's original layout.
 	resetView = async () => {
+		if (this.state.isAnimating) return;
 		const items = [
 			{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: true },
 			{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: true },
@@ -1577,12 +1585,13 @@ export default class App extends Component {
 						{this.state.displaySelectCoin &&
 						<Animated.View style={[styles.selectCoin, { opacity: this.state.selectCoinOpacity }]}>
 							<SelectCoin
+								wallet={this.props.wallet}
 								onCoinPress={this.onCoinPress}
-								onClose={() => {
-									this.resetView();
-									this.refreshWallet();
-								}}
+								cryptoUnit={this.props.settings.cryptoUnit}
+								updateWallet={this.props.updateWallet}
+								deleteWallet={this.props.deleteWallet}
 								createNewWallet={this.createNewWallet}
+								displayTestnet={this.props.settings.testnet}
 							/>
 						</Animated.View>}
 					

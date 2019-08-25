@@ -1,11 +1,13 @@
-import React, {useState, memo} from "react";
+import React, {useState, useEffect, memo} from "react";
 import {
 	StyleSheet,
 	Text,
 	View,
 	Share,
 	Clipboard,
-	Animated
+	Animated,
+	LayoutAnimation,
+	Platform
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
@@ -61,6 +63,11 @@ interface ReceiveTransactionComponent extends Default, FormatUri {
 	disabled?: boolean // Disable the Copy/Share buttons
 }
 const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", address = "aaaaaaa", amount = 0, label = "", size = 200, disabled = false }: ReceiveTransactionComponent) => {
+	
+	useEffect(() => {
+		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
+	});
+	
 	const [addressOpacity] = useState(new Animated.Value(0));
 	let uri = "";
 	try {uri = formatUri({selectedCrypto, address, amount, label});} catch (e) {}

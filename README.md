@@ -1,3 +1,5 @@
+<img align="left" width="80" height="80" src="./src/assets/main_icon.png" alt="Moonshine Icon">
+
 # Moonshine
 Moonshine's alpha is available for testing on [iOS](https://testflight.apple.com/join/yTLqj9Xn) & [Android](https://play.google.com/store/apps/details?id=com.kisswallet)
 

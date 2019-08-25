@@ -1,10 +1,12 @@
-import React, {memo} from "react";
+import React, {useEffect, memo} from "react";
 import {
 	StyleSheet,
 	Text,
 	View,
 	FlatList,
-	RefreshControl
+	RefreshControl,
+	LayoutAnimation,
+	Platform
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
@@ -49,6 +51,10 @@ const _TransactionList = (
 		onRefresh,
 		onTransactionPress = () => null
 	}: TransactionListComponent) => {
+	
+	useEffect(() => {
+		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
+	});
 
 	interface DisplayItemComponent {
 		transaction: {

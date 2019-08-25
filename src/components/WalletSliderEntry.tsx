@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { useEffect, memo } from "react";
 import {
 	View,
 	Text,
@@ -7,7 +7,9 @@ import {
 	Dimensions,
 	ScrollView,
 	Image,
-	Alert
+	Alert,
+	LayoutAnimation,
+	Platform
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
@@ -91,6 +93,11 @@ interface WalletSliderEntryComponent {
 	updateActiveSlide: Function
 }
 const _WalletSliderEntry = ({ walletId = "bitcoin", wallet = { wallets: {}, selectedWallet: "wallet0", walletOrder: [] }, cryptoUnit = "satoshi", updateWallet = () => null, deleteWallet = () => null, displayTestnet = true, onCoinPress = () => null, updateActiveSlide }: WalletSliderEntryComponent) => {
+	
+	useEffect(() => {
+		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
+	});
+	
 	const Header = () => (
 		<View style={styles.header}>
 			<Text style={styles.headerText}>

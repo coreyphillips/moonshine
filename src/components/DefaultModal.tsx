@@ -1,8 +1,10 @@
-import React, { memo } from "react";
+import React, { useEffect, memo } from "react";
 import {
 	StyleSheet,
 	View,
-	ScrollView
+	ScrollView,
+	LayoutAnimation,
+	Platform
 } from "react-native";
 import PropTypes from "prop-types";
 import Modal from "react-native-modal";
@@ -22,6 +24,11 @@ interface DefaultModalComponent {
 	children: object
 }
 const _DefaultModal = ({ isVisible = false, onClose = () => null, style = {}, contentStyle = {}, type = "ScrollView", children = {} }: DefaultModalComponent) => {
+	
+	useEffect(() => {
+		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
+	});
+	
 	return (
 		<Modal
 			isVisible={isVisible}

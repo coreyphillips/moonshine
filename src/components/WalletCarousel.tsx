@@ -1,8 +1,10 @@
-import React, { useState, memo } from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import {
 	Dimensions,
 	StyleSheet,
-	View
+	View,
+	LayoutAnimation,
+	Platform
 } from 'react-native';
 import PropTypes from "prop-types";
 import Carousel, { Pagination } from 'react-native-snap-carousel';
@@ -36,6 +38,11 @@ interface WalletCarouselComponent {
 	displayTestnet: boolean
 }
 const _WalletCarousel = ({ wallet = { wallets: {}, selectedWallet: "wallet0", walletOrder: [] }, onCoinPress = () => null, updateWallet = () => null, deleteWallet = () => null, cryptoUnit = "satoshi", displayTestnet = true }: WalletCarouselComponent) => {
+	
+	useEffect(() => {
+		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
+	});
+	
 	const [activeSlide, setActiveSlide] = useState(wallet.walletOrder.indexOf(wallet.selectedWallet));
 	
 	interface RenderItem {

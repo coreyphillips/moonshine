@@ -1,9 +1,11 @@
-import React, { memo } from "react";
+import React, { useEffect, memo } from "react";
 import {
 	StyleSheet,
 	Text,
 	View,
-	TouchableOpacity
+	TouchableOpacity,
+	LayoutAnimation,
+	Platform
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
@@ -40,6 +42,11 @@ interface TransactionRowComponent {
 	isBlacklisted: boolean
 }
 const _TransactionRow = ({ id = "", coin = "bitcoin", address = "", amount = 0, label = "", date = 0, transactionBlockHeight = 0, exchangeRate = "0", currentBlockHeight = 0, cryptoUnit = "satoshi", type = "received", onTransactionPress = () => null, messages = [], isBlacklisted = false}: TransactionRowComponent) => {
+	
+	useEffect(() => {
+		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
+	});
+	
 	const getCryptoAmountLabel = () => {
 		try {
 			//This prevents the view from displaying 0 BTC

@@ -1,5 +1,5 @@
-import React, {memo} from "react";
-import {Animated, Image, StyleSheet, Text, View} from "react-native";
+import React, {useEffect, memo} from "react";
+import {Animated, Image, StyleSheet, Text, View, LayoutAnimation, Platform} from "react-native";
 import PropTypes from "prop-types";
 import * as Progress from "react-native-progress";
 import { systemWeights } from "react-native-typography";
@@ -54,6 +54,10 @@ interface LoadingComponent {
 	textStyle: object
 }
 const _Loading = ({loadingOpacity = 0, loadingMessage = "Loading State", loadingProgress = 0, animationName = "", enableProgressBar = true, enableSpinner = true, enableErrorIcon = false, enableSuccessIcon = false, width = 200, style = {}, textStyle = {}}: LoadingComponent) => {
+	
+	useEffect(() => {
+		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
+	});
 	
 	const Icon = () => {
 		if (availableCoins.includes(animationName)) {

@@ -5,7 +5,9 @@ import {
 	StyleSheet,
 	Text,
 	View,
-	TouchableOpacity
+	TouchableOpacity,
+	LayoutAnimation,
+	Platform
 } from "react-native";
 import { systemWeights } from "react-native-typography";
 
@@ -60,6 +62,10 @@ const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice 
 			}, 500);
 		}
 	}, []);
+	
+	useEffect(() => {
+		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
+	});
 
 	const _wipeDevice = async () => {
 		await wipeDevice();

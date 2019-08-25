@@ -1,4 +1,4 @@
-import React, { useEffect, useState, memo } from "react";
+import React, { memo } from "react";
 import {
 	StyleSheet,
 	Text,
@@ -62,7 +62,10 @@ const styles = StyleSheet.create({
 //ComponentShouldNotUpdate
 const XButton = memo(
 	_XButton,
-	() => true
+	(prevProps, nextProps) => {
+		if (!prevProps || !nextProps) return true;
+		return prevProps === nextProps;
+	}
 );
 
 export default XButton;

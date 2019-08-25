@@ -1,10 +1,12 @@
-import React, { memo } from "react";
+import React, { useEffect, memo } from "react";
 import {
 	StyleSheet,
 	Text,
 	View,
 	TouchableOpacity,
-	TouchableHighlight
+	TouchableHighlight,
+	LayoutAnimation,
+	Platform
 } from "react-native";
 import { systemWeights } from "react-native-typography";
 import EvilIcon from "react-native-vector-icons/EvilIcons";
@@ -24,6 +26,11 @@ interface CameraComponent {
 	style?: object
 }
 const _CameraRow = ({ onSendPress = () => null, onReceivePress = () => null, onCameraPress = () => null, style = {} }: CameraComponent) => {
+	
+	useEffect(() => {
+		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
+	});
+	
 	const _onSendPress = () => onSendPress();
 	const _onCameraPress = () => onCameraPress();
 	const _onReceivePress = () => onReceivePress();
