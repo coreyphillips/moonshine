@@ -244,19 +244,15 @@ export default class App extends Component {
 			{ stateId: "displayPin", opacityId: "pinOpacity", display: false },
 			{ stateId: "displayLoading", opacityId: "loadingOpacity", display: displayLoading }
 		];
-		this.updateItems(items);
+		await this.updateItems(items);
 		
 		//Attempt to migrate any old wallets to the new wallet model
 		await this.migrateToNewWalletModel();
 		
 		//Determine if the user has any existing wallets. Create a new wallet if so.
-		let walletKey = "";
-		let walletExists = false;
-		try {
-			walletKey = Object.keys(this.props.wallet.wallets)[0];
-			walletExists = this.props.wallet.wallets[walletKey].addresses["bitcoin"].length > 0;
-		} catch (e) {}
-		if (!walletKey || !walletExists) {
+		let walletLength = 0;
+		try {walletLength = this.props.wallet.walletOrder.length;} catch (e) {}
+		if (walletLength < 1) {
 			this.createWallet("wallet0", true);
 			return;
 		}
