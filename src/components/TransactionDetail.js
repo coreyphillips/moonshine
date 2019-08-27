@@ -287,22 +287,6 @@ class TransactionDetail extends PureComponent {
 		} catch (e) {}
 	};
 	
-	/*
-	getBlacklistValue = () => {
-		try {
-			const { selectedCrypto, selectedWallet } = this.props.wallet;
-			const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
-			let transacationHash = "";
-			try { transacationHash = this.props.wallet.selectedTransaction.hash; } catch (e) {}
-			const result = blacklistedUtxos.includes(transacationHash);
-			return result ? "Whitelist UTXO" : "Blacklist UTXO";
-		} catch (e) {
-			console.log(e);
-			return "Blacklist UTXO";
-		}
-	};
-	 */
-	
 	isBlacklisted = (): boolean => {
 		try {
 			const { selectedCrypto, selectedWallet } = this.props.wallet;
