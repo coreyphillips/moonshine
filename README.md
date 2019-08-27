@@ -89,6 +89,8 @@ Please be aware and take note that my primary focus is on expanding the core fun
 
 ## Support
 
+Supported Derivation Paths: m/0' | 44' | 49' | 84' /0'/0'
+
 If you have any questions, feature requests, etc., please feel free to create an issue on [Github](https://github.com/coreyphillips/moonshine/issues), reach out to me on [Twitter](https://twitter.com/coreylphillips) or send an email to corey@ferrymanfin.com.
 
 ## Meta
