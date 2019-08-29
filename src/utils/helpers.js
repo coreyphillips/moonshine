@@ -468,10 +468,7 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 			for (let i = 0; i < utxosLength; i++) {
 				try {
 					const utxo = utxos[i];
-					if (blacklistedUtxos.includes(utxo.tx_hash)) {
-						if (index > 0) index--;
-						continue;
-					}
+					if (blacklistedUtxos.includes(utxo.tx_hash)) continue;
 					const path = utxo.path;
 					const keyPair = root.derivePath(path);
 					
