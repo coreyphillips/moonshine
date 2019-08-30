@@ -183,8 +183,8 @@ class TransactionDetail extends PureComponent {
 		//If rbfIsSupported include the initialFee provided by the rbfData for the transaction
 		if (this.state.rbfIsSupported && displayFeePerByte) {
 			const initialFee = this.state.initialFee;
-			const cryptoAcronym = getCoinData({selectedCrypto, cryptoUnit}).acronym;
-			return `${fiat}\n${formatNumber(crypto)} ${getCoinData({ selectedCrypto, cryptoUnit }).acronym}\n${initialFee} ${cryptoAcronym}/byte`;
+			const { acronym, oshi } = getCoinData({selectedCrypto, cryptoUnit});
+			return `${fiat}\n${formatNumber(crypto)} ${acronym}\n${initialFee} ${oshi}/byte`;
 		}
 		return `${fiat}\n${formatNumber(crypto)} ${getCoinData({ selectedCrypto, cryptoUnit }).acronym}`;
 	};
@@ -217,7 +217,6 @@ class TransactionDetail extends PureComponent {
 			const { hash } = this.props.wallet.selectedTransaction;
 			const cryptoUnit = this.props.settings.cryptoUnit;
 			const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
-			const cryptoAcronym = getCoinData({selectedCrypto, cryptoUnit}).acronym;
 			const rbfData = this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto][hash];
 			
 			const transactionSize = getTransactionSize(rbfData.utxos.length, !rbfData.changeAddress ? 1 : 2);
@@ -236,8 +235,8 @@ class TransactionDetail extends PureComponent {
 			bitcoinUnits.setFiat("usd", exchangeRate);
 			let fiat = bitcoinUnits(totalFee, "satoshi").to("usd").value().toFixed(2);
 			fiat = totalFee < 0 ? `-$${formatNumber(Math.abs(fiat).toFixed(2))}` : `$${formatNumber(fiat)}`;
-			
-			return `+${fiat}\n+${formatNumber(crypto)} ${getCoinData({ selectedCrypto, cryptoUnit }).acronym}\n+${rbfValue} ${cryptoAcronym}/byte`;
+			const { acronym, oshi } = getCoinData({selectedCrypto, cryptoUnit});
+			return `+${fiat}\n+${formatNumber(crypto)} ${acronym}\n+${rbfValue} ${oshi}/byte`;
 		} catch (e) {}
 	};
 	
