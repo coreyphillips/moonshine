@@ -12,7 +12,7 @@ Moonshine's alpha is available for testing on [iOS](https://testflight.apple.com
 > Moonshine is a homebrewed, open-source, non-custodial, Bitcoin/Litecoin Electrum wallet for iOS & Android.
 
 CAUTION: **Caution:**
-This app is still heavily in development. I encourage users to only utilize the Testnet chains at this time. Otherwise, please use at your own risk.
+This app is still heavily in development. Please use at your own risk.
 
 Built with React Native, Moonshine utilizes Electrum's JSON-RPC methods to interact with the Bitcoin/Litecoin network.
 

@@ -744,15 +744,11 @@ export default class App extends Component {
 				this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
 				
 				try {
-					//Determine if user is a first timer. Create a new wallet if so.
-					let walletKey = "";
-					let walletExists = false;
-					try {
-						walletKey = Object.keys(this.props.wallet.wallets)[0];
-						walletExists = this.props.wallet.wallets[walletKey].addresses["bitcoin"].length > 0;
-					} catch (e) {}
-					if (!walletExists) {
-						await this.createWallet("wallet0", true);
+					//Determine if the user has any existing wallets. Create a new wallet if so.
+					let walletLength = 0;
+					try {walletLength = this.props.wallet.walletOrder.length;} catch (e) {}
+					if (walletLength < 1) {
+						this.createWallet("wallet0", true);
 						return;
 					}
 				} catch (e) {}
