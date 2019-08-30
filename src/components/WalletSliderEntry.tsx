@@ -108,8 +108,11 @@ const _WalletSliderEntry = ({ walletId = "bitcoin", wallet = { wallets: {}, sele
 		try {
 			if (Object.keys(wallet.wallets).length > 1) {
 				let newWalletIndex = 0;
-				if (walletIndex === 0 && Object.keys(wallet.wallets).length <= 2) newWalletIndex = walletIndex;
-				newWalletIndex = walletIndex > 0 ? walletIndex - 1 : walletIndex;
+				if (walletIndex === 0 && Object.keys(wallet.wallets).length <= 2) {
+					newWalletIndex = walletIndex;
+				} else {
+					newWalletIndex = walletIndex > 0 ? walletIndex - 1 : walletIndex;
+				}
 				await deleteWallet({ wallet: walletId });
 				await updateWallet({ selectedWallet: Object.keys(wallet.wallets)[newWalletIndex]});
 				updateActiveSlide(newWalletIndex);

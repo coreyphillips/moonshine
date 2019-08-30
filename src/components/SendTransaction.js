@@ -537,12 +537,12 @@ class SendTransaction extends Component {
 		}
 
 		//Ensure that the address they are trying to send to is not our own.
-		const addresses = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto].map(addr => (addr.address));
+		/*const addresses = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto].map(addr => (addr.address));
 		const changeAddresses = this.props.wallet.wallets[selectedWallet].changeAddresses[selectedCrypto].map(addr => (addr.address));
 		if ( addresses.includes(address) || changeAddresses.includes(address)) {
 			alert(`It appears that you are attempting to send to your own address:\n\n"${address}"\n\nPlease enter an address that is unaffiliated with this wallet and try again.`);
 			return;
-		}
+		}*/
 
 		this.updateConfirmationModal({ display: true });
 	};
@@ -607,14 +607,11 @@ class SendTransaction extends Component {
 			const changeAddresses = wallet.changeAddresses[selectedCrypto];
 			const currentBlockHeight = this.props.wallet.blockHeight[selectedCrypto];
 			let currentUtxos = [];
-			try {
-				currentUtxos = wallet.utxos[selectedCrypto] || [];
-			} catch (e) {
-			}
-			await pauseExecution();
+			try {currentUtxos = wallet.utxos[selectedCrypto] || [];} catch (e) {}
+			//await pauseExecution();
 			const transaction = await this.createTransaction();
 			await this.setState({ loadingMessage: "Sending Transaction...", loadingProgress: 0.8 });
-			await pauseExecution();
+			//await pauseExecution();
 			let sendTransactionResult = await this.props.sendTransaction({ txHex: transaction.data, selectedCrypto, sendTransactionFallback: this.props.settings.sendTransactionFallback });
 			
 			if (sendTransactionResult.error) {
@@ -1115,7 +1112,7 @@ const styles = StyleSheet.create({
 	},
 	slider: {
 		flex: 1,
-		height: 30
+		paddingVertical: 5
 	},
 	clipboardIcon: {
 		alignItems: "flex-end"
