@@ -107,15 +107,32 @@ const _WalletSliderEntry = ({ walletId = "bitcoin", wallet = { wallets: {}, sele
 	const _delWallet = async ({ walletIndex = 0 } = {}) => {
 		try {
 			if (Object.keys(wallet.wallets).length > 1) {
-				let newWalletIndex = 0;
-				if (walletIndex === 0 && Object.keys(wallet.wallets).length <= 2) {
-					newWalletIndex = walletIndex;
-				} else {
-					newWalletIndex = walletIndex > 0 ? walletIndex - 1 : walletIndex;
-				}
+				const indexOfSelectedWallet = wallet.walletOrder.indexOf(wallet.selectedWallet);
+				const totalWallets = wallet.walletOrder.length;
+				let newActiveSlide = walletIndex;
+				
+				//Delete the requested wallet via it's passed in walletId
 				await deleteWallet({ wallet: walletId });
-				await updateWallet({ selectedWallet: Object.keys(wallet.wallets)[newWalletIndex]});
-				updateActiveSlide(newWalletIndex);
+				
+				//Only update to a new selectedWallet if you delete the currently selectedWallet.
+				if (walletIndex === indexOfSelectedWallet) {
+					let newWalletIndex = indexOfSelectedWallet;
+					//If you're deleting the first wallet in an array of two.
+					if (walletIndex === 0 && totalWallets === 2) {
+						newWalletIndex = walletIndex;
+						//If you're deleting a wallet with an index less than that of the selected wallet
+					} else if (walletIndex < indexOfSelectedWallet) {
+						newWalletIndex = indexOfSelectedWallet - 1;
+						//If you're deleting the currently selectedWallet and the last item in the wallet array.
+					} else if (walletIndex === indexOfSelectedWallet && walletIndex === (totalWallets-1)) {
+						newWalletIndex = indexOfSelectedWallet - 1;
+					}
+					await updateWallet({ selectedWallet: wallet.walletOrder[newWalletIndex]});
+				}
+				
+				//Only update the active Wallet Carousel Slider index if it's the last wallet in the array.
+				if (walletIndex !== 0 && walletIndex === (totalWallets-1)) newActiveSlide = walletIndex - 1;
+				updateActiveSlide(newActiveSlide);
 			}
 		} catch (e) {
 			console.log(e);
@@ -124,7 +141,7 @@ const _WalletSliderEntry = ({ walletId = "bitcoin", wallet = { wallets: {}, sele
 	
 	const delWallet = async () => {
 		try {
-			const index = Object.keys(wallet.wallets).indexOf(walletId);
+			const index = wallet.walletOrder.indexOf(walletId);
 			Alert.alert(
 				"Delete Wallet",
 				`Are you sure you wish to delete Wallet ${index}?`,
@@ -261,7 +278,8 @@ const WalletSliderEntry = memo(
 	_WalletSliderEntry,
 	(prevProps, nextProps) => {
 		if (!prevProps || !nextProps) return true;
-		return prevProps.wallet.selectedWallet === nextProps.wallet.selectedWallet;
+		return prevProps.wallet === nextProps.wallet &&
+			prevProps.wallet.selectedWallet === nextProps.wallet.selectedWallet;
 	}
 );
 
