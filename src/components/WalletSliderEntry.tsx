@@ -96,10 +96,19 @@ const _WalletSliderEntry = ({ walletId = "bitcoin", wallet = { wallets: {}, sele
 	
 	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
 	
+	const getWalletName = () => {
+		try {
+			try { if (wallet.wallets[walletId].name.trim() !== "") return wallet.wallets[walletId].name; } catch (e) {}
+			try { return `Wallet ${wallet.walletOrder.indexOf(walletId)}`; } catch (e) {}
+		} catch (e) {
+			return "?";
+		}
+	};
+	
 	const Header = () => (
 		<View style={styles.header}>
 			<Text style={styles.headerText}>
-				{`Wallet ${wallet.walletOrder.indexOf(walletId)}`}
+				{getWalletName()}
 			</Text>
 		</View>
 	);
@@ -142,9 +151,10 @@ const _WalletSliderEntry = ({ walletId = "bitcoin", wallet = { wallets: {}, sele
 	const delWallet = async () => {
 		try {
 			const index = wallet.walletOrder.indexOf(walletId);
+			const walletName = getWalletName();
 			Alert.alert(
 				"Delete Wallet",
-				`Are you sure you wish to delete Wallet ${index}?`,
+				`Are you sure you wish to delete ${walletName}?`,
 				[
 					{
 						text: "No",

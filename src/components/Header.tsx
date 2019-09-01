@@ -49,7 +49,7 @@ interface HeaderComponent {
 	onSelectCoinPress: Function,
 	isOnline: boolean,
 	exchangeRate: number | string,
-	displayWalletName: boolean,
+	walletName: string,
 	selectedCryptoStyle: object,
 	activeOpacity: number,
 	fontSize: number,
@@ -57,7 +57,7 @@ interface HeaderComponent {
 	cryptoValue: number | string,
 	cryptoUnit: string
 }
-const _Header = ({fiatSymbol = "$", selectedCrypto = "bitcoin", selectedWallet = "wallet0", onSelectCoinPress = () => null, isOnline = true, exchangeRate = 0, displayWalletName = false, selectedCryptoStyle = {}, activeOpacity = 0.6, fontSize = 60, fiatValue = 0, cryptoValue = 0, cryptoUnit = "satoshi"}: HeaderComponent) => {
+const _Header = ({fiatSymbol = "$", selectedCrypto = "bitcoin", onSelectCoinPress = () => null, isOnline = true, exchangeRate = 0, walletName = "", selectedCryptoStyle = {}, activeOpacity = 0.6, fontSize = 60, fiatValue = 0, cryptoValue = 0, cryptoUnit = "satoshi"}: HeaderComponent) => {
 	try {
 		if (isNaN(fiatValue)) fiatValue = 0;
 		if (cryptoValue === 0 && cryptoUnit === "BTC") {
@@ -77,8 +77,8 @@ const _Header = ({fiatSymbol = "$", selectedCrypto = "bitcoin", selectedWallet =
 	
 	return (
 		<TouchableOpacity style={styles.container} activeOpacity={activeOpacity} onPress={_onSelectCoinPress}>
-			{displayWalletName &&
-			<Text style={[styles.cryptoValue, { fontSize: fontSize/2.5 }]}>{selectedWallet.split('wallet').join('Wallet ')}</Text>}
+			{walletName !== "" &&
+			<Text style={[styles.cryptoValue, { fontSize: fontSize/2.5 }]}>{walletName}</Text>}
 			<Text style={[styles.cryptoValue, { fontSize: fontSize/2.5, ...selectedCryptoStyle }]}>{getCryptoLabel({selectedCrypto})}</Text>
 			<View style={styles.row}>
 				<View style={{ flexDirection: "row", alignItems: "center", left: -4 }}>

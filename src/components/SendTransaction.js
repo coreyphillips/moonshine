@@ -760,6 +760,16 @@ class SendTransaction extends Component {
 		} catch (e) {}
 	};
 	
+	getWalletName = () => {
+		try {
+			const selectedWallet = this.props.wallet.selectedWallet;
+			try { if (this.props.wallet.wallets[selectedWallet].name.trim() !== "") return this.props.wallet.wallets[selectedWallet].name; } catch (e) {}
+			try { return `Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}`; } catch (e) {}
+		} catch (e) {
+			return "?";
+		}
+	};
+	
 	shouldComponentUpdate(nextProps, nextState) {
 		try {
 			if (
@@ -793,7 +803,7 @@ class SendTransaction extends Component {
 						selectedWallet={`Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}`}
 						exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]}
 						isOnline={this.props.user.isOnline}
-						displayWalletName={true}
+						walletName={this.getWalletName()}
 					/>
 
 					<View style={styles.row}>

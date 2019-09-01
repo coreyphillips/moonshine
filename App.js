@@ -1465,9 +1465,13 @@ export default class App extends Component {
 	};
 	
 	getWalletName = () => {
-		let name = "0";
-		try {name = this.props.wallet.walletOrder.indexOf(this.props.wallet.selectedWallet);} catch (e) {}
-		return name;
+		try {
+			const selectedWallet = this.props.wallet.selectedWallet;
+			try { if (this.props.wallet.wallets[selectedWallet].name.trim() !== "") return this.props.wallet.wallets[selectedWallet].name; } catch (e) {}
+			try { return `Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}`; } catch (e) {}
+		} catch (e) {
+			return "?";
+		}
 	};
 	
 	render() {
@@ -1527,7 +1531,7 @@ export default class App extends Component {
 								
 								<Animated.View style={[styles.priceHeader, { opacity: this.state.priceHeaderOpacity }]}>
 									<TouchableOpacity onPress={this.onSelectCoinPress} style={{ position: "absolute",top: 0, paddingTop: 10, paddingBottom: 20, paddingHorizontal: 30 }}>
-										<Text style={styles.cryptoValue}>{`Wallet ${this.getWalletName()}`}</Text>
+										<Text style={styles.cryptoValue}>{this.getWalletName()}</Text>
 									</TouchableOpacity>
 									<Header
 										fiatValue={this.getFiatBalance()}

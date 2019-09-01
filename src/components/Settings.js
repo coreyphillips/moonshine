@@ -132,7 +132,9 @@ class Settings extends PureComponent {
 			displayWalletHelp: false,
 			
 			bip39PassphraseIsSet: false,
-			bip39Passphrase: ""
+			bip39Passphrase: "",
+			
+			walletName: ""
 		};
 	}
 	
@@ -143,6 +145,13 @@ class Settings extends PureComponent {
 			const bip39PassphraseResult = await getKeychainValue({ key });
 			if (bip39PassphraseResult.error === false && bip39PassphraseResult.data.password) {
 				this.setState({ bip39PassphraseIsSet: true });
+			}
+		} catch (e) {}
+		//Set walletName
+		try {
+			const selectedWallet = this.props.wallet.selectedWallet;
+			if (this.props.wallet.wallets[selectedWallet].name) {
+				this.setState({ walletName: this.props.wallet.wallets[selectedWallet].name });
 			}
 		} catch (e) {}
 	}
@@ -245,7 +254,7 @@ class Settings extends PureComponent {
 		} catch (e) {}
 	}
 	
-	TextInputRow({ title = "", subTitle = "", currentValue = "", onChangeText = () => null, onPress = () => null } = {}) {
+	TextInputRow({ title = "", subTitle = "", currentValue = "", onChangeText = () => null, onPress = () => null, secureTextEntry = true, submitText = "Add Passphrase" } = {}) {
 		try {
 			return (
 				<View style={styles.rowContainer}>
@@ -255,7 +264,7 @@ class Settings extends PureComponent {
 								<Text style={styles.title}>{title}</Text>
 								<TextInput
 									style={styles.textInput}
-									secureTextEntry={true}
+									secureTextEntry={secureTextEntry}
 									autoCapitalize="none"
 									selectionColor={colors.lightPurple}
 									onChangeText={onChangeText}
@@ -266,7 +275,7 @@ class Settings extends PureComponent {
 								/>
 							</View>
 							<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginHorizontal: 20 }}>
-								{this._displayOption({ value: "Add Passphrase", optionsLength: 1, currentValue: "Add Passphrase", onPress})}
+								{this._displayOption({ value: submitText, optionsLength: 1, currentValue: submitText, onPress})}
 							</View>
 						</View>
 					</View>
@@ -536,6 +545,24 @@ class Settings extends PureComponent {
 		} catch (e) {}
 	};
 	
+	addWalletName = async () => {
+		try {
+			const walletName = this.state.walletName;
+			if (!walletName) return;
+			const wallet = this.props.wallet.selectedWallet;
+			this.props.updateWallet({
+				...this.props.wallet,
+				wallets: {
+					...this.props.wallet.wallets,
+					[wallet]: {
+						...this.props.wallet.wallets[wallet],
+						name: walletName
+					}
+				}
+			});
+		} catch (e) {}
+	};
+	
 	addBip39Passphrase = async () => {
 		try {
 			const passphrase = this.state.bip39Passphrase;
@@ -764,6 +791,15 @@ class Settings extends PureComponent {
 		return phrase;
 	};
 	
+	getWalletName = () => {
+		try {
+			try { if (this.props.wallet.wallets[this.props.wallet.selectedWallet].name.trim() !== "") return this.props.wallet.wallets[this.props.wallet.selectedWallet].name; } catch (e) {}
+			try { return `Wallet ${this.props.wallet.walletOrder.indexOf(this.props.wallet.selectedWallet)}`; } catch (e) {}
+		} catch (e) {
+			return "?";
+		}
+	};
+	
 	render() {
 		const { selectedWallet, selectedCrypto } = this.props.wallet;
 		let coinDataLabel = "?";
@@ -848,7 +884,7 @@ class Settings extends PureComponent {
 							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
 								<View style={styles.header}>
 									
-									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{`Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}:`}</Text>
+									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{this.getWalletName()}</Text>
 									
 									<TouchableOpacity onPress={() => this.setState({ displayWalletHelp: true })} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
 										<MaterialCommunityIcons name={"help-circle-outline"} size={26} color={colors.white} />
@@ -862,6 +898,16 @@ class Settings extends PureComponent {
 								</View>
 								<View style={{ height: 1.5, backgroundColor: colors.white, width: "80%" }} />
 							</View>
+							
+							{this.TextInputRow({
+								title: `Wallet Name (${this.state.walletName.length}/16)`,
+								subTitle: `Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}`,
+								currentValue: this.state.walletName || "",
+								onChangeText: (walletName) => walletName.length < 17 ? this.setState({walletName}) : null,
+								onPress: this.addWalletName,
+								secureTextEntry: false,
+								submitText: "Add Name"
+							})}
 							
 							{this.HeaderRow({
 								header: "Connected To:",
@@ -928,7 +974,7 @@ class Settings extends PureComponent {
 							/>
 							
 							<SettingGeneral
-								value={`Rescan Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}\n${cryptoLabel} Wallet`}
+								value={`Rescan ${this.getWalletName()}\n${cryptoLabel} Wallet`}
 								col1Loading={this.state.rescanningWallet}
 								col1Image="radar"
 								onPress={this.rescanWallet}
@@ -950,12 +996,12 @@ class Settings extends PureComponent {
 				
 				{this.state.displayBackupPhrase &&
 				<Animated.View style={[styles.settingContainer, { opacity: this.state.backupPhraseOpacity }]}>
-					<Text style={[styles.headerText, { position: "absolute", top: 25, left: 0, right: 0 }]}>{`Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}`}</Text>
+					<Text style={[styles.headerText, { position: "absolute", top: 20, left: 0, right: 0 }]}>{this.getWalletName()}</Text>
 					<SettingGeneral
 						value={this.getBackupPhrase()}
 						onPress={() => this.toggleBackupPhrase({ selectedWallet, display: false })}
 						col1Style={{ flex: 0.1 }}
-						col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 30 }}
+						col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 20 }}
 						valueStyle={{ color: colors.purple, textAlign: "left", paddingHorizontal: 20, fontWeight: "bold" }}
 					/>
 				</Animated.View>
