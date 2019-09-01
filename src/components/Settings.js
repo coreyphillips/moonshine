@@ -80,6 +80,10 @@ const generalHelpItems = [
 
 const walletHelpItems = [
 	{
+		title: "Wallet Name:",
+		text: `This option allows you to either set or update the name of the currently selected wallet.`
+	},
+	{
 		title: "Connected To:",
 		text: `This option displays the Electrum server that you are currently connected to. At the time of this writing, tapping this option will connect you to a new Electrum server at random. If you have added a custom Electrum server via the "Electrum Options" menu for this coin the app will simply attempt to disconnect and reconnect to the specified server.`
 	},
