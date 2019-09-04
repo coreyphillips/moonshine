@@ -121,10 +121,7 @@ class SendTransaction extends Component {
 
 	componentWillUnmount() {
 		InteractionManager.runAfterInteractions(() => {
-			try {
-				this.props.resetTransaction();
-			} catch (e) {
-			}
+			try {this.props.resetTransaction();} catch (e) {}
 		});
 	}
 
@@ -771,15 +768,7 @@ class SendTransaction extends Component {
 	};
 	
 	shouldComponentUpdate(nextProps, nextState) {
-		try {
-			if (
-				nextProps.transaction !== this.props.transaction ||
-				nextState !== this.state
-			) {
-				return true;
-			}
-			return false;
-		} catch (e) {return false;}
+		try {return nextProps.transaction !== this.props.transaction || nextState !== this.state;} catch (e) {return false;}
 	}
 
 	render() {

@@ -1,24 +1,24 @@
-import React, { Component } from "react";
+import React, {Component} from "react";
 import {
-	Platform,
-	StyleSheet,
-	Text,
-	View,
+	ActivityIndicator,
 	Animated,
-	TouchableOpacity,
+	AppState,
+	BackHandler,
+	Dimensions,
+	InteractionManager,
+	Keyboard,
+	LayoutAnimation,
+	NativeModules,
+	Platform,
 	SafeAreaView,
 	StatusBar,
-	Keyboard,
-	BackHandler,
-	ActivityIndicator,
-	Dimensions,
-	LayoutAnimation,
-	AppState,
-	InteractionManager,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
 	TouchableWithoutFeedback,
-	NativeModules
+	View
 } from "react-native";
-import { systemWeights } from "react-native-typography";
+import {systemWeights} from "react-native-typography";
 import EvilIcon from "react-native-vector-icons/EvilIcons";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import LinearGradient from "react-native-linear-gradient";
@@ -39,13 +39,12 @@ import Settings from "./src/components/Settings";
 import Biometrics from "./src/components/Biometrics";
 import PinPad from "./src/components/PinPad";
 import Loading from "./src/components/Loading";
-//import ElectrumTesting from "./src/components/ElectrumTesting";
-
 import * as electrum from "./src/utils/electrum";
 import nodejs from "nodejs-mobile-react-native";
 import bitcoinUnits from "bitcoin-units";
+//import ElectrumTesting from "./src/components/ElectrumTesting";
 const uuidv4 = require("uuid/v4");
-const { UIManager } = NativeModules;
+const {UIManager} = NativeModules;
 
 const {
 	Constants: {
@@ -64,7 +63,7 @@ const {
 	validatePrivateKey,
 	getTransactionSize
 } = require("./src/utils/helpers");
-const { width } = Dimensions.get("window");
+const {width} = Dimensions.get("window");
 const bip39 = require("bip39");
 const moment = require("moment");
 
@@ -139,12 +138,12 @@ export default class App extends Component {
 		isAnimating: false
 	};
 	
-	setExchangeRate = async ({ selectedCrypto = "bitcoin", selectedCurrency = "usd", selectedService = "coingecko" } = {}) => {
+	setExchangeRate = async ({selectedCrypto = "bitcoin", selectedCurrency = "usd", selectedService = "coingecko"} = {}) => {
 		//const start = this.props.transaction.feeTimestamp;
 		//const end = new Date();
 		//const difference = getDifferenceBetweenDates({ start, end });
 		//if (!this.props.transaction.feeTimestamp || difference > 10) {
-		const exchangeRate = await getExchangeRate({ selectedCrypto, selectedCurrency, selectedService });
+		const exchangeRate = await getExchangeRate({selectedCrypto, selectedCurrency, selectedService});
 		if (exchangeRate.error === false) {
 			this.props.updateWallet({
 				exchangeRate: {
@@ -156,7 +155,7 @@ export default class App extends Component {
 		//}
 	};
 	
-	onCoinPress = async ({ coin = "bitcoin", walletId = "wallet0", initialLoadingMessage = "" } = {}) => {
+	onCoinPress = async ({coin = "bitcoin", walletId = "wallet0", initialLoadingMessage = ""} = {}) => {
 		try {
 			const sameCoin = this.props.wallet.selectedCrypto === coin;
 			const sameWallet = this.props.wallet.selectedWallet === walletId;
@@ -165,31 +164,44 @@ export default class App extends Component {
 				return;
 			}
 			
-			this.updateItem({ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false, duration: 200 });
+			this.updateItem({
+				stateId: "displaySelectCoin",
+				opacityId: "selectCoinOpacity",
+				display: false,
+				duration: 200
+			});
 			
 			const network = getNetworkType(coin);
-			await this.props.updateWallet({ selectedCrypto: coin, network, selectedWallet: walletId });
+			await this.props.updateWallet({selectedCrypto: coin, network, selectedWallet: walletId});
 			
 			if (this.props.wallet.wallets[walletId].addresses[coin].length > 0) {
 				//This condition occurs when the user selects a coin that already has generated addresses from the "SelectCoin" view.
-				this.updateItem({ stateId: "displayLoading", opacityId: "loadingOpacity", display: false });
+				this.updateItem({stateId: "displayLoading", opacityId: "loadingOpacity", display: false});
 				this.resetView();
 			} else {
 				//This condition occurs when the user selects a coin that does not have any addresses from the "SelectCoin" view.
 				if (initialLoadingMessage) {
-					this.setState({ loadingMessage: initialLoadingMessage, loadingProgress: 0.3, loadingAnimationName: coin });
+					this.setState({
+						loadingMessage: initialLoadingMessage,
+						loadingProgress: 0.3,
+						loadingAnimationName: coin
+					});
 				} else {
-					this.setState({ loadingMessage: `Switching to ${capitalize(coin)} for Wallet ${this.props.wallet.wallets[walletId].name || this.getWalletName()}`, loadingProgress: 0.3, loadingAnimationName: coin });
+					this.setState({
+						loadingMessage: `Switching to ${capitalize(coin)} for Wallet ${this.props.wallet.wallets[walletId].name || this.getWalletName()}`,
+						loadingProgress: 0.3,
+						loadingAnimationName: coin
+					});
 				}
-				this.updateItem({ stateId: "displayLoading", opacityId: "loadingOpacity", display: true });
+				this.updateItem({stateId: "displayLoading", opacityId: "loadingOpacity", display: true});
 				InteractionManager.runAfterInteractions(async () => {
-					await this.refreshWallet({ reconnectToElectrum: !sameCoin });
+					await this.refreshWallet({reconnectToElectrum: !sameCoin});
 					this.resetView();
 				});
 				return;
 			}
 			
-			if (this.state.loadingTransactions !== true) this.setState({ loadingTransactions: true });
+			if (this.state.loadingTransactions !== true) this.setState({loadingTransactions: true});
 			InteractionManager.runAfterInteractions(() => {
 				this.refreshWallet({reconnectToElectrum: !sameCoin});
 			});
@@ -215,7 +227,7 @@ export default class App extends Component {
 						walletOrder: this.props.wallet.wallets,
 						wallets
 					});
-					resolve({ error: false });
+					resolve({error: false});
 				} else {
 					//The app has already switched to the new wallet model.
 					//Check if walletOrder exists and create it if necessary.
@@ -229,20 +241,22 @@ export default class App extends Component {
 							...this.props.wallet,
 							walletOrder: Object.keys(this.props.wallet.wallets)
 						});
-						resolve({ error: false });
+						resolve({error: false});
 					}
-					resolve({ error: false });
+					resolve({error: false});
 				}
-			} catch (e) { resolve({ error: true }); }
+			} catch (e) {
+				resolve({error: true});
+			}
 		});
 	};
 	
-	launchDefaultFuncs = async ({ displayLoading = true, resetView = true } = {}) => {
+	launchDefaultFuncs = async ({displayLoading = true, resetView = true} = {}) => {
 		
 		const items = [
-			{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false },
-			{ stateId: "displayPin", opacityId: "pinOpacity", display: false },
-			{ stateId: "displayLoading", opacityId: "loadingOpacity", display: displayLoading }
+			{stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false},
+			{stateId: "displayPin", opacityId: "pinOpacity", display: false},
+			{stateId: "displayLoading", opacityId: "loadingOpacity", display: displayLoading}
 		];
 		await this.updateItems(items);
 		
@@ -251,7 +265,10 @@ export default class App extends Component {
 		
 		//Determine if the user has any existing wallets. Create a new wallet if so.
 		let walletLength = 0;
-		try {walletLength = this.props.wallet.walletOrder.length;} catch (e) {}
+		try {
+			walletLength = this.props.wallet.walletOrder.length;
+		} catch (e) {
+		}
 		if (walletLength < 1) {
 			this.createWallet("wallet0", true);
 			return;
@@ -274,43 +291,43 @@ export default class App extends Component {
 			AppState.addEventListener("change", this._handleAppStateChange);
 			//Setup Layout Animation for Android
 			if (Platform.OS === "android") UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
-		} catch (e) {}
+		} catch (e) {
+		}
 		
 		this.startDate = new Date();
 		clearInterval(this._refreshWallet);
 		
-		this.setState({ loadingMessage: "Fetching Network Status", loadingProgress: 0.35, appHasLoaded: true });
+		this.setState({loadingMessage: "Fetching Network Status", loadingProgress: 0.35, appHasLoaded: true});
 		/*
 		 Clear or Reset any pending transactions to start from a clean slate.
 		 &&
 		 Set user's online status
 		 */
 		const isConnected = await isOnline();
-		await Promise.all([this.props.resetTransaction(), this.props.updateUser({ isOnline: isConnected })]);
+		await Promise.all([this.props.resetTransaction(), this.props.updateUser({isOnline: isConnected})]);
 		
 		//If online, connect to an electrum server.
 		if (isConnected) {
-			this.refreshWallet({ ignoreLoading: !displayLoading });
-			await pauseExecution();
+			this.refreshWallet({ignoreLoading: !displayLoading});
 		} else {
 			//Device is offline. Ensure any loading animations are disabled.
 			await pauseExecution();
-			if (this.state.loadingTransactions !== false) this.setState({ loadingTransactions: false });
+			if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
 		}
 		
 		//Push user to the default view while the rest of the wallet data loads.
 		if (resetView) this.resetView();
 	};
 	
-	refreshWallet = async ({ ignoreLoading = false, reconnectToElectrum = true } = {}) => {
+	refreshWallet = async ({ignoreLoading = false, reconnectToElectrum = true} = {}) => {
 		//This helps to prevent the app from disconnecting and stalling when attempting to connect to an electrum server after some time.
 		//await nodejs.start("main.js");
 		
 		try {
 			//Enable the loading state
-			if (this.state.loadingTransactions !== true) this.setState({ loadingTransactions: true });
-			const { selectedWallet, selectedCrypto, selectedCurrency } = this.props.wallet;
-			const { selectedService } = this.props.settings;
+			if (this.state.loadingTransactions !== true) this.setState({loadingTransactions: true});
+			const {selectedWallet, selectedCrypto, selectedCurrency} = this.props.wallet;
+			const {selectedService} = this.props.settings;
 			const keyDerivationPath = this.props.wallet.wallets[selectedWallet].keyDerivationPath[selectedCrypto];
 			const addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
 			
@@ -320,8 +337,8 @@ export default class App extends Component {
 				//Ensure the user is still online
 				if (!isConnected) {
 					//Device is offline. Ensure any loading animations are disabled.
-					await Promise.all([this.props.updateUser({ isOnline: isConnected })]);
-					if (this.state.loadingTransactions !== false)  this.setState({ loadingTransactions: false });
+					await Promise.all([this.props.updateUser({isOnline: isConnected})]);
+					if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
 					alert("Your device is currently offline. Please check your network connection and try again.");
 					return;
 				}
@@ -330,25 +347,28 @@ export default class App extends Component {
 				if (isConnected) {
 					this.props.updateUser({isOnline: isConnected});
 				} else {
-					this.setState({ loadingTransactions: false });
+					this.setState({loadingTransactions: false});
 					return;
 				}
 			}
 			
-			this.setExchangeRate({ selectedCrypto, selectedService, selectedCurrency }); //Set the exchange rate for the selected currency
+			this.setExchangeRate({selectedCrypto, selectedService, selectedCurrency}); //Set the exchange rate for the selected currency
 			//Update status of the user-facing loading message and progress bar
-			if (!ignoreLoading) this.setState({ loadingMessage: "Connecting to Electrum Server...", loadingProgress: 0.4 });
+			if (!ignoreLoading) this.setState({
+				loadingMessage: "Connecting to Electrum Server...",
+				loadingProgress: 0.4
+			});
 			if (reconnectToElectrum) {
 				//Spin up electrum, connect to a peer & start Electrum's keep-alive function;
 				//Returns: { customPeers: [], data: { host: "" port: 443 }, error: false, method: "connectToPeer" }
-				const electrumStartResponse = await this.restartElectrum({ coin: selectedCrypto });
+				const electrumStartResponse = await this.restartElectrum({coin: selectedCrypto});
 				if (electrumStartResponse.error === false) {
 					//Set the current electrum peer.
 					this.props.updateSettings({currentPeer: electrumStartResponse.data});
 				} else {
 					//The device is considered offline if it is unable to connect to an electrum server. Ensure any loading animations are disabled.
 					await Promise.all([this.props.updateUser({isOnline: false})]);
-					if (this.state.loadingTransactions !== false)  this.setState({loadingTransactions: false});
+					if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
 					alert("Unable to connect to an electrum server at this time. Please check your connection and try again.");
 					return;
 				}
@@ -376,17 +396,22 @@ export default class App extends Component {
 			}
 			
 			//Update status of the user-facing loading message and progress bar
-			if (ignoreLoading === false) this.setState({ loadingMessage: "Getting Current Block Height & Exchange Rate...", loadingProgress: 0.5 });
+			if (ignoreLoading === false) this.setState({
+				loadingMessage: "Getting Current Block Height & Exchange Rate...",
+				loadingProgress: 0.5
+			});
 			
 			//Gather existing addresses, changeAddresses and their respective indexes for use later on
 			let addresses = [];
 			try {
 				addresses = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto];
-			} catch (e) {}
+			} catch (e) {
+			}
 			let changeAddresses = [];
 			try {
 				changeAddresses = this.props.wallet.wallets[selectedWallet].changeAddresses[selectedCrypto];
-			} catch (e) {}
+			} catch (e) {
+			}
 			
 			let addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
 			let changeAddressIndex = this.props.wallet.wallets[selectedWallet].changeAddressIndex[selectedCrypto];
@@ -414,28 +439,45 @@ export default class App extends Component {
 			
 			
 			//Get & Set Current Block Height
-			await this.props.updateBlockHeight({ selectedCrypto });
+			await this.props.updateBlockHeight({selectedCrypto});
 			const currentBlockHeight = this.props.wallet.blockHeight[selectedCrypto];
 			
 			let utxoLength = 1;
 			try {
 				utxoLength = utxos.length;
-			} catch (e) {}
+			} catch (e) {
+			}
 			
 			//Update the recommended fee for the selected coin.
 			const transactionSize = getTransactionSize(utxoLength, 2);
 			this.props.getRecommendedFee({coin: this.props.wallet.selectedCrypto, transactionSize});
 			
 			//Update status of the user-facing loading message and progress bar
-			if (ignoreLoading === false) this.setState({ loadingMessage: "Generating Addresses,\nUpdating Transactions.\nThis may take a while...", loadingProgress: 0.65 });
+			if (ignoreLoading === false) this.setState({
+				loadingMessage: "Generating Addresses,\nUpdating Transactions.\nThis may take a while...",
+				loadingProgress: 0.65
+			});
 			
 			//This function loads up the user's transaction history for the transaction list, gathers the wallet's next available addresses/changeAddresses and creates more as needed
 			//TODO: This function is way too large/multipurpose and needs to be broken up for easier use and testing.
-
-			await this.props.getNextAvailableAddress({ addresses, changeAddresses, addressIndex, changeAddressIndex, indexThreshold: 1, currentBlockHeight, selectedCrypto, selectedWallet, wallet: selectedWallet, customPeers: this.props.settings.customPeers[selectedCrypto], keyDerivationPath, addressType });
+			
+			await this.props.getNextAvailableAddress({
+				addresses,
+				changeAddresses,
+				addressIndex,
+				changeAddressIndex,
+				indexThreshold: 1,
+				currentBlockHeight,
+				selectedCrypto,
+				selectedWallet,
+				wallet: selectedWallet,
+				customPeers: this.props.settings.customPeers[selectedCrypto],
+				keyDerivationPath,
+				addressType
+			});
 			
 			//Update status of the user-facing loading message and progress bar
-			if (ignoreLoading === false) this.setState({ loadingMessage: "Updating UTXO's", loadingProgress: 0.8 });
+			if (ignoreLoading === false) this.setState({loadingMessage: "Updating UTXO's", loadingProgress: 0.8});
 			
 			//Fetch any new utxos.
 			//Re-gather all known addresses and changeAddresses in case more were created from the getNextAvailableAddress function.
@@ -444,7 +486,15 @@ export default class App extends Component {
 			
 			//Scan all addresses & changeAddresses for UTXO's and save them.
 			//Note: The app uses the saved UTXO response to verify/update the wallet's balance.
-			const resetUtxosResponse = await this.props.resetUtxos({ addresses, changeAddresses, currentUtxos: utxos, selectedCrypto, selectedWallet, wallet: selectedWallet, currentBlockHeight });
+			const resetUtxosResponse = await this.props.resetUtxos({
+				addresses,
+				changeAddresses,
+				currentUtxos: utxos,
+				selectedCrypto,
+				selectedWallet,
+				wallet: selectedWallet,
+				currentBlockHeight
+			});
 			//Iterate over the new utxos and rescan the transactions if a utxo with a new hash appears
 			let needsToRescanTransactions = false;
 			addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
@@ -456,7 +506,8 @@ export default class App extends Component {
 						if (newUtxo.tx_hash === transaction.hash) {
 							noHashMatches = false;
 						}
-					} catch (e) {}
+					} catch (e) {
+					}
 					
 				}));
 				//If the transactions need to be rescanned set the index. Use the lowest index based on the results.
@@ -470,7 +521,8 @@ export default class App extends Component {
 						} else {
 							if (Number(pathInfo.addressIndex) < addressIndex) addressIndex = pathInfo.addressIndex;
 						}
-					} catch (e) {}
+					} catch (e) {
+					}
 				}
 			}));
 			
@@ -515,14 +567,17 @@ export default class App extends Component {
 							txHash: transaction.hash,
 							coin: selectedCrypto
 						});
-
+						
 						//If error, remove the transaction from the list of transactions
 						if (result.error === true && result.data.code) {
 							try {
 								let rbfData = this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto];
 								const savedTransactions = await Promise.all(transactions.filter((tx) => tx.hash !== transaction.hash));
 								//Delete any RBF data for the given hash if it exists.
-								try {if (rbfData[transaction.hash]) delete rbfData[transaction.hash];} catch (e) {}
+								try {
+									if (rbfData[transaction.hash]) delete rbfData[transaction.hash];
+								} catch (e) {
+								}
 								const wallet = this.props.wallet.wallets[selectedWallet];
 								await this.props.updateWallet({
 									...this.props.wallet,
@@ -541,18 +596,22 @@ export default class App extends Component {
 										}
 									}
 								});
-							} catch (e) {console.log(e);}
+							} catch (e) {
+								console.log(e);
+							}
 						}
 						
-					} catch (e) {}
+					} catch (e) {
+					}
 				})
 			);
 			//Clear RBF Data if there are no 0-conf sent transactions.
 			try {
 				if (transactionsThatNeedRescanning.length === 0 && Object.entries(this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto]).length !== 0 && this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto].constructor === Object) {
-					this.props.updateRbfData({ wallet: selectedWallet, selectedCrypto });
+					this.props.updateRbfData({wallet: selectedWallet, selectedCrypto});
 				}
-			} catch (e) {}
+			} catch (e) {
+			}
 			
 			/*
 			 let transactionPathsThatNeedRescanning = [];
@@ -575,30 +634,49 @@ export default class App extends Component {
 			 */
 			
 			//Begin Rescan of transactions if necessary based on the saved path indexes.
-			let getNextAvailableAddressResponse = { error: false, data: [] };
+			let getNextAvailableAddressResponse = {error: false, data: []};
 			if (needsToRescanTransactions) {
-				getNextAvailableAddressResponse = await this.props.getNextAvailableAddress({ addresses, changeAddresses, addressIndex, changeAddressIndex, indexThreshold: 1, currentBlockHeight, selectedCrypto, selectedWallet, wallet: selectedWallet, customPeers: this.props.settings.customPeers[selectedCrypto], keyDerivationPath, addressType });
+				getNextAvailableAddressResponse = await this.props.getNextAvailableAddress({
+					addresses,
+					changeAddresses,
+					addressIndex,
+					changeAddressIndex,
+					indexThreshold: 1,
+					currentBlockHeight,
+					selectedCrypto,
+					selectedWallet,
+					wallet: selectedWallet,
+					customPeers: this.props.settings.customPeers[selectedCrypto],
+					keyDerivationPath,
+					addressType
+				});
 			}
 			
 			//Update status of the user-facing loading message and progress bar
-			if (ignoreLoading === false) this.setState({ loadingMessage: "Updating Balance", loadingProgress: 1 });
+			if (ignoreLoading === false) this.setState({loadingMessage: "Updating Balance", loadingProgress: 1});
 			
 			//If there was no issue fetching the UTXO sets or the next available addresses, update the balance using the newly acquired UTXO's.
 			if (resetUtxosResponse.error === false && getNextAvailableAddressResponse.error === false) {
 				try {
 					utxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto] || [];
 					const blacklistedUtxos = this.props.wallet.wallets[selectedWallet].blacklistedUtxos[selectedCrypto];
-					await this.props.updateBalance({ utxos, blacklistedUtxos, selectedCrypto, selectedWallet, wallet: selectedWallet });
+					await this.props.updateBalance({
+						utxos,
+						blacklistedUtxos,
+						selectedCrypto,
+						selectedWallet,
+						wallet: selectedWallet
+					});
 				} catch (e) {
 					console.log(e);
 				}
 			}
-
+			
 			//Cease the loading state.
-			if (this.state.loadingTransactions !== false) this.setState({ loadingTransactions: false });
+			if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
 		} catch (e) {
 			console.log(e);
-			if (this.state.loadingTransactions !== false)  this.setState({ loadingTransactions: false });
+			if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
 		}
 	};
 	
@@ -610,7 +688,7 @@ export default class App extends Component {
 			TouchID.authenticate("To open Bitbip", optionalConfigObject)
 				.then(() => {
 					//Hide the retry button on the Biometric Authentication view.
-					if (this.state.displayBiometricAuthenticationRetry !== false)  this.setState({ displayBiometricAuthenticationRetry: false });
+					if (this.state.displayBiometricAuthenticationRetry !== false) this.setState({displayBiometricAuthenticationRetry: false});
 					//Forward the user to the Pin view if they've enabled it. Otherwise, forward them to the app via launchDefaultFuncs.
 					if (this.props.settings.pin) {
 						//Transition to the pin view.
@@ -621,7 +699,7 @@ export default class App extends Component {
 				})
 				.catch(() => {
 					//Display the retry button on the Biometric Authentication view in case they hit cancel or encountered some other error during the authentication process.
-					if (this.state.displayBiometricAuthenticationRetry !== true)  this.setState({ displayBiometricAuthenticationRetry: true });
+					if (this.state.displayBiometricAuthenticationRetry !== true) this.setState({displayBiometricAuthenticationRetry: true});
 				});
 		};
 		//Ensure Biometric authentication via Face or Touch ID is supported.
@@ -634,19 +712,20 @@ export default class App extends Component {
 					authenticate(); //TouchID is supported.
 				}
 			})
-			.catch(() => {});
+			.catch(() => {
+			});
 	};
 	
 	createWallet = async (walletName = "wallet0", ignoreAddressCheck = false) => {
 		try {
-			const { selectedCrypto } = this.props.wallet;
+			const {selectedCrypto} = this.props.wallet;
 			const items = [
-				{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false },
-				{ stateId: "displayPin", opacityId: "pinOpacity", display: false },
-				{ stateId: "displayLoading", opacityId: "loadingOpacity", display: true }
+				{stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false},
+				{stateId: "displayPin", opacityId: "pinOpacity", display: false},
+				{stateId: "displayLoading", opacityId: "loadingOpacity", display: true}
 			];
 			await this.updateItems(items);
-			await this.props.updateWallet({ selectedCrypto: "bitcoin" });
+			await this.props.updateWallet({selectedCrypto: "bitcoin"});
 			
 			//Figure out what type of security/authentication is allowed for settings.
 			let biometricsIsSupported = false;
@@ -663,15 +742,20 @@ export default class App extends Component {
 					} else {
 						biometricTypeSupported = "TouchID";
 					}
-					this.props.updateSettings({ biometricsIsSupported, biometricTypeSupported });
+					this.props.updateSettings({biometricsIsSupported, biometricTypeSupported});
 				})
 				.catch(() => {
-					this.props.updateSettings({ biometricsIsSupported, biometricTypeSupported });
+					this.props.updateSettings({biometricsIsSupported, biometricTypeSupported});
 				});
 			
 			//Create Wallet if first timer
 			this.setState({loadingMessage: "Creating Wallet...", loadingProgress: 0.1});
-			await this.props.createWallet({addressAmount: 2, changeAddressAmount: 2, wallet: walletName, generateAllAddresses: true});
+			await this.props.createWallet({
+				addressAmount: 2,
+				changeAddressAmount: 2,
+				wallet: walletName,
+				generateAllAddresses: true
+			});
 			//Add wallet name to the walletOrder array;
 			let walletOrder = [];
 			try {
@@ -680,8 +764,8 @@ export default class App extends Component {
 				walletOrder = [walletName];
 			}
 			//Set the selectedWallet accordingly and update the wallets array.
-			await this.props.updateWallet({ selectedWallet: walletName, walletOrder });
-			const { selectedWallet } = this.props.wallet;
+			await this.props.updateWallet({selectedWallet: walletName, walletOrder});
+			const {selectedWallet} = this.props.wallet;
 			this.setState({loadingMessage: "Fetching Current Block Height...", loadingProgress: 0.15});
 			let addresses = [];
 			try {
@@ -697,9 +781,9 @@ export default class App extends Component {
 				//Spin up the nodejs thread and connect to electrum.
 				//await nodejs.start("main.js");
 				//await electrum.stop({ coin: selectedCrypto });
-				await this.restartElectrum({ coin: selectedCrypto });
+				await this.restartElectrum({coin: selectedCrypto});
 				//Get Current Block Height
-				await this.props.updateBlockHeight({ selectedCrypto });
+				await this.props.updateBlockHeight({selectedCrypto});
 				const currentBlockHeight = this.props.wallet.blockHeight[selectedCrypto];
 				
 				this.setState({loadingMessage: "Syncing...", loadingProgress: 0.15});
@@ -713,16 +797,21 @@ export default class App extends Component {
 					currentBlockHeight,
 					wallet: selectedWallet
 				});
-				this.setState({loadingMessage: "Finished Creating Wallet", loadingProgress: 0.3, loadingAnimationName: "astronaut"});
+				this.setState({
+					loadingMessage: "Finished Creating Wallet",
+					loadingProgress: 0.3,
+					loadingAnimationName: "astronaut"
+				});
 			}
-			this.launchDefaultFuncs({ displayLoading: false });
-		} catch (e) {}
+			this.launchDefaultFuncs({displayLoading: false});
+		} catch (e) {
+		}
 	};
 	
 	_handleAppStateChange = async (nextAppState) => {
 		//Foreground -> Background
 		if (this.state.appState.match(/active/) && nextAppState.match(/inactive|background/) && !this.state.displayCamera) {
-			electrum.stop({ coin: this.props.wallet.selectedCrypto });
+			electrum.stop({coin: this.props.wallet.selectedCrypto});
 			//Clear/Remove Wallet Refresh Timer
 			clearInterval(this._refreshWallet);
 			if (this.state.appHasLoaded !== false) this.setState({appHasLoaded: false});
@@ -731,14 +820,14 @@ export default class App extends Component {
 		if (this.state.appState.match(/inactive|background/) && nextAppState === "active" && !this.state.displayCamera) {
 			if (this.props.settings.biometrics || this.props.settings.pin) {
 				const items = [
-					{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false },
-					{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
-					{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false },
-					{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false },
-					{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false },
-					{ stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: false },
-					{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
-					{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false }
+					{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false},
+					{stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250},
+					{stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false},
+					{stateId: "displaySettings", opacityId: "settingsOpacity", display: false},
+					{stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false},
+					{stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: false},
+					{stateId: "displayCamera", opacityId: "cameraOpacity", display: false},
+					{stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false}
 				];
 				this.updateItems(items);
 				this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
@@ -746,12 +835,16 @@ export default class App extends Component {
 				try {
 					//Determine if the user has any existing wallets. Create a new wallet if so.
 					let walletLength = 0;
-					try {walletLength = this.props.wallet.walletOrder.length;} catch (e) {}
+					try {
+						walletLength = this.props.wallet.walletOrder.length;
+					} catch (e) {
+					}
 					if (walletLength < 1) {
 						this.createWallet("wallet0", true);
 						return;
 					}
-				} catch (e) {}
+				} catch (e) {
+				}
 				
 				try {
 					//Check if Biometrics is Enabled
@@ -759,7 +852,8 @@ export default class App extends Component {
 						this.onBiometricsPress();
 						return;
 					}
-				} catch (e) {}
+				} catch (e) {
+				}
 				
 				try {
 					//Check if Pin is Enabled
@@ -767,7 +861,8 @@ export default class App extends Component {
 						this.onPinPress();
 						return;
 					}
-				} catch (e) {}
+				} catch (e) {
+				}
 			}
 			try {
 				/*
@@ -781,8 +876,9 @@ export default class App extends Component {
 				 });
 				 */
 				//Resume normal operations
-				this.launchDefaultFuncs({ displayLoading: false, resetView: false });
-			} catch (e) {}
+				this.launchDefaultFuncs({displayLoading: false, resetView: false});
+			} catch (e) {
+			}
 		}
 		if (this.state.appState !== nextAppState) this.setState({appState: nextAppState});
 	};
@@ -822,20 +918,23 @@ export default class App extends Component {
 	shouldComponentUpdate(nextProps, nextState) {
 		try {
 			return nextProps.wallet !== this.props.wallet || nextState !== this.state;
-		} catch (e) {return false;}
+		} catch (e) {
+			return false;
+		}
 	}
 	
 	componentWillUnmount() {
 		try {
 			//Stop Electrum Process
-			electrum.stop({ coin: this.props.wallet.selectedCrypto });
+			electrum.stop({coin: this.props.wallet.selectedCrypto});
 			//Remove Back Button Listener
 			BackHandler.removeEventListener("hardwareBackPress", this.resetView);
 			//Start the listener that detects if the app is in the background or foreground
 			AppState.removeEventListener("change", this._handleAppStateChange);
 			//Clear/Remove Wallet Refresh Timer
 			clearInterval(this._refreshWallet);
-		} catch (e) {}
+		} catch (e) {
+		}
 	}
 	
 	//Handles The "upper" & "lower" Flex Animation
@@ -859,11 +958,11 @@ export default class App extends Component {
 					)
 				]).start(() => {
 					//Perform any other action after the update has been completed.
-					resolve({ error: false });
+					resolve({error: false});
 				});
 			} catch (e) {
 				console.log(e);
-				resolve({ error: true, data: e });
+				resolve({error: true, data: e});
 			}
 		});
 	};
@@ -877,7 +976,7 @@ export default class App extends Component {
 				let animations = [];
 				let onCompleteFuncs = [];
 				
-				await Promise.all(items.map(async ({ stateId = "", opacityId = "", display = false, duration = 400, onComplete = null } = {}) => {
+				await Promise.all(items.map(async ({stateId = "", opacityId = "", display = false, duration = 400, onComplete = null} = {}) => {
 					try {
 						//Handle Opacity Animations
 						
@@ -885,68 +984,70 @@ export default class App extends Component {
 						if (this.state[stateId] === display) return;
 						
 						//Push all onComplete functions into an array to call once the animation completes
-						try {if (typeof onComplete === "function") onCompleteFuncs.push(onComplete);} catch (e) {}
 						try {
-							
+							if (typeof onComplete === "function") onCompleteFuncs.push(onComplete);
+						} catch (e) {
+						}
+						try {
 							//Set the items to display and hide in the appropriate object.
-							const isNewValue = this.state[stateId] !== display;
-							if (isNewValue) {
-								if (display) {
-									itemsToDisplay = {...itemsToDisplay, [stateId]: display};
-								} else {
-									itemsToHide = {...itemsToHide, [stateId]: display};
-								}
-								
-								//Construct and push each animation to the animations array.
-								animations.push(
-									Animated.timing(
-										this.state[opacityId],
-										{
-											toValue: display ? 1 : 0,
-											duration,
-											useNativeDriver: true
-										}
-									),
-								);
+							if (display) {
+								itemsToDisplay = {...itemsToDisplay, [stateId]: display};
+							} else {
+								itemsToHide = {...itemsToHide, [stateId]: display};
 							}
 							
-						} catch (e) {}
-					} catch (e) {}
+							//Construct and push each animation to the animations array.
+							animations.push(
+								Animated.timing(
+									this.state[opacityId],
+									{
+										toValue: display ? 1 : 0,
+										duration,
+										useNativeDriver: true
+									}
+								),
+							);
+						} catch (e) {
+						}
+					} catch (e) {
+					}
 				}));
 				
 				//Display necessary items
 				if (Object.entries(itemsToDisplay).length !== 0 && itemsToDisplay.constructor === Object) this.setState(itemsToDisplay);
 				
 				//Start Animations.
-				Animated.parallel(animations).start(async() => {
+				Animated.parallel(animations).start(async () => {
 					//Perform any other action after the update has been completed.
 					
 					//Hide necessary items
 					if (Object.entries(itemsToHide).length !== 0 && itemsToHide.constructor === Object) this.setState(itemsToHide);
 					
 					//Call all onComplete functions
-					onCompleteFuncs.map((onComplete) => {try {onComplete();} catch (e) {}});
-					resolve({ error: false });
+					onCompleteFuncs.map((onComplete) => {
+						try {
+							onComplete();
+						} catch (e) {
+						}
+					});
+					resolve({error: false});
 				});
 				
 			} catch (e) {
 				console.log(e);
-				resolve({ error: true, data: e });
+				resolve({error: true, data: e});
 			}
 		});
 	};
 	
-	updateItem = ({ stateId = "", opacityId = "", display = true, duration = 400, endToEndAnimation = true } = {}) => {
+	updateItem = ({stateId = "", opacityId = "", display = true, duration = 400, endToEndAnimation = true} = {}) => {
 		if (this.state[stateId] === display) return;
 		return new Promise(async (resolve) => {
 			try {
-				const isNewValue = this.state[stateId] !== display;
-				if (isNewValue) {
-					if (endToEndAnimation) {
-						if (display) this.setState({[stateId]: display});
-					} else {
-						this.setState({[stateId]: display});
-					}
+				if (endToEndAnimation) {
+					if (display) this.setState({[stateId]: display});
+				} else {
+					this.setState({[stateId]: display});
 				}
 				Animated.timing(
 					this.state[opacityId],
@@ -957,12 +1058,12 @@ export default class App extends Component {
 					}
 				).start(async () => {
 					//Perform any other action after the update has been completed.
-					if (!display && endToEndAnimation && isNewValue) this.setState({[stateId]: display});
-					resolve ({error: false});
+					if (!display && endToEndAnimation) this.setState({[stateId]: display});
+					resolve({error: false});
 				});
 			} catch (e) {
 				console.log(e);
-				resolve ({error: true});
+				resolve({error: true});
 			}
 		});
 	};
@@ -973,15 +1074,15 @@ export default class App extends Component {
 			if (this.state.isAnimating || !this.state.appHasLoaded) return;
 			//Open Send State
 			const items = [
-				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
-				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
-				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 250 },
-				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 },
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true },
-				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: true, duration: 600 }
+				{stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250},
+				{stateId: "displayCamera", opacityId: "cameraOpacity", display: false},
+				{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 250},
+				{stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200},
+				{stateId: "displayXButton", opacityId: "xButtonOpacity", display: true},
+				{stateId: "displayTextInput", opacityId: "textInputOpacity", display: true, duration: 600}
 			];
 			this.updateItems(items);
-			this.updateFlex({ upperContentFlex: 1, lowerContentFlex: 0 });
+			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
 			InteractionManager.runAfterInteractions(() => {
 				if (this.state.optionSelected !== "send") this.setState({optionSelected: "send"});
 			});
@@ -997,19 +1098,24 @@ export default class App extends Component {
 				alert("No private key detected.");
 				return;
 			}
-			await this.setState({ privateKey: key });
+			await this.setState({privateKey: key});
 			//Open Send State
 			const items = [
-				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true },
-				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
-				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 250 },
-				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 },
-				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false, duration: 200 }
+				{stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250},
+				{stateId: "displayXButton", opacityId: "xButtonOpacity", display: true},
+				{stateId: "displayCamera", opacityId: "cameraOpacity", display: false},
+				{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 250},
+				{stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200},
+				{stateId: "displayTextInput", opacityId: "textInputOpacity", display: false, duration: 200}
 			];
 			this.updateItems(items);
 			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			this.updateItems([{ stateId: "displaySweepPrivateKey", opacityId: "sweepPrivateKeyOpacity", display: true, duration: Platform.OS === "ios" ? 800 : 300 }]);
+			this.updateItems([{
+				stateId: "displaySweepPrivateKey",
+				opacityId: "sweepPrivateKeyOpacity",
+				display: true,
+				duration: Platform.OS === "ios" ? 800 : 300
+			}]);
 			InteractionManager.runAfterInteractions(() => {
 				if (this.state.optionSelected !== "send") this.setState({optionSelected: "send"});
 			});
@@ -1024,12 +1130,17 @@ export default class App extends Component {
 		if (this.state.optionSelected !== "receive") {
 			//Open Receive State
 			const items = [
-				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true },
-				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 250 },
-				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
-				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 },
-				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: true, duration: 800 }
+				{stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250},
+				{stateId: "displayXButton", opacityId: "xButtonOpacity", display: true},
+				{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 250},
+				{stateId: "displayTextInput", opacityId: "textInputOpacity", display: false},
+				{stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200},
+				{
+					stateId: "displayReceiveTransaction",
+					opacityId: "receiveTransactionOpacity",
+					display: true,
+					duration: 800
+				}
 			];
 			this.updateItems(items);
 			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
@@ -1041,14 +1152,24 @@ export default class App extends Component {
 			if (this.state.optionSelected !== "") this.setState({optionSelected: ""});
 			
 			const items = [
-				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false, duration: 200 },
-				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100 },
-				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 350 }
+				{
+					stateId: "displayReceiveTransaction",
+					opacityId: "receiveTransactionOpacity",
+					display: false,
+					duration: 200
+				},
+				{stateId: "displayTextInput", opacityId: "textInputOpacity", display: false},
+				{stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100},
+				{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 350}
 			];
 			this.updateItems(items);
 			await this.updateFlex();
-			this.updateItem({ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 350 });
+			this.updateItem({
+				stateId: "displayPriceHeader",
+				opacityId: "priceHeaderOpacity",
+				display: true,
+				duration: 350
+			});
 		}
 	};
 	
@@ -1061,16 +1182,17 @@ export default class App extends Component {
 			await this.props.updateWallet({selectedTransaction: transaction[0]});
 			
 			const items = [
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true },
-				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
-				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 350 },
-				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
-				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 400 },
-				{ stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: true }
+				{stateId: "displayXButton", opacityId: "xButtonOpacity", display: true},
+				{stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250},
+				{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 350},
+				{stateId: "displayTextInput", opacityId: "textInputOpacity", display: false},
+				{stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 400},
+				{stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: true}
 			];
 			this.updateItems(items);
 			this.updateFlex({upperContentFlex: 0, lowerContentFlex: 1, duration: 400});
-		} catch (e) {}
+		} catch (e) {
+		}
 	};
 	
 	//Handles the series of animations necessary when the user taps the selected crypto symbol
@@ -1080,13 +1202,13 @@ export default class App extends Component {
 		if (!this.state.displaySelectCoin) {
 			//Open SelectCoin State
 			const items = [
-				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true, duration: 500 },
-				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 300 },
-				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
-				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 },
-				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false },
-				{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: true, duration: 600 }
+				{stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250},
+				{stateId: "displayXButton", opacityId: "xButtonOpacity", display: true, duration: 500},
+				{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 300},
+				{stateId: "displayTextInput", opacityId: "textInputOpacity", display: false},
+				{stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200},
+				{stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false},
+				{stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: true, duration: 600}
 			];
 			await Promise.all([
 				this.updateItems(items),
@@ -1095,11 +1217,16 @@ export default class App extends Component {
 		} else {
 			//Close SelectCoin State
 			const items = [
-				{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false },
-				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false, duration: 200 },
-				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100 },
-				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 350 }
+				{stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false},
+				{
+					stateId: "displayReceiveTransaction",
+					opacityId: "receiveTransactionOpacity",
+					display: false,
+					duration: 200
+				},
+				{stateId: "displayTextInput", opacityId: "textInputOpacity", display: false},
+				{stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100},
+				{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 350}
 			];
 			await Promise.all([
 				this.updateItems(items),
@@ -1114,16 +1241,30 @@ export default class App extends Component {
 			if (this.state.isAnimating || !this.state.appHasLoaded) return;
 			//Open Receive State
 			const items = [
-				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
-				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 300 },
-				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
-				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false },
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false },
-				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 }
+				{stateId: "displayTextInput", opacityId: "textInputOpacity", display: false},
+				{stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false},
+				{stateId: "displayXButton", opacityId: "xButtonOpacity", display: false},
+				{stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200}
 			];
-			this.updateItems(items);
-			await this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			this.updateItem({ stateId: "displayCamera", opacityId: "cameraOpacity", display: true });
+			await Promise.all([
+				this.updateItem({
+					stateId: "displayPriceHeader",
+					opacityId: "priceHeaderOpacity",
+					display: false,
+					duration: 200,
+					endToEndAnimation: true
+				}),
+				this.updateItem({
+					stateId: "displayCameraRow",
+					opacityId: "cameraRowOpacity",
+					display: false,
+					duration: 200,
+					endToEndAnimation: true
+				}),
+				this.updateItems(items),
+				this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0})
+			]);
+			this.updateItem({stateId: "displayCamera", opacityId: "cameraOpacity", display: true});
 		} catch (e) {
 			console.log(e);
 		}
@@ -1135,14 +1276,14 @@ export default class App extends Component {
 			if (this.state.isAnimating || !this.state.appHasLoaded) return;
 			//Open Receive State
 			const items = [
-				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
-				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 350 },
-				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
-				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false },
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false },
-				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
-				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 },
-				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: true, duration: 600 }
+				{stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250},
+				{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 350},
+				{stateId: "displayTextInput", opacityId: "textInputOpacity", display: false},
+				{stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false},
+				{stateId: "displayXButton", opacityId: "xButtonOpacity", display: false},
+				{stateId: "displayCamera", opacityId: "cameraOpacity", display: false},
+				{stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200},
+				{stateId: "displaySettings", opacityId: "settingsOpacity", display: true, duration: 600}
 			];
 			await Promise.all([
 				this.updateItems(items),
@@ -1157,21 +1298,26 @@ export default class App extends Component {
 	onBiometricsPress = async () => {
 		try {
 			const items = [
-				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false },
-				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false },
-				{ stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: false },
-				{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false },
-				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
-				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false },
-				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false },
-				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
-				{ stateId: "displayLoading", opacityId: "loadingOpacity", display: false },
-				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false }
+				{stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false},
+				{stateId: "displaySettings", opacityId: "settingsOpacity", display: false},
+				{stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: false},
+				{stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false},
+				{stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250},
+				{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false},
+				{stateId: "displayTextInput", opacityId: "textInputOpacity", display: false},
+				{stateId: "displayXButton", opacityId: "xButtonOpacity", display: false},
+				{stateId: "displayCamera", opacityId: "cameraOpacity", display: false},
+				{stateId: "displayLoading", opacityId: "loadingOpacity", display: false},
+				{stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false}
 			];
 			this.updateItems(items);
 			await this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			this.updateItems([{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: true, onComplete: this.authenticateUserWithBiometrics }]);
+			this.updateItems([{
+				stateId: "displayBiometrics",
+				opacityId: "biometricsOpacity",
+				display: true,
+				onComplete: this.authenticateUserWithBiometrics
+			}]);
 		} catch (e) {
 			console.log(e);
 		}
@@ -1181,22 +1327,22 @@ export default class App extends Component {
 	onPinPress = async () => {
 		try {
 			const items = [
-				{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false },
-				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false },
-				{ stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: false },
-				{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false },
-				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
-				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false },
-				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false },
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false },
-				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
-				{ stateId: "displayLoading", opacityId: "loadingOpacity", display: false },
-				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false },
-				{ stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false }
+				{stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false},
+				{stateId: "displaySettings", opacityId: "settingsOpacity", display: false},
+				{stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: false},
+				{stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false},
+				{stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250},
+				{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false},
+				{stateId: "displayTextInput", opacityId: "textInputOpacity", display: false},
+				{stateId: "displayXButton", opacityId: "xButtonOpacity", display: false},
+				{stateId: "displayCamera", opacityId: "cameraOpacity", display: false},
+				{stateId: "displayLoading", opacityId: "loadingOpacity", display: false},
+				{stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false},
+				{stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false}
 			];
 			this.updateItems(items);
 			await this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-			this.updateItem({ stateId: "displayPin", opacityId: "pinOpacity", display: true });
+			this.updateItem({stateId: "displayPin", opacityId: "pinOpacity", display: true});
 		} catch (e) {
 			console.log(e);
 		}
@@ -1206,35 +1352,51 @@ export default class App extends Component {
 	resetView = async () => {
 		if (this.state.isAnimating) return;
 		const items = [
-			{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: true },
-			{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: true },
-			{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
-			{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100 },
-			{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false, duration: 200 },
-			{ stateId: "displaySweepPrivateKey", opacityId: "sweepPrivateKeyOpacity", display: false, duration: 200 },
-			{ stateId: "displayLoading", opacityId: "loadingOpacity", display: false, duration: 200 },
-			{ stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false, duration: 200 },
-			{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false, duration: 200 },
-			{ stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: false, duration: 200 },
-			{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false, duration: 200 },
-			{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 600 }
+			{stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: true},
+			{stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: true},
+			{stateId: "displayCamera", opacityId: "cameraOpacity", display: false},
+			{stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100},
+			{stateId: "displayTextInput", opacityId: "textInputOpacity", display: false, duration: 200},
+			{stateId: "displaySweepPrivateKey", opacityId: "sweepPrivateKeyOpacity", display: false, duration: 200},
+			{
+				stateId: "displayReceiveTransaction",
+				opacityId: "receiveTransactionOpacity",
+				display: false,
+				duration: 200
+			},
+			{stateId: "displaySettings", opacityId: "settingsOpacity", display: false, duration: 200},
+			{stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: false, duration: 200},
+			{stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false, duration: 200},
+			{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 600}
 		];
+		this.updateItem({
+			stateId: "displayLoading",
+			opacityId: "loadingOpacity",
+			display: false,
+			duration: 200,
+			endToEndAnimation: false
+		});
 		this.updateItems(items);
-		this.updateFlex({ duration: 400 });
+		this.updateFlex({duration: 400});
 		InteractionManager.runAfterInteractions(() => {
-			this.props.updateWallet({ selectedTransaction: "" });
-			this.setState({optionSelected: "", transactionsAreExpanded: false, loadingAnimationName: "loader", privateKey: ""});
+			this.props.updateWallet({selectedTransaction: ""});
+			this.setState({
+				optionSelected: "",
+				transactionsAreExpanded: false,
+				loadingAnimationName: "loader",
+				privateKey: ""
+			});
 		});
 	};
 	
 	//Handles the series of animations necessary for the user to expand the transaction list.
 	expandTransactions = () => {
-		this.setState({ transactionsAreExpanded: true });
+		this.setState({transactionsAreExpanded: true});
 		const items = [
-			{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true },
-			{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 200 },
-			{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 350 },
-			{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: false }
+			{stateId: "displayXButton", opacityId: "xButtonOpacity", display: true},
+			{stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 200},
+			{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 350},
+			{stateId: "displayTextInput", opacityId: "textInputOpacity", display: false}
 		];
 		this.updateItems(items);
 		this.updateFlex({upperContentFlex: 0, lowerContentFlex: 1});
@@ -1245,10 +1407,10 @@ export default class App extends Component {
 		Keyboard.dismiss();
 	};
 	
-	restartElectrum = ({ coin = "" } = {}) => {
-		return new Promise(async(resolve) => {
+	restartElectrum = ({coin = ""} = {}) => {
+		return new Promise(async (resolve) => {
 			try {
-				if (!coin) resolve({ error: true, data: {} });
+				if (!coin) resolve({error: true, data: {}});
 				
 				//This helps to prevent the app from disconnecting and stalling when attempting to connect to an electrum server after some time.
 				//await nodejs.start("main.js");
@@ -1256,13 +1418,20 @@ export default class App extends Component {
 				//Disconnect from the currently connected Electrum server. Not entirely sure if this is necessary, but it seems to prevent the app from stalling in certain scenarios.
 				try {
 					//await electrum.stop({ coin });
-				} catch (e) {}
+				} catch (e) {
+				}
 				
 				try {
 					let hasPeers = false;
 					let hasCustomPeers = false;
-					try {if (Array.isArray(this.props.settings.peers[coin]) && this.props.settings.peers[coin].length) hasPeers = true;} catch (e) {}
-					try {if (Array.isArray(this.props.settings.customPeers[coin]) && this.props.settings.customPeers[coin].length) hasCustomPeers = true;} catch (e) {}
+					try {
+						if (Array.isArray(this.props.settings.peers[coin]) && this.props.settings.peers[coin].length) hasPeers = true;
+					} catch (e) {
+					}
+					try {
+						if (Array.isArray(this.props.settings.customPeers[coin]) && this.props.settings.customPeers[coin].length) hasCustomPeers = true;
+					} catch (e) {
+					}
 					
 					if (!hasPeers && !hasCustomPeers) {
 						//Attempt to retrieve a list of peers from the default servers.
@@ -1279,7 +1448,8 @@ export default class App extends Component {
 						const peers = await electrum.getPeers({coin});
 						await this.props.updatePeersList({peerList: peers.data, coin});
 					}
-				} catch (e) {}
+				} catch (e) {
+				}
 				
 				//Connect to an electrum server
 				const result = await electrum.start({
@@ -1300,8 +1470,8 @@ export default class App extends Component {
 		try {
 			//Determine if we need to import a mnemonic phrase
 			if (bip39.validateMnemonic(data)) {
-				await this.updateItem({ stateId: "displayCamera", opacityId: "cameraOpacity", display: false });
-				this.createNewWallet({ mnemonic: data });
+				await this.updateItem({stateId: "displayCamera", opacityId: "cameraOpacity", display: false});
+				this.createNewWallet({mnemonic: data});
 				return;
 			}
 			
@@ -1310,7 +1480,7 @@ export default class App extends Component {
 			if (validatePrivateKeyResults.isPrivateKey === true) {
 				
 				//Remove Camera View
-				await this.updateItem({ stateId: "displayCamera", opacityId: "cameraOpacity", display: false });
+				await this.updateItem({stateId: "displayCamera", opacityId: "cameraOpacity", display: false});
 				this.onSweep(data);
 				return;
 			}
@@ -1320,7 +1490,7 @@ export default class App extends Component {
 			if (data.substr(0, 5).toLowerCase() === "bitid") {
 				//Present user with the option to sign and send the request.
 				//Remove Camera View
-				await this.updateItem({ stateId: "displayCamera", opacityId: "cameraOpacity", display: false });
+				await this.updateItem({stateId: "displayCamera", opacityId: "cameraOpacity", display: false});
 				//Reveal Sign Message View
 				//await this.updateSignMessage({ display: true });
 			}
@@ -1328,7 +1498,7 @@ export default class App extends Component {
 			const qrCodeData = await parsePaymentRequest(data);
 			//Throw error if unable to interpret the qrcode data.
 			if (qrCodeData.error) {
-				await this.updateItem({ stateId: "displayCamera", opacityId: "cameraOpacity", display: false });
+				await this.updateItem({stateId: "displayCamera", opacityId: "cameraOpacity", display: false});
 				await this.resetView();
 				alert(`Unable to parse the following data:\n${qrCodeData.data}`);
 				return;
@@ -1342,7 +1512,7 @@ export default class App extends Component {
 					//Disconnect from the current electurm server.
 					//await electrum.stop({ coin });
 					//Connect to the relevant electrum server as per the qrcode data.
-					await this.restartElectrum({ coin });
+					await this.restartElectrum({coin});
 				}
 				
 				//Pass the transaction data forward for use.
@@ -1358,7 +1528,7 @@ export default class App extends Component {
 	//Returns the fiat balance based on the most recent exchange rate of the selected crypto.
 	getFiatBalance = () => {
 		try {
-			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			const {selectedWallet, selectedCrypto} = this.props.wallet;
 			const confirmedBalance = Number(this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto]);
 			bitcoinUnits.setFiat("usd", Number(this.props.wallet.exchangeRate[selectedCrypto]));
 			const fiatBalance = bitcoinUnits(confirmedBalance, "satoshi").to("usd").value().toFixed(2);
@@ -1373,16 +1543,17 @@ export default class App extends Component {
 	getCryptoBalance = () => {
 		let confirmedBalance = 0;
 		try {
-			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			const {selectedWallet, selectedCrypto} = this.props.wallet;
 			return Number(this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto]) || 0;
-		} catch (e) {}
+		} catch (e) {
+		}
 		return confirmedBalance;
 	};
 	
 	//Returns the next available empty address of the selected crypto.
 	getQrCodeAddress = () => {
 		try {
-			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			const {selectedWallet, selectedCrypto} = this.props.wallet;
 			const addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
 			return this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto][addressIndex].address;
 		} catch (e) {
@@ -1394,7 +1565,7 @@ export default class App extends Component {
 	//Returns all transactions for the selected crypto.
 	getTransactions = () => {
 		try {
-			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			const {selectedWallet, selectedCrypto} = this.props.wallet;
 			const transactions = this.props.wallet.wallets[selectedWallet].transactions[selectedCrypto];
 			if (Array.isArray(transactions)) {
 				return transactions;
@@ -1414,7 +1585,7 @@ export default class App extends Component {
 		}
 	};
 	
-	createNewWallet = async ({ mnemonic = "" } = {}) => {
+	createNewWallet = async ({mnemonic = ""} = {}) => {
 		try {
 			//Add wallet name to wallets array;
 			const walletName = await uuidv4();
@@ -1425,33 +1596,37 @@ export default class App extends Component {
 				walletOrder = [walletName];
 			}
 			//Set Loading Message
-			await this.setState({loadingMessage: `Creating Wallet ${Object.keys(this.props.wallet.wallets).length} & Generating Addresses`, loadingProgress: 0.5});
+			await this.setState({
+				loadingMessage: `Creating Wallet ${Object.keys(this.props.wallet.wallets).length} & Generating Addresses`,
+				loadingProgress: 0.5
+			});
 			
 			//Close Receive State
 			const items = [
-				{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false },
-				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false },
-				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100 },
-				{ stateId: "displayLoading", opacityId: "loadingOpacity", display: true }
+				{stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false},
+				{stateId: "displaySettings", opacityId: "settingsOpacity", display: false},
+				{stateId: "displayXButton", opacityId: "xButtonOpacity", display: false, duration: 100},
+				{stateId: "displayLoading", opacityId: "loadingOpacity", display: true}
 			];
 			await this.updateItems(items);
 			
 			//Set the selectedWallet accordingly and update the wallets array.
-			await this.props.updateWallet({ selectedWallet: walletName, walletOrder });
+			await this.props.updateWallet({selectedWallet: walletName, walletOrder});
 			
-			const { selectedCrypto } = this.props.wallet;
+			const {selectedCrypto} = this.props.wallet;
 			
-			await this.props.createWallet({ wallet: walletName, mnemonic, generateAllAddresses: mnemonic === "" });
-			
-			await this.restartElectrum({ coin: selectedCrypto });
+			await this.props.createWallet({wallet: walletName, mnemonic, generateAllAddresses: mnemonic === ""});
+			await this.setState({loadingMessage: "Connecting to Electrum...", loadingProgress: 0.8});
+			await this.restartElectrum({coin: selectedCrypto});
 			//Get Current Block Height
-			this.props.updateBlockHeight({ selectedCrypto });
+			this.props.updateBlockHeight({selectedCrypto});
 			
 			//There's no need to check address/transaction history for new, random mnemonics.
 			if (mnemonic !== "") {
 				await this.refreshWallet({ignoreLoading: false});
 			}
-			
+			await this.setState({loadingMessage: "Wallet Created!", loadingProgress: 1});
+			await pauseExecution(500);
 			this.resetView();
 		} catch (e) {
 			console.log(e);
@@ -1460,15 +1635,24 @@ export default class App extends Component {
 	
 	getBlacklistedUtxos = () => {
 		let blacklistedUtxos = [];
-		try { blacklistedUtxos = this.props.wallet.wallets[this.props.wallet.selectedWallet].blacklistedUtxos[this.props.wallet.selectedCrypto];} catch (e) {}
+		try {
+			blacklistedUtxos = this.props.wallet.wallets[this.props.wallet.selectedWallet].blacklistedUtxos[this.props.wallet.selectedCrypto];
+		} catch (e) {
+		}
 		return blacklistedUtxos;
 	};
 	
 	getWalletName = () => {
 		try {
 			const selectedWallet = this.props.wallet.selectedWallet;
-			try { if (this.props.wallet.wallets[selectedWallet].name.trim() !== "") return this.props.wallet.wallets[selectedWallet].name; } catch (e) {}
-			try { return `Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}`; } catch (e) {}
+			try {
+				if (this.props.wallet.wallets[selectedWallet].name.trim() !== "") return this.props.wallet.wallets[selectedWallet].name;
+			} catch (e) {
+			}
+			try {
+				return `Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}`;
+			} catch (e) {
+			}
 		} catch (e) {
 			return "?";
 		}
@@ -1479,20 +1663,31 @@ export default class App extends Component {
 		return (
 			<SafeAreaView style={styles.container}>
 				<StatusBar backgroundColor={colors.darkPurple} barStyle="light-content" animated={true} />
-				<Animated.View style={[styles.upperContent, { flex: this.state.upperContentFlex }]}>
-					<LinearGradient style={styles.linearGradient} colors={["#8e45bf", "#7931ab","#5e1993", "#59158e"]} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
+				<Animated.View style={[styles.upperContent, {flex: this.state.upperContentFlex}]}>
+					<LinearGradient
+						style={styles.linearGradient}
+						colors={["#8e45bf", "#7931ab", "#5e1993", "#59158e"]}
+						start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}
+					>
 						
-						<TouchableWithoutFeedback style={{ flex: 1 }} activeOpacity={1} onPress={this.dismissKeyboard}>
-							<View style={{ flex: 1 }}>
+						<TouchableWithoutFeedback style={{flex: 1}} activeOpacity={1} onPress={this.dismissKeyboard}>
+							<View style={{flex: 1}}>
 								{this.state.displayPriceHeader &&
-								<Animated.View style={[styles.settingsContainer, { opacity: this.state.priceHeaderOpacity, zIndex: 200 }]}>
-									<TouchableOpacity style={{ paddingTop: 10, paddingRight: 10, paddingLeft: 30, paddingBottom: 30 }} onPress={this.onSettingsPress}>
+								<Animated.View style={[styles.settingsContainer, {
+									opacity: this.state.priceHeaderOpacity,
+									zIndex: 200
+								}]}
+								>
+									<TouchableOpacity
+										style={{paddingTop: 10, paddingRight: 10, paddingLeft: 30, paddingBottom: 30}}
+										onPress={this.onSettingsPress}
+									>
 										<Ionicons name={"ios-cog"} size={30} color={colors.white} />
 									</TouchableOpacity>
 								</Animated.View>}
 								
 								{this.state.displayBiometrics &&
-								<Animated.View style={[styles.settings, { opacity: this.state.biometricsOpacity }]}>
+								<Animated.View style={[styles.settings, {opacity: this.state.biometricsOpacity}]}>
 									<Biometrics
 										biometricTypeSupported={this.props.settings.biometricTypeSupported}
 										retryAuthentication={this.state.displayBiometricAuthenticationRetry ? this.authenticateUserWithBiometrics : () => null}
@@ -1500,7 +1695,7 @@ export default class App extends Component {
 								</Animated.View>}
 								
 								{this.state.displayPin &&
-								<Animated.View style={[styles.settings, { opacity: this.state.pinOpacity }]}>
+								<Animated.View style={[styles.settings, {opacity: this.state.pinOpacity}]}>
 									<PinPad
 										updateSettings={this.props.updateSettings}
 										wipeDevice={this.props.wipeDevice}
@@ -1515,22 +1710,36 @@ export default class App extends Component {
 									loadingOpacity={this.state.loadingOpacity}
 									loadingMessage={this.state.loadingMessage}
 									loadingProgress={this.state.loadingProgress}
-									width={width/2}
+									width={width / 2}
 									animationName={this.state.loadingAnimationName}
 								/>}
 								
 								{this.state.displayCamera &&
-								<Animated.View style={[styles.camera, { opacity: this.state.cameraOpacity }]}>
-									<Camera onClose={this.state.optionSelected === "send" ? this.onSendPress : this.resetView} onBarCodeRead={this.onBarCodeRead} />
+								<Animated.View style={[styles.camera, {opacity: this.state.cameraOpacity}]}>
+									<Camera
+										onClose={this.state.optionSelected === "send" ? this.onSendPress : this.resetView}
+										onBarCodeRead={this.onBarCodeRead}
+									/>
 								</Animated.View>}
 								
 								{this.state.displaySettings &&
-								<Animated.View style={[styles.settings, { opacity: this.state.settingsOpacity }]}>
-									<Settings createNewWallet={this.createNewWallet} onBack={this.resetView} refreshWallet={this.refreshWallet} />
+								<Animated.View style={[styles.settings, {opacity: this.state.settingsOpacity}]}>
+									<Settings
+										createNewWallet={this.createNewWallet}
+										onBack={this.resetView}
+										refreshWallet={this.refreshWallet}
+									/>
 								</Animated.View>}
 								
-								<Animated.View style={[styles.priceHeader, { opacity: this.state.priceHeaderOpacity }]}>
-									<TouchableOpacity onPress={this.onSelectCoinPress} style={{ position: "absolute",top: 0, paddingTop: 10, paddingBottom: 20, paddingHorizontal: 30 }}>
+								<Animated.View style={[styles.priceHeader, {opacity: this.state.priceHeaderOpacity}]}>
+									<TouchableOpacity onPress={this.onSelectCoinPress} style={{
+										position: "absolute",
+										top: 0,
+										paddingTop: 10,
+										paddingBottom: 20,
+										paddingHorizontal: 30
+									}}
+									>
 										<Text style={styles.cryptoValue}>{this.getWalletName()}</Text>
 									</TouchableOpacity>
 									<Header
@@ -1547,33 +1756,55 @@ export default class App extends Component {
 								</Animated.View>
 								
 								{this.state.displayReceiveTransaction &&
-								<Animated.View style={[styles.ReceiveTransaction, { opacity: this.state.receiveTransactionOpacity }]}>
-									<ReceiveTransaction address={this.getQrCodeAddress()} selectedCrypto={this.props.wallet.selectedCrypto} size={200} />
+								<Animated.View
+									style={[styles.ReceiveTransaction, {opacity: this.state.receiveTransactionOpacity}]}
+								>
+									<ReceiveTransaction
+										address={this.getQrCodeAddress()}
+										selectedCrypto={this.props.wallet.selectedCrypto}
+										size={200}
+									/>
 								</Animated.View>}
 								
 								{this.state.displayTextInput &&
-								<Animated.View style={[styles.textFormContainer, { opacity: this.state.textInputOpacity }]}>
+								<Animated.View
+									style={[styles.textFormContainer, {opacity: this.state.textInputOpacity}]}
+								>
 									
-									<SendTransaction onCameraPress={this.onCameraPress} refreshWallet={this.refreshWallet} onClose={this.resetView} />
+									<SendTransaction
+										onCameraPress={this.onCameraPress}
+										refreshWallet={this.refreshWallet}
+										onClose={this.resetView}
+									/>
 								
 								</Animated.View>}
 								
 								{this.state.displaySweepPrivateKey &&
-								<Animated.View style={[styles.textFormContainer, { opacity: this.state.sweepPrivateKeyOpacity }]}>
+								<Animated.View
+									style={[styles.textFormContainer, {opacity: this.state.sweepPrivateKeyOpacity}]}
+								>
 									
-									<SweepPrivateKey privateKey={this.state.privateKey} refreshWallet={this.refreshWallet} onClose={this.resetView} updateXButton={this.updateItem} />
+									<SweepPrivateKey
+										privateKey={this.state.privateKey}
+										refreshWallet={this.refreshWallet} onClose={this.resetView}
+										updateXButton={this.updateItem}
+									/>
 								
 								</Animated.View>}
 								
 								{this.state.displayCameraRow &&
-								<Animated.View style={[styles.cameraRow, { opacity: this.state.cameraRowOpacity }]}>
-									<CameraRow onSendPress={this.onSendPress} onReceivePress={this.onReceivePress} onCameraPress={this.onCameraPress} />
+								<Animated.View style={[styles.cameraRow, {opacity: this.state.cameraRowOpacity}]}>
+									<CameraRow
+										onSendPress={this.onSendPress}
+										onReceivePress={this.onReceivePress}
+										onCameraPress={this.onCameraPress}
+									/>
 								</Animated.View>}
 							</View>
 						</TouchableWithoutFeedback>
 						
 						{this.state.displaySelectCoin &&
-						<Animated.View style={[styles.selectCoin, { opacity: this.state.selectCoinOpacity }]}>
+						<Animated.View style={[styles.selectCoin, {opacity: this.state.selectCoinOpacity}]}>
 							<SelectCoin
 								wallet={this.props.wallet}
 								onCoinPress={this.onCoinPress}
@@ -1588,12 +1819,12 @@ export default class App extends Component {
 					</LinearGradient>
 				</Animated.View>
 				
-				<Animated.View style={[styles.lowerContent, { flex: this.state.lowerContentFlex }]}>
+				<Animated.View style={[styles.lowerContent, {flex: this.state.lowerContentFlex}]}>
 					
-					<View style={{ flex: 1 }}>
+					<View style={{flex: 1}}>
 						
-						<View style={{ flex: 1 }}>
-							<Animated.View style={{ flex: 1, opacity: this.state.transactionListOpacity }}>
+						<View style={{flex: 1}}>
+							<Animated.View style={{flex: 1, opacity: this.state.transactionListOpacity}}>
 								<View style={styles.transactionListHeader}>
 									{!this.state.loadingTransactions &&
 									<TouchableOpacity onPress={this.refreshWallet} style={styles.refresh}>
@@ -1603,11 +1834,17 @@ export default class App extends Component {
 									<View style={styles.refresh}>
 										<ActivityIndicator size="small" color={colors.lightPurple} />
 									</View>}
-									<TouchableOpacity onPress={this.state.transactionsAreExpanded ? this.resetView : this.expandTransactions} style={styles.centerContent}>
+									<TouchableOpacity
+										onPress={this.state.transactionsAreExpanded ? this.resetView : this.expandTransactions}
+										style={styles.centerContent}
+									>
 										<Text style={styles.boldText}>Transactions</Text>
 									</TouchableOpacity>
 									
-									<TouchableOpacity onPress={this.state.transactionsAreExpanded ? this.resetView : this.expandTransactions} style={styles.expand}>
+									<TouchableOpacity
+										onPress={this.state.transactionsAreExpanded ? this.resetView : this.expandTransactions}
+										style={styles.expand}
+									>
 										{this.state.transactionsAreExpanded &&
 										<EvilIcon name={"chevron-down"} size={30} color={colors.darkPurple} />}
 										{!this.state.transactionsAreExpanded &&
@@ -1628,8 +1865,13 @@ export default class App extends Component {
 						</View>
 						
 						{this.state.displayTransactionDetail &&
-						<Animated.View style={[styles.transactionDetail, { opacity: this.state.transactionDetailOpacity }]}>
-							<TransactionDetail refreshWallet={this.refreshWallet} onTransactionPress={this.onTransactionPress} />
+						<Animated.View
+							style={[styles.transactionDetail, {opacity: this.state.transactionDetailOpacity}]}
+						>
+							<TransactionDetail
+								refreshWallet={this.refreshWallet}
+								onTransactionPress={this.onTransactionPress}
+							/>
 						</Animated.View>}
 					
 					</View>
@@ -1637,9 +1879,9 @@ export default class App extends Component {
 				</Animated.View>
 				
 				{this.state.displayXButton &&
-				<Animated.View style={[styles.xButton, { opacity: this.state.xButtonOpacity }]}>
+				<Animated.View style={[styles.xButton, {opacity: this.state.xButtonOpacity}]}>
 					<XButton
-						style={{ borderColor: this.state.displayTransactionList ? "transparent": colors.white }}
+						style={{borderColor: this.state.displayTransactionList ? "transparent" : colors.white}}
 						onPress={this.resetView}
 					/>
 				</Animated.View>}

@@ -1,7 +1,7 @@
 import React, {useEffect, memo} from "react";
 import {Animated, Image, StyleSheet, Text, View, LayoutAnimation, Platform} from "react-native";
 import PropTypes from "prop-types";
-import * as Progress from "react-native-progress";
+import ProgressBar from "./ProgressBar";
 import { systemWeights } from "react-native-typography";
 import EvilIcon from "react-native-vector-icons/EvilIcons";
 import LottieView from "lottie-react-native";
@@ -79,7 +79,7 @@ const _Loading = ({loadingOpacity = 0, loadingMessage = "Loading State", loading
 	return (
 		<Animated.View style={[styles.container, { ...style }]}>
 			<Animated.View style={[styles.loading, { opacity: loadingOpacity }]}>
-
+				
 				<View style={{ flex: 1, alignItems: "center", justifyContent: "flex-end", marginBottom: 10 }}>
 					{enableSpinner && !enableErrorIcon && !enableSuccessIcon &&
 					Icon()}
@@ -90,13 +90,13 @@ const _Loading = ({loadingOpacity = 0, loadingMessage = "Loading State", loading
 					<EvilIcon name={"exclamation"} size={110} color={colors.white} style={{ marginBottom: 10 }} />
 					}
 					{enableProgressBar &&
-					<Progress.Bar height={10} animated={true} animationType={"spring"} color={colors.white} progress={loadingProgress} width={width} />}
+					<ProgressBar progress={loadingProgress} height={7} width={width} />}
 				</View>
-
+				
 				<View style={{ flex: 1, alignItems: "center", justifyContent: "flex-start", marginTop: 10 }}>
 					<Text style={[styles.boldText, { ...textStyle }]}>{loadingMessage}</Text>
 				</View>
-
+			
 			</Animated.View>
 		</Animated.View>
 	);

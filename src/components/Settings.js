@@ -993,9 +993,9 @@ class Settings extends PureComponent {
 				</Animated.View>
 				
 				{this.state.displayPin &&
-					<View style={styles.settingContainer}>
+					<Animated.View style={[styles.settingContainer, { opacity: this.state.pinOpacity }]}>
 						<PinPad onSuccess={this.onPinSuccess} pinSetup={true} updateSettings={this.props.updateSettings} />
-					</View>
+					</Animated.View>
 				}
 				
 				{this.state.displayBackupPhrase &&
