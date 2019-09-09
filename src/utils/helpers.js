@@ -7,6 +7,7 @@ import NetInfo from "@react-native-community/netinfo";
 import * as Keychain from "react-native-keychain";
 import { decode as atob } from 'base-64';
 import "../../shim";
+import { randomBytes } from "react-native-randombytes";
 
 const {
 	networks
@@ -15,10 +16,12 @@ const {
 	walletHelpers
 } = require("./walletApi");
 const bitcoin = require("bitcoinjs-lib");
+const bitcoinMessage = require("bitcoinjs-message");
 const bip39 = require("bip39");
 const bip32 = require("bip32");
 const moment = require("moment");
 const bip21 = require("bip21");
+const Url = require("url-parse");
 const {
 	availableCoins,
 	supportsRbf
@@ -822,6 +825,107 @@ const base64UrlToBase64 = (input: string) => {
 	return input;
 };
 
+const signMessage = async ({ message = "", addressType = "bech32", path = "m/84'/0'/0'/0/0", selectedWallet = "wallet0", selectedCrypto = "bitcoin" } = {}) => {
+	try {
+		if (message === "") return { error: true, data: "No message to sign." };
+		const network = networks[selectedCrypto];
+		const messagePrefix = network.messagePrefix;
+		
+		//Fetch Keypair
+		const keychainResult = await getKeychainValue({ key: selectedWallet });
+		if (keychainResult.error === true) return;
+		
+		//Attempt to acquire the bip39Passphrase if available
+		let bip39Passphrase = "";
+		try {
+			const key = `${selectedWallet}passphrase`;
+			const bip39PassphraseResult = await getKeychainValue({ key });
+			if (bip39PassphraseResult.error === false && bip39PassphraseResult.data.password) bip39Passphrase = bip39PassphraseResult.data.password;
+		} catch (e) {}
+		
+		const mnemonic = keychainResult.data.password;
+		const seed = bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
+		const root = bip32.fromSeed(seed, network);
+		const keyPair = root.derivePath(path);
+		const privateKey = keyPair.privateKey;
+		
+		let sigOptions = { extraEntropy: randomBytes(32) };
+		if (addressType === "bech32") sigOptions["segwitType"] = "p2wpkh" ;
+		if (addressType === "segwit") sigOptions["segwitType"] = "p2sh(p2wpkh)" ;
+		
+		let signature = "";
+		if (addressType === "legacy") {
+			signature = bitcoinMessage.sign(message, privateKey, keyPair);
+		} else {
+			signature = bitcoinMessage.sign(message, privateKey, keyPair.compressed, messagePrefix, sigOptions);
+		}
+		signature = signature.toString("base64");
+		
+		const address = await getAddress(keyPair, network, addressType);
+		const isVerified = verifyMessage({ message, address, signature, messagePrefix });
+		if (isVerified === true) return { error: false, data: { address, message, signature } };
+		return { error: true, data: "Unable to verify signature." };
+	} catch (e) {
+		return { error: true, data: e };
+	}
+};
+
+const verifyMessage = ({ message = "", address = "", signature = "", messagePrefix = "" } = {}) => {
+	try {
+		return bitcoinMessage.verify(message, address, signature, messagePrefix);
+	} catch (e) {
+		console.log(e);
+		return false;
+	}
+};
+
+const getBaseDerivationPath = ({ keyDerivationPath = "84", selectedCrypto = "bitcoin" }) => {
+	try {
+		const networkType = getNetworkType(selectedCrypto);
+		const networkValue = networkType === "testnet" ? "1" : "0";
+		return `m/${keyDerivationPath}'/0'/0'/${networkValue}/0`;
+	} catch (e) {
+		return { error: true, data: e };
+	}
+};
+
+const decodeURLParams = (url) => {
+	const hashes = url.slice(url.indexOf("?") + 1).split("&");
+	return hashes.reduce((params, hash) => {
+		const split = hash.indexOf("=");
+		if (split < 0) return Object.assign(params, {[hash]: null});
+		const key = hash.slice(0, split);
+		const val = hash.slice(split + 1);
+		return Object.assign(params, { [key]: decodeURIComponent(val) });
+	}, {});
+};
+
+const loginWithBitid = async ({ url = "", addressType = "bech32", keyDerivationPath, selectedCrypto, selectedWallet } ={}) => {
+	try {
+		//Get the base derivation path based on the current derivation path key.
+		const path = getBaseDerivationPath({ keyDerivationPath, selectedCrypto });
+		//Sign the message
+		const signMessageResponse = await signMessage(
+			{
+				message: url,
+				addressType,
+				path,
+				selectedWallet,
+				selectedCrypto
+			});
+		//Check for signing error
+		if (signMessageResponse.error) return { error: true, data: signMessageResponse.data };
+		const { address, signature } = signMessageResponse.data;
+		const parsedURL = new Url(url);
+		const response = await fetch(`https://${parsedURL.hostname}${parsedURL.pathname}`, fetchData("POST", {uri: url, address, signature}));
+		const responseJson = await response.json();
+		return { error: false, data: responseJson };
+	} catch (e) {
+		console.log(e);
+		return { error: true, data: e };
+	}
+};
+
 module.exports = {
 	base64UrlToHex,
 	getItem,
@@ -857,5 +961,10 @@ module.exports = {
 	nthIndex,
 	formatNumber,
 	removeAllButFirstInstanceOfPeriod,
-	decodeOpReturnMessage
+	decodeOpReturnMessage,
+	signMessage,
+	verifyMessage,
+	decodeURLParams,
+	getBaseDerivationPath,
+	loginWithBitid
 };

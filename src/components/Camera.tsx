@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, {memo, useState} from "react";
 import {
 	StyleSheet,
 	View,
@@ -15,13 +15,13 @@ const {
 		colors
 	}
 } = require("../../ProjectData.json");
-let _data = "";
 
 interface CameraComponent {
 	onBarCodeRead: Function,
 	onClose: Function
 }
 const _Camera = ({ onBarCodeRead = () => null, onClose = () => null }: CameraComponent) => {
+	const [_data, useData] = useState("");
 	const notAuthorizedView = (
 		<View style={styles.notAuthorizedView}>
 			<EvilIcon name={"exclamation"} size={60} color={colors.white} />
@@ -41,7 +41,7 @@ const _Camera = ({ onBarCodeRead = () => null, onClose = () => null }: CameraCom
 				style={styles.container}
 				onBarCodeRead={({ data }) => {
 					if (_data !== data) {
-						_data = data;
+						useData(data);
 						onBarCodeRead(data);
 					}
 				}}

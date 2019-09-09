@@ -21,6 +21,7 @@ import ImportPhrase from "./ImportPhrase";
 import ElectrumOptions from "./ElectrumOptions";
 import SettingSwitch from "./SettingSwitch";
 import SettingGeneral from "./SettingGeneral";
+import SignMessage from "./SignMessage";
 import * as electrum from "../utils/electrum";
 
 const {
@@ -125,6 +126,9 @@ class Settings extends PureComponent {
 			
 			displayImportPhrase: false,
 			importPhraseOpacity: new Animated.Value(0),
+			
+			displaySignMessage: false,
+			signMessageOpacity: new Animated.Value(0),
 			
 			displayElectrumOptions: false,
 			electrumOptionsOpacity: new Animated.Value(0),
@@ -443,6 +447,16 @@ class Settings extends PureComponent {
 				this.updateItems(items);
 				return;
 			}
+			if (this.state.displaySignMessage) {
+				//Hide SignMessage component
+				//Show the Settings View
+				const items = [
+					{ stateId: "displaySignMessage", opacityId: "signMessageOpacity", display: false },
+					{ stateId: "displaySettings", opacityId: "settingsOpacity", display: true }
+				];
+				this.updateItems(items);
+				return;
+			}
 			if (this.state.displayElectrumOptions) {
 				//Hide ImportPhrase component
 				//Show the Settings View
@@ -509,6 +523,18 @@ class Settings extends PureComponent {
 		try {
 			const items = [
 				{ stateId: "displayImportPhrase", opacityId: "importPhraseOpacity", display },
+				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: !display },
+			];
+			this.updateItems(items);
+		} catch (e) {
+		
+		}
+	};
+	
+	toggleSignMessage = async ({ display = false }) => {
+		try {
+			const items = [
+				{ stateId: "displaySignMessage", opacityId: "signMessageOpacity", display },
 				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: !display },
 			];
 			this.updateItems(items);
@@ -586,7 +612,7 @@ class Settings extends PureComponent {
 		try {
 			const wallet = this.props.wallet.selectedWallet;
 			const key = `${wallet}passphrase`;
-			this.setState({ bip39PassphraseIsSet: false });
+			this.setState({ bip39PassphraseIsSet: false, bip39Passphrase: "" });
 			await resetKeychainValue({ key });
 			await this._resetWalletForPassphrase();
 			this.rescanWallet();
@@ -962,8 +988,15 @@ class Settings extends PureComponent {
 								options:[
 									{value: "Remove Passphrase", onPress: this.removeBip39Passphrase }
 								]
-							})
-							}
+							})}
+							
+							{this.MultiOptionRow({
+								title: "Sign Messages",
+								currentValue: addressType,
+								options:[
+									{value: "Sign", onPress: () => this.toggleSignMessage({ display: true }) }
+								]
+							})}
 							
 							<SettingGeneral
 								title="Backup Wallet"
@@ -1014,6 +1047,19 @@ class Settings extends PureComponent {
 				{this.state.displayImportPhrase &&
 				<Animated.View style={[styles.settingContainer, { opacity: this.state.importPhraseOpacity, zIndex: 500 }]}>
 					<ImportPhrase onBack={this.onBack} createNewWallet={this.props.createNewWallet} />
+				</Animated.View>
+				}
+				
+				{this.state.displaySignMessage &&
+				<Animated.View style={[styles.settingContainer, { opacity: this.state.signMessageOpacity, zIndex: 500 }]}>
+					<SignMessage
+						selectedCrypto={selectedCrypto}
+						selectedWallet={selectedWallet}
+						derivationPath={this.props.wallet.wallets[selectedWallet].keyDerivationPath[selectedCrypto]}
+						addressType={this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto]}
+						onBack={this.onBack}
+						addresses={this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto]}
+					/>
 				</Animated.View>
 				}
 				

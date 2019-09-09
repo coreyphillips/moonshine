@@ -30,6 +30,7 @@ import CameraRow from "./src/components/CameraRow";
 import ReceiveTransaction from "./src/components/ReceiveTransaction";
 import TransactionList from "./src/components/TransactionList";
 import TransactionDetail from "./src/components/TransactionDetail";
+import Button from "./src/components/Button";
 import XButton from "./src/components/XButton";
 import Camera from "./src/components/Camera";
 import SelectCoin from "./src/components/SelectCoin";
@@ -42,10 +43,11 @@ import Loading from "./src/components/Loading";
 import * as electrum from "./src/utils/electrum";
 import nodejs from "nodejs-mobile-react-native";
 import bitcoinUnits from "bitcoin-units";
+import DefaultModal from "./src/components/DefaultModal";
 //import ElectrumTesting from "./src/components/ElectrumTesting";
 const uuidv4 = require("uuid/v4");
 const {UIManager} = NativeModules;
-
+const Url = require("url-parse");
 const {
 	Constants: {
 		colors
@@ -61,7 +63,8 @@ const {
 	getInfoFromAddressPath,
 	getExchangeRate,
 	validatePrivateKey,
-	getTransactionSize
+	getTransactionSize,
+	loginWithBitid
 } = require("./src/utils/helpers");
 const {width} = Dimensions.get("window");
 const bip39 = require("bip39");
@@ -116,6 +119,9 @@ export default class App extends Component {
 		displayTransactionList: false,
 		transactionListOpacity: new Animated.Value(0),
 		
+		displayBitidModal: false,
+		bitidData: { uri: "", host: "" },
+		
 		appState: AppState.currentState,
 		appHasLoaded: false,
 		
@@ -123,6 +129,7 @@ export default class App extends Component {
 		I do wonder how long it will take for someone to find and sweep this private key...
 		Addr: bc1qcgt450ctz7c0zpgzq0wmua3je7mmpzzed9wyfg
 		Priv: L323HBXNkhn4ogPvmMZBa5fFVE7BjL6f5osyXYxmVsUjNoBvYAHG
+		Update: Congrats to whoever managed to find and sweep this key! Thank you for taking the time to check out my code, you are awesome :-)
 		*/
 		//Only used to pass as a prop to SweepPrivateKey when sweeping a private key.
 		privateKey: "",
@@ -1465,6 +1472,41 @@ export default class App extends Component {
 		});
 	};
 	
+	_closeBitidModal = () => {
+		try {
+			this.setState({ displayBitidModal: false, bitidData: { uri: "", host: "" } });
+		} catch (e) {}
+	};
+	
+	_loginWithBitid = async () => {
+		try {
+			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			const keyDerivationPath = this.props.wallet.wallets[selectedWallet].keyDerivationPath[selectedCrypto];
+			const addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
+			let url = "";
+			try {url = this.state.bitidData["uri"];} catch (e) {}
+			if (url === "") {
+				this._closeBitidModal();
+				alert("Invalid URI");
+				return;
+			}
+			await Promise.all([
+				loginWithBitid({
+					url,
+					addressType,
+					keyDerivationPath,
+					selectedCrypto,
+					selectedWallet
+				}),
+				this.setState({ displayBitidModal: false, bitidData: { uri: "", host: "" } })
+			]);
+			//Allows the BitidModal enough time to remove itself before removing it's text/content.
+			setTimeout(() => {
+				this.setState({ bitidData: { uri: "", host: "" } });
+			}, 1000);
+		} catch (e) {}
+	};
+	
 	//Handles any BarCodeRead action.
 	onBarCodeRead = async (data) => {
 		try {
@@ -1478,7 +1520,6 @@ export default class App extends Component {
 			//Determine if we need to sweep a private key
 			const validatePrivateKeyResults = await validatePrivateKey(data);
 			if (validatePrivateKeyResults.isPrivateKey === true) {
-				
 				//Remove Camera View
 				await this.updateItem({stateId: "displayCamera", opacityId: "cameraOpacity", display: false});
 				this.onSweep(data);
@@ -1486,13 +1527,16 @@ export default class App extends Component {
 			}
 			
 			//Check if this is a BitId Request
-			//TODO: Complete this BitId function.
-			if (data.substr(0, 5).toLowerCase() === "bitid") {
-				//Present user with the option to sign and send the request.
-				//Remove Camera View
-				await this.updateItem({stateId: "displayCamera", opacityId: "cameraOpacity", display: false});
-				//Reveal Sign Message View
-				//await this.updateSignMessage({ display: true });
+			if (data.includes("bitid:")) {
+				try {
+					//Remove Camera & Reset View
+					await this.updateItem({stateId: "displayCamera", opacityId: "cameraOpacity", display: false});
+					await this.resetView();
+					//Present user with the option to sign and send the request.
+					const parsedURL = new Url(data);
+					this.setState({displayBitidModal: true, bitidData: {uri: data, host: parsedURL.hostname}});
+				} catch (e) {alert("Unable to parse Bitid URL.");}
+				return;
 			}
 			
 			const qrCodeData = await parsePaymentRequest(data);
@@ -1836,7 +1880,7 @@ export default class App extends Component {
 									</View>}
 									<TouchableOpacity
 										onPress={this.state.transactionsAreExpanded ? this.resetView : this.expandTransactions}
-										style={styles.centerContent}
+										style={[styles.centerContent, { flex: 2 }]}
 									>
 										<Text style={styles.boldText}>Transactions</Text>
 									</TouchableOpacity>
@@ -1885,6 +1929,25 @@ export default class App extends Component {
 						onPress={this.resetView}
 					/>
 				</Animated.View>}
+				
+				<DefaultModal
+					isVisible={this.state.displayBitidModal}
+					onClose={this._closeBitidModal}
+					type="View"
+					style={styles.modal}
+					contentStyle={styles.modalContent}
+				>
+					<View style={styles.centerContent}>
+						<Text style={styles.boldText}>Do you want to login to:</Text>
+						<Text style={[styles.text, { marginTop: 10, color: colors.purple }]}>{this.state.bitidData["host"]}</Text>
+					</View>
+					<View style={[styles.centerContent, { flexDirection: "row" }]}>
+						<Button textStyle={styles.text} gradient={true} style={styles.button} text="Cancel" onPress={this._closeBitidModal} />
+						<View style={{marginHorizontal: 10}} />
+						<Button textStyle={styles.text} gradient={true} style={styles.button} text="Login" onPress={this._loginWithBitid} />
+					</View>
+				</DefaultModal>
+				
 			</SafeAreaView>
 		);
 	}
@@ -1905,7 +1968,7 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.white
 	},
 	centerContent: {
-		flex: 2,
+		flex: 1,
 		alignItems: "center",
 		justifyContent: "center"
 	},
@@ -1981,8 +2044,14 @@ const styles = StyleSheet.create({
 		borderBottomColor: colors.gray
 	},
 	boldText: {
-		...systemWeights.bold,
+		...systemWeights.semibold,
 		color: colors.purple,
+		fontSize: 20,
+		textAlign: "center"
+	},
+	text: {
+		...systemWeights.light,
+		color: colors.white,
 		fontSize: 20,
 		textAlign: "center"
 	},
@@ -2018,6 +2087,22 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		textAlign: "center",
 		backgroundColor: "transparent"
+	},
+	modal: {
+		flex: 0,
+		height: "40%",
+		width: "100%",
+	},
+	modalContent: {
+		borderWidth: 5,
+		borderRadius: 20,
+		borderColor: colors.lightGray
+	},
+	button: {
+		backgroundColor: colors.lightPurple,
+		minWidth: "20%",
+		paddingHorizontal: 15,
+		paddingVertical: 9,
 	},
 });
 

@@ -31,6 +31,7 @@
     "bip39": "^2.5.0",
     "bitcoin-units": "^0.3.0",
     "bitcoinjs-lib": "^5.1.2",
+    "bitcoinjs-message": "^2.1.0",
     "buffer": "^5.2.1",
     "crypto": "^1.0.1",
     "events": "^3.0.0",
@@ -63,6 +64,7 @@
     "redux-persist": "^5.10.0",
     "redux-thunk": "^2.3.0",
     "stream-browserify": "^1.0.0",
+    "url-parse": "^1.4.7",
     "uuid": "^3.3.2",
     "vm-browserify": "^1.1.0"
   },

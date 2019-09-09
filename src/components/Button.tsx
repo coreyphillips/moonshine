@@ -3,10 +3,12 @@ import {
 	StyleSheet,
 	Text,
 	TouchableOpacity,
-	ActivityIndicator
+	ActivityIndicator,
+	View
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
+import LinearGradient from "react-native-linear-gradient";
 
 const {
 	Constants: {
@@ -24,28 +26,52 @@ interface ButtonComponent {
 	disabled?: boolean,
 	style?: object,
 	titleStyle?: object,
-	textStyle?: object
+	textStyle?: object,
+	gradient?: boolean
 }
-const _Button = ({ title = "", onPress = () => null, text = "", activeOpacity = 0, text2 = "", loading = false, disabled = false, style = {}, titleStyle = {}, textStyle = {} }: ButtonComponent) => {
+const _Button = ({ title = "", onPress = () => null, text = "", activeOpacity = 0.6, text2 = "", loading = false, disabled = false, style = {}, titleStyle = {}, textStyle = {}, gradient = false }: ButtonComponent) => {
 	const _handleOnPress = () => {
 		if (!disabled || !loading) onPress();
 	};
-	return (
-		<TouchableOpacity style={[styles.container, { ...style }]} onPress={_handleOnPress} activeOpacity={activeOpacity} disabled={disabled || loading}>
+	const color = disabled ? colors.gray : colors.white;
+	const opacity = disabled ? 0.4 : 1;
+	
+	const ButtonContent = () => (
+		<View>
 			{loading &&
 			<ActivityIndicator size="small" color={colors.white} />
 			}
 			{title !== "" && !loading &&
-			<Text style={[styles.title, { ...titleStyle }]}>{title}</Text>
+			<Text style={[styles.title, { color, ...titleStyle }]}>{title}</Text>
 			}
 			{text !== "" && !loading &&
-			<Text style={[styles.text, {...textStyle}]}>{text}</Text>
+			<Text style={[styles.text, { color, ...textStyle}]}>{text}</Text>
 			}
 			{text2 !== "" && !loading &&
-			<Text style={[styles.text, {...textStyle}]}>{text2}</Text>
+			<Text style={[styles.text, { color, ...textStyle}]}>{text2}</Text>
 			}
-		</TouchableOpacity>
+		</View>
 	);
+	
+	if (gradient) {
+		return (
+			<TouchableOpacity onPress={_handleOnPress} activeOpacity={activeOpacity}>
+				<LinearGradient
+					style={[styles.container, { borderColor: color, opacity, ...style }]}
+					colors={["#8e45bf", "#7931ab", "#5e1993", "#59158e"]}
+					start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}
+				>
+					<ButtonContent />
+				</LinearGradient>
+			</TouchableOpacity>
+		)
+	} else {
+		return (
+			<TouchableOpacity style={[styles.container, { borderColor: color, opacity, ...style }]} onPress={_handleOnPress} activeOpacity={activeOpacity} disabled={disabled || loading}>
+				<ButtonContent />
+			</TouchableOpacity>
+		);
+	}
 };
 
 _Button.propTypes = {
@@ -58,13 +84,13 @@ _Button.propTypes = {
 	loading: PropTypes.bool,
 	style: PropTypes.object,
 	titleStyle: PropTypes.object,
-	textStyle: PropTypes.object
+	textStyle: PropTypes.object,
+	gradient: PropTypes.bool
 };
 
 const styles = StyleSheet.create({
 	container: {
-		backgroundColor: "#813fb1",
-		borderWidth: 2,
+		borderWidth: 1.2,
 		borderRadius: 10,
 		paddingHorizontal: 15,
 		paddingVertical: 12,

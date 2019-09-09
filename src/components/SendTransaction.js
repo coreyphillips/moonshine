@@ -960,7 +960,7 @@ class SendTransaction extends Component {
 											/>
 										</View>
 										<View>
-											<Button title="Send" onPress={this.sendTransaction} />
+											<Button style={{ backgroundColor: "transparent" }} title="Send" onPress={this.sendTransaction} activeOpacity={0.6} />
 										</View>
 									</View>
 								</View>
