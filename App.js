@@ -1660,7 +1660,6 @@ export default class App extends Component {
 			const {selectedCrypto} = this.props.wallet;
 			
 			await this.props.createWallet({wallet: walletName, mnemonic, generateAllAddresses: mnemonic === ""});
-			await this.setState({loadingMessage: "Connecting to Electrum...", loadingProgress: 0.8});
 			await this.restartElectrum({coin: selectedCrypto});
 			//Get Current Block Height
 			this.props.updateBlockHeight({selectedCrypto});

@@ -940,28 +940,25 @@ class SendTransaction extends Component {
 								</View>
 								<View style={{ flex: 0.2, justifyContent: "flex-end" }}>
 									<View style={{ flexDirection: "row", justifyContent: "space-evenly", alignItems: "center" }}>
-										<View>
-											<Button
-												title="Copy TxHex"
-												loading={this.state.generatingTxHex}
-												onPress={async () => {
-													this.setState({ generatingTxHex: true });
-													let rawTx = await this.createTransaction();
-													if (rawTx.error === true) {
-														await this.setState({ generatingTxHex: false });
-														alert(JSON.stringify(rawTx));
-														return;
-													}
-													rawTx = rawTx.data;
+										<Button
+											title="Copy TxHex"
+											loading={this.state.generatingTxHex}
+											style={{ backgroundColor: "#813fb1" }}
+											onPress={async () => {
+												this.setState({ generatingTxHex: true });
+												let rawTx = await this.createTransaction();
+												if (rawTx.error === true) {
 													await this.setState({ generatingTxHex: false });
-													this.copyRawTx(rawTx);
-													if (this.state.rawTx !== rawTx) this.setState({ rawTx });
-												}}
-											/>
-										</View>
-										<View>
-											<Button style={{ backgroundColor: "transparent" }} title="Send" onPress={this.sendTransaction} activeOpacity={0.6} />
-										</View>
+													alert(JSON.stringify(rawTx));
+													return;
+												}
+												rawTx = rawTx.data;
+												await this.setState({ generatingTxHex: false });
+												this.copyRawTx(rawTx);
+												if (this.state.rawTx !== rawTx) this.setState({ rawTx });
+											}}
+										/>
+										<Button style={{ backgroundColor: "#813fb1" }} title="Send" onPress={this.sendTransaction} activeOpacity={0.6} />
 									</View>
 								</View>
 							</View>
