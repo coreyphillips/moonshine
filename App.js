@@ -207,9 +207,8 @@ export default class App extends Component {
 				});
 				return;
 			}
-			
-			if (this.state.loadingTransactions !== true) this.setState({loadingTransactions: true});
 			InteractionManager.runAfterInteractions(() => {
+				if (this.state.loadingTransactions !== true) this.setState({loadingTransactions: true});
 				this.refreshWallet({reconnectToElectrum: !sameCoin});
 			});
 		} catch (e) {
@@ -315,15 +314,16 @@ export default class App extends Component {
 		
 		//If online, connect to an electrum server.
 		if (isConnected) {
+			//Push user to the default view while the rest of the wallet data loads.
+			if (resetView) await this.resetView();
 			this.refreshWallet({ignoreLoading: !displayLoading});
 		} else {
 			//Device is offline. Ensure any loading animations are disabled.
 			await pauseExecution();
 			if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
+			//Push user to the default view.
+			if (resetView) await this.resetView();
 		}
-		
-		//Push user to the default view while the rest of the wallet data loads.
-		if (resetView) this.resetView();
 	};
 	
 	refreshWallet = async ({ignoreLoading = false, reconnectToElectrum = true} = {}) => {
@@ -1376,15 +1376,17 @@ export default class App extends Component {
 			{stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false, duration: 200},
 			{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: true, duration: 600}
 		];
-		this.updateItem({
-			stateId: "displayLoading",
-			opacityId: "loadingOpacity",
-			display: false,
-			duration: 200,
-			endToEndAnimation: false
-		});
-		this.updateItems(items);
-		this.updateFlex({duration: 400});
+		await Promise.all([
+			this.updateItem({
+				stateId: "displayLoading",
+				opacityId: "loadingOpacity",
+				display: false,
+				duration: 200,
+				endToEndAnimation: false
+			}),
+			this.updateItems(items),
+			this.updateFlex({duration: 400})
+		]);
 		InteractionManager.runAfterInteractions(() => {
 			this.props.updateWallet({selectedTransaction: ""});
 			this.setState({
