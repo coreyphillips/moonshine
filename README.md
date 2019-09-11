@@ -66,6 +66,7 @@ If you are looking for secure cold storage solutions please consider purchasing 
     * *Partially Complete (0.1.1)* - Add support for UTXO blacklisting - Blacklist functionality can be accessed via the Transaction Detail view for now.
         * This allows users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo excludes it's amount from the wallet's total balance.
 * 0.3.0 Alpha
+    * *Complete (0.2.0)* - Sign & Verify Messages
     * Add support for Lightning via Neutrino
     * Transition to TypeScript
     * Add a UTXO selector to create custom transactions
