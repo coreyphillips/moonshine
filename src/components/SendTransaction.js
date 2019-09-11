@@ -805,6 +805,8 @@ class SendTransaction extends Component {
 						<TextInput
 							style={styles.textInput}
 							autoCapitalize="none"
+							autoCompleteType="off"
+							autoCorrect={false}
 							selectionColor={colors.lightPurple}
 							onChangeText={(address) => this.props.updateTransaction({ address })}
 							value={this.props.transaction.address}
@@ -828,6 +830,8 @@ class SendTransaction extends Component {
 						<TextInput
 							style={[styles.textInput, { backgroundColor: this.state.spendMaxAmount ? colors.gray : colors.white }]}
 							selectionColor={colors.lightPurple}
+							autoCompleteType="off"
+							autoCorrect={false}
 							onChangeText={(amount) => this.updateAmount(amount)}
 							value={this.getTextInputAmount()}
 							editable={!this.state.spendMaxAmount}
@@ -857,6 +861,8 @@ class SendTransaction extends Component {
 						<TextInput
 							maxLength={80}
 							autoCapitalize="none"
+							autoCompleteType="off"
+							autoCorrect={false}
 							placeholder="Anything entered here will be public"
 							style={[styles.textInput, { borderRadius: 5 }]}
 							selectionColor={colors.lightPurple}

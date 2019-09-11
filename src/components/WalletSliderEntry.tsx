@@ -105,14 +105,6 @@ const _WalletSliderEntry = ({ walletId = "bitcoin", wallet = { wallets: {}, sele
 		}
 	};
 	
-	const Header = () => (
-		<View style={styles.header}>
-			<Text style={styles.headerText}>
-				{getWalletName()}
-			</Text>
-		</View>
-	);
-	
 	const _delWallet = async ({ walletIndex = 0 } = {}) => {
 		try {
 			if (Object.keys(wallet.wallets).length > 1) {
@@ -172,7 +164,13 @@ const _WalletSliderEntry = ({ walletId = "bitcoin", wallet = { wallets: {}, sele
 	return (
 		<View style={styles.container}>
 			<ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} style={styles.innerContainer}>
-				<Header />
+				
+				<View style={styles.header}>
+					<Text style={styles.headerText}>
+						{getWalletName()}
+					</Text>
+				</View>
+				
 				<View style={styles.scrollViewContent}>
 					{availableCoins.map((coin, i) => {
 						if (!displayTestnet && coin.toLowerCase().includes("testnet")) return;
@@ -193,7 +191,9 @@ const _WalletSliderEntry = ({ walletId = "bitcoin", wallet = { wallets: {}, sele
 						<Text style={[styles.text, { color: colors.white }]}>Delete Wallet</Text>
 					</TouchableOpacity>}
 				</View>
+				
 				<View style={{ paddingVertical: 70 }} />
+				
 			</ScrollView>
 		
 		</View>

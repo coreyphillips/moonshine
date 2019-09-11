@@ -111,6 +111,8 @@ const _SignMessage = (
 					style={styles.textInput}
 					selectionColor={colors.lightPurple}
 					autoCapitalize="none"
+					autoCompleteType="off"
+					autoCorrect={false}
 					onChangeText={(message) => setMessage(message)}
 					value={message}
 					multiline={true}
@@ -121,6 +123,7 @@ const _SignMessage = (
 					<Text style={styles.header}>Signature:</Text>
 					<View style={{ paddingVertical: 2.5 }} />
 					<ShareButtons
+						textContainerStyle={{ borderRadius: 10 }}
 						text={signature}
 						shareMessage={shareMessage}
 						shareTitle={shareTitle}
@@ -158,14 +161,18 @@ const _SignMessage = (
 						<Text style={[styles.text, { color: colors.purple, textAlign: "left" }]}>{address}</Text>
 					</TouchableOpacity>
 				))}
-				<View style={{ paddingVertical: "40%" }} />
 			</DefaultModal>
 		</View>
 	);
 };
 
 _SignMessage.propTypes = {
-	onBack: PropTypes.func.isRequired
+	onBack: PropTypes.func.isRequired,
+	selectedCrypto: PropTypes.string.isRequired,
+	selectedWallet: PropTypes.string.isRequired,
+	derivationPath: PropTypes.string.isRequired,
+	addressType: PropTypes.string.isRequired,
+	addresses: PropTypes.array.isRequired
 };
 
 const styles = StyleSheet.create({
@@ -219,7 +226,7 @@ const styles = StyleSheet.create({
 		fontWeight: "bold"
 	},
 	text: {
-		...systemWeights.thin,
+		...systemWeights.semibold,
 		color: colors.white,
 		textAlign: "center",
 		backgroundColor: "transparent",
@@ -240,9 +247,9 @@ const styles = StyleSheet.create({
 	},
 	pathRow: {
 		alignItems: "flex-start",
-		marginBottom: 10,
 		borderBottomColor: colors.gray,
-		borderBottomWidth: 2
+		borderBottomWidth: 2,
+		paddingVertical: 10
 	}
 });
 

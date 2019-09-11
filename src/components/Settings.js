@@ -22,6 +22,7 @@ import ElectrumOptions from "./ElectrumOptions";
 import SettingSwitch from "./SettingSwitch";
 import SettingGeneral from "./SettingGeneral";
 import SignMessage from "./SignMessage";
+import VerifyMessage from "./VerifyMessage";
 import * as electrum from "../utils/electrum";
 
 const {
@@ -129,6 +130,9 @@ class Settings extends PureComponent {
 			
 			displaySignMessage: false,
 			signMessageOpacity: new Animated.Value(0),
+			
+			displayVerifyMessage: false,
+			verifyMessageOpacity: new Animated.Value(0),
 			
 			displayElectrumOptions: false,
 			electrumOptionsOpacity: new Animated.Value(0),
@@ -274,12 +278,12 @@ class Settings extends PureComponent {
 									style={styles.textInput}
 									secureTextEntry={secureTextEntry}
 									autoCapitalize="none"
+									autoCompleteType="off"
+									autoCorrect={false}
 									selectionColor={colors.lightPurple}
 									onChangeText={onChangeText}
 									value={currentValue}
 									placeholder={subTitle}
-									autoCorrect={false}
-									autoCompleteType={"off"}
 								/>
 							</View>
 							<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginHorizontal: 20 }}>
@@ -457,6 +461,16 @@ class Settings extends PureComponent {
 				this.updateItems(items);
 				return;
 			}
+			if (this.state.displayVerifyMessage) {
+				//Hide VerifyMessage component
+				//Show the Settings View
+				const items = [
+					{ stateId: "displayVerifyMessage", opacityId: "verifyMessageOpacity", display: false },
+					{ stateId: "displaySettings", opacityId: "settingsOpacity", display: true }
+				];
+				this.updateItems(items);
+				return;
+			}
 			if (this.state.displayElectrumOptions) {
 				//Hide ImportPhrase component
 				//Show the Settings View
@@ -535,6 +549,18 @@ class Settings extends PureComponent {
 		try {
 			const items = [
 				{ stateId: "displaySignMessage", opacityId: "signMessageOpacity", display },
+				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: !display },
+			];
+			this.updateItems(items);
+		} catch (e) {
+		
+		}
+	};
+	
+	toggleVerifyMessage = async ({ display = false }) => {
+		try {
+			const items = [
+				{ stateId: "displayVerifyMessage", opacityId: "verifyMessageOpacity", display },
 				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: !display },
 			];
 			this.updateItems(items);
@@ -991,10 +1017,11 @@ class Settings extends PureComponent {
 							})}
 							
 							{this.MultiOptionRow({
-								title: "Sign Messages",
+								title: "Sign & Verify Messages",
 								currentValue: addressType,
 								options:[
-									{value: "Sign", onPress: () => this.toggleSignMessage({ display: true }) }
+									{value: "Sign", onPress: () => this.toggleSignMessage({ display: true }) },
+									{value: "Verify", onPress: () => this.toggleVerifyMessage({ display: true }) }
 								]
 							})}
 							
@@ -1059,6 +1086,15 @@ class Settings extends PureComponent {
 						addressType={this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto]}
 						onBack={this.onBack}
 						addresses={this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto]}
+					/>
+				</Animated.View>
+				}
+				
+				{this.state.displayVerifyMessage &&
+				<Animated.View style={[styles.settingContainer, { opacity: this.state.verifyMessageOpacity, zIndex: 500 }]}>
+					<VerifyMessage
+						selectedCrypto={selectedCrypto}
+						onBack={this.onBack}
 					/>
 				</Animated.View>
 				}

@@ -54,6 +54,9 @@ class ElectrumInput extends PureComponent {
 						selectionColor={colors.lightPurple}
 						onChangeText={(host) => this.props.onChangeText({coin: this.props.coin, value: { host, port: this.props.port } })}
 						value={this.props.host}
+						autoCapitalize="none"
+						autoCompleteType="off"
+						autoCorrect={false}
 						multiline={false}
 						placeholder={this.props.hostPlaceholder}
 					/>
@@ -63,6 +66,8 @@ class ElectrumInput extends PureComponent {
 					<TextInput
 						style={styles.textInput}
 						autoCapitalize="none"
+						autoCompleteType="off"
+						autoCorrect={false}
 						selectionColor={colors.lightPurple}
 						keyboardType="decimal-pad"
 						onChangeText={(port) =>  {if (!isNaN(port) || port === "") this.props.onChangeText({coin: this.props.coin, value: { port, host: this.props.host } });}}

@@ -36,23 +36,6 @@ const _Button = ({ title = "", onPress = () => null, text = "", activeOpacity = 
 	const color = disabled ? colors.gray : colors.white;
 	const opacity = disabled ? 0.4 : 1;
 	
-	const ButtonContent = () => (
-		<View>
-			{loading &&
-			<ActivityIndicator size="small" color={colors.white} />
-			}
-			{title !== "" && !loading &&
-			<Text style={[styles.title, { color, ...titleStyle }]}>{title}</Text>
-			}
-			{text !== "" && !loading &&
-			<Text style={[styles.text, { color, ...textStyle}]}>{text}</Text>
-			}
-			{text2 !== "" && !loading &&
-			<Text style={[styles.text, { color, ...textStyle}]}>{text2}</Text>
-			}
-		</View>
-	);
-	
 	if (gradient) {
 		return (
 			<TouchableOpacity onPress={_handleOnPress} activeOpacity={activeOpacity}>
@@ -61,14 +44,36 @@ const _Button = ({ title = "", onPress = () => null, text = "", activeOpacity = 
 					colors={["#8e45bf", "#7931ab", "#5e1993", "#59158e"]}
 					start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}
 				>
-					<ButtonContent />
+					{loading &&
+					<ActivityIndicator size="small" color={colors.white} />
+					}
+					{title !== "" && !loading &&
+					<Text style={[styles.title, { color, ...titleStyle }]}>{title}</Text>
+					}
+					{text !== "" && !loading &&
+					<Text style={[styles.text, { color, ...textStyle}]}>{text}</Text>
+					}
+					{text2 !== "" && !loading &&
+					<Text style={[styles.text, { color, ...textStyle}]}>{text2}</Text>
+					}
 				</LinearGradient>
 			</TouchableOpacity>
 		)
 	} else {
 		return (
 			<TouchableOpacity style={[styles.container, { borderColor: color, opacity, ...style }]} onPress={_handleOnPress} activeOpacity={activeOpacity} disabled={disabled || loading}>
-				<ButtonContent />
+				{loading &&
+				<ActivityIndicator size="small" color={colors.white} />
+				}
+				{title !== "" && !loading &&
+				<Text style={[styles.title, { color, ...titleStyle }]}>{title}</Text>
+				}
+				{text !== "" && !loading &&
+				<Text style={[styles.text, { color, ...textStyle}]}>{text}</Text>
+				}
+				{text2 !== "" && !loading &&
+				<Text style={[styles.text, { color, ...textStyle}]}>{text2}</Text>
+				}
 			</TouchableOpacity>
 		);
 	}

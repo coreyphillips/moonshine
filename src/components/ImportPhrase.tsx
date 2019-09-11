@@ -110,6 +110,8 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 					style={styles.textInput}
 					selectionColor={colors.lightPurple}
 					autoCapitalize="none"
+					autoCompleteType="off"
+					autoCorrect={false}
 					onChangeText={(mnemonic) => updateMnemonic(mnemonic)}
 					value={mnemonic}
 					multiline={true}

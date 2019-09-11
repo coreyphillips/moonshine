@@ -862,7 +862,7 @@ const signMessage = async ({ message = "", addressType = "bech32", path = "m/84'
 		signature = signature.toString("base64");
 		
 		const address = await getAddress(keyPair, network, addressType);
-		const isVerified = verifyMessage({ message, address, signature, messagePrefix });
+		const isVerified = verifyMessage({ message, address, signature, selectedCrypto });
 		if (isVerified === true) return { error: false, data: { address, message, signature } };
 		return { error: true, data: "Unable to verify signature." };
 	} catch (e) {
@@ -870,8 +870,10 @@ const signMessage = async ({ message = "", addressType = "bech32", path = "m/84'
 	}
 };
 
-const verifyMessage = ({ message = "", address = "", signature = "", messagePrefix = "" } = {}) => {
+const verifyMessage = ({ message = "", address = "", signature = "", selectedCrypto = "" } = {}) => {
 	try {
+		const network = networks[selectedCrypto];
+		const messagePrefix = network.messagePrefix;
 		return bitcoinMessage.verify(message, address, signature, messagePrefix);
 	} catch (e) {
 		console.log(e);
