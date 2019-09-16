@@ -1091,16 +1091,12 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		paddingHorizontal: 5,
-		borderWidth: 1,
-		borderColor: colors.white,
 		backgroundColor: colors.white
 	},
 	rightIconContainer: {
 		backgroundColor: "transparent",
 		alignItems: "center",
 		justifyContent: "center",
-		borderWidth: 1,
-		borderColor: colors.white,
 		paddingHorizontal: 5,
 		borderTopRightRadius: 5,
 		borderBottomRightRadius: 5,
