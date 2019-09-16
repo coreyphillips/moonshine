@@ -23,28 +23,28 @@ import EvilIcon from "react-native-vector-icons/EvilIcons";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import LinearGradient from "react-native-linear-gradient";
 import TouchID from "react-native-touch-id";
-import "./shim";
+import "../../shim";
 
-import Header from "./src/components/Header";
-import CameraRow from "./src/components/CameraRow";
-import ReceiveTransaction from "./src/components/ReceiveTransaction";
-import TransactionList from "./src/components/TransactionList";
-import TransactionDetail from "./src/components/TransactionDetail";
-import Button from "./src/components/Button";
-import XButton from "./src/components/XButton";
-import Camera from "./src/components/Camera";
-import SelectCoin from "./src/components/SelectCoin";
-import SendTransaction from "./src/components/SendTransaction";
-import SweepPrivateKey from "./src/components/SweepPrivateKey";
-import Settings from "./src/components/Settings";
-import Biometrics from "./src/components/Biometrics";
-import PinPad from "./src/components/PinPad";
-import Loading from "./src/components/Loading";
-import * as electrum from "./src/utils/electrum";
+import Header from "./Header";
+import CameraRow from "./CameraRow";
+import ReceiveTransaction from "./ReceiveTransaction";
+import TransactionList from "./TransactionList";
+import TransactionDetail from "./TransactionDetail";
+import Button from "./Button";
+import XButton from "./XButton";
+import Camera from "./Camera";
+import SelectCoin from "./SelectCoin";
+import SendTransaction from "./SendTransaction";
+import SweepPrivateKey from "./SweepPrivateKey";
+import Settings from "./Settings";
+import Biometrics from "./Biometrics";
+import PinPad from "./PinPad";
+import Loading from "./Loading";
+import * as electrum from "../utils/electrum";
 import nodejs from "nodejs-mobile-react-native";
 import bitcoinUnits from "bitcoin-units";
-import DefaultModal from "./src/components/DefaultModal";
-//import ElectrumTesting from "./src/components/ElectrumTesting";
+import DefaultModal from "./DefaultModal";
+//import ElectrumTesting from "./ElectrumTesting";
 const uuidv4 = require("uuid/v4");
 const {UIManager} = NativeModules;
 const Url = require("url-parse");
@@ -52,7 +52,7 @@ const {
 	Constants: {
 		colors
 	}
-} = require("./ProjectData.json");
+} = require("../../ProjectData.json");
 const {
 	parsePaymentRequest,
 	getDifferenceBetweenDates,
@@ -65,7 +65,7 @@ const {
 	validatePrivateKey,
 	getTransactionSize,
 	loginWithBitid
-} = require("./src/utils/helpers");
+} = require("../utils/helpers");
 const {width} = Dimensions.get("window");
 const bip39 = require("bip39");
 const moment = require("moment");
@@ -2109,10 +2109,10 @@ const styles = StyleSheet.create({
 
 const connect = require("react-redux").connect;
 const bindActionCreators = require("redux").bindActionCreators;
-const userActions = require("./src/actions/user");
-const walletActions = require("./src/actions/wallet");
-const settingsActions = require("./src/actions/settings");
-const transactionActions = require("./src/actions/transaction");
+const userActions = require("../actions/user");
+const walletActions = require("../actions/wallet");
+const settingsActions = require("../actions/settings");
+const transactionActions = require("../actions/transaction");
 
 const mapStateToProps = ({...state}) => ({
 	...state

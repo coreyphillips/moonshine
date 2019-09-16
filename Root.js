@@ -1,13 +1,11 @@
-// @flow
-
 import React from "react";
 import {
 	SafeAreaView,
 	StyleSheet
 } from "react-native";
-import App from "../../App";
+import App from "./src/components/App";
 import { createStore, applyMiddleware } from "redux";
-import reducers from "../reducers/index";
+import reducers from "./src/reducers";
 import thunk from "redux-thunk";
 import logger from "redux-logger";
 import { PersistGate } from "redux-persist/integration/react";
@@ -17,7 +15,7 @@ const {
 	Constants: {
 		colors
 	}
-} = require("../../ProjectData.json");
+} = require("./ProjectData.json");
 
 const Provider = require("react-redux").Provider;
 const { persistStore, persistReducer } = require("redux-persist");
