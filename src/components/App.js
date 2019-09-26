@@ -840,20 +840,6 @@ export default class App extends Component {
 				this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
 				
 				try {
-					//Determine if the user has any existing wallets. Create a new wallet if so.
-					let walletLength = 0;
-					try {
-						walletLength = this.props.wallet.walletOrder.length;
-					} catch (e) {
-					}
-					if (walletLength < 1) {
-						this.createWallet("wallet0", true);
-						return;
-					}
-				} catch (e) {
-				}
-				
-				try {
 					//Check if Biometrics is Enabled
 					if (this.props.settings.biometrics) {
 						this.onBiometricsPress();
@@ -872,16 +858,6 @@ export default class App extends Component {
 				}
 			}
 			try {
-				/*
-				 const { selectedCrypto } = this.props.wallet;
-				 await nodejs.start("main.js");
-				 await electrum.stop({ coin: selectedCrypto });
-				 await electrum.start({
-				 coin: selectedCrypto,
-				 peers: this.props.settings.peers[selectedCrypto],
-				 customPeers: this.props.settings.customPeers[selectedCrypto]
-				 });
-				 */
 				//Resume normal operations
 				this.launchDefaultFuncs({displayLoading: false, resetView: false});
 			} catch (e) {
