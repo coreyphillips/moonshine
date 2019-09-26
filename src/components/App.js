@@ -320,9 +320,11 @@ export default class App extends Component {
 		} else {
 			//Device is offline. Ensure any loading animations are disabled.
 			await pauseExecution();
-			if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
 			//Push user to the default view.
 			if (resetView) await this.resetView();
+			InteractionManager.runAfterInteractions(() => {
+				if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
+			});
 		}
 	};
 	
@@ -680,10 +682,14 @@ export default class App extends Component {
 			}
 			
 			//Cease the loading state.
-			if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
+			InteractionManager.runAfterInteractions(() => {
+				if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
+			});
 		} catch (e) {
 			console.log(e);
-			if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
+			InteractionManager.runAfterInteractions(() => {
+				if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
+			});
 		}
 	};
 	

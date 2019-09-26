@@ -6,14 +6,14 @@ import {
 	StyleSheet,
 	Dimensions,
 	ScrollView,
-	Image,
 	Alert,
 	LayoutAnimation,
 	Platform
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
-import bitcoinUnits from "bitcoin-units";
+import CoinButton from "./CoinButton";
+
 const {
 	Constants: {
 		colors
@@ -21,66 +21,12 @@ const {
 } = require("../../ProjectData.json");
 const { height, width } = Dimensions.get("window");
 const {
-	formatNumber,
 	capitalize
 } = require("../utils/helpers");
 
 const {
-	availableCoins,
-	getCoinImage,
-	getCoinData
+	availableCoins
 } = require("../utils/networks");
-
-interface FormatBalance {
-	coin: string,
-	cryptoUnit: string,
-	balance: number
-}
-const formatBalance = ({ coin = "", cryptoUnit = "satoshi", balance = 0 }: FormatBalance): string => {
-	try {
-		let formattedBalance = "0";
-		if (balance === 0 && cryptoUnit === "BTC") {
-			formattedBalance = "0";
-		} else {
-			//This prevents the view from displaying 0 for values less than 50000 BTC
-			if (balance < 50000 && cryptoUnit === "BTC") {
-				formattedBalance = `${(Number(balance) * 0.00000001).toFixed(8)}`;
-			} else {
-				formattedBalance = bitcoinUnits(balance, "satoshi").to(cryptoUnit).value();
-			}
-		}
-		formattedBalance = formatNumber(formattedBalance);
-		return `${formattedBalance} ${getCoinData({ selectedCrypto: coin, cryptoUnit }).acronym}`;
-	} catch (e) {
-		return "0";
-	}
-};
-
-interface CoinButtonComponent {
-	onCoinPress: Function,
-	cryptoUnit: string,
-	coin: string,
-	label: string,
-	walletId: string,
-	balance: number
-}
-const CoinButton = ({ onCoinPress, cryptoUnit = "satoshi", coin = "bitcoin", label = "Bitcoin", walletId = "wallet0", balance = 0 }: CoinButtonComponent) => {
-	return (
-		<TouchableOpacity key={`${coin}${walletId}`} onPress={() => onCoinPress({coin, walletId})} style={styles.button}>
-			<View style={styles.buttonContent}>
-				
-				<Image
-					style={styles.buttonImage}
-					source={getCoinImage(coin)}
-				/>
-				
-				<Text style={styles.text}>{label}</Text>
-				<Text style={styles.subText}>{formatBalance({ balance, coin, cryptoUnit })}</Text>
-			
-			</View>
-		</TouchableOpacity>
-	);
-};
 
 interface WalletSliderEntryComponent {
 	walletId: string,
@@ -237,13 +183,6 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "flex-start"
 	},
-	button: {
-		width: "82%",
-		minHeight: 80,
-		flexDirection: "row",
-		backgroundColor: "transparent",
-		marginBottom: 15
-	},
 	deleteButton: {
 		width: "82%",
 		minHeight: 80,
@@ -254,29 +193,8 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center"
 	},
-	buttonContent: {
-		flex: 1,
-		alignItems: "center",
-		borderRadius: 40,
-		justifyContent: "center",
-		backgroundColor: colors.white
-	},
-	buttonImage: {
-		width: 48,
-		height: 48,
-		position: "absolute",
-		alignItems: "center",
-		justifyContent: "center",
-		left: 10
-	},
 	text: {
 		...systemWeights.semibold,
-		color: colors.purple,
-		fontSize: 18,
-		textAlign: "center"
-	},
-	subText: {
-		...systemWeights.regular,
 		color: colors.purple,
 		fontSize: 18,
 		textAlign: "center"
