@@ -22,30 +22,22 @@ As with any hot wallet, please ensure that you keep only a small, responsible am
 
 If you are looking for secure cold storage solutions please consider purchasing a [Trezor](https://wallet.trezor.io) or a [Ledger](https://www.ledger.com/)
 
-## Installation
-#### Without LND:
-1. LND isn't fully implemented in this app yet so if you do not wish to use Lightning or go through the process of generating any .aar & .framework files you can simply checkout the commit prior to the LND implementation and run the project like so:
-    ```
-    git clone https://github.com/coreyphillips/moonshine
-    cd moonshine
-    git checkout 79d1e65879dac8dc2fd5bcd4401ec8e462100813
-    yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../ && cd ios && pod install && cd ..
-    react-native run ios or react-native run-android
-    ```
-#### With LND:
-1. Generate the Lndmobile.aar & Lndmobile.framework files:
-    * For the most recent build to work you will need to generate the Lndmobile.aar & Lndmobile.framework files and add them to `moonshine/android/Lndmobile` & `moonshine/ios/lightning` respectively. The instructions to generate these files can be found [here](https://github.com/lightningnetwork/lnd/pull/3282) for now.
-2. Clone and Install Project Dependencies:
+### Installation
+1. First and foremost, we need to generate the Lndmobile.aar & Lndmobile.framework files. To generate these files, please follow the instructions detailed in the README of Lightning Lab's Lightning App [here](https://github.com/lightninglabs/lightning-app/tree/master/mobile):
+2. Clone Moonshine and Install Dependencies:
    ```
     git clone https://github.com/coreyphillips/moonshine
     cd moonshine
-    yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../
+    yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../ && cd ios && pod install && cd ..
     ```
-3. Add the Lndmobile.aar file to `moonshine/android/Lndmobile` and Lndmobile.framework file to `moonshine/ios/lightning` and run the project:
-    ```
-    react-native run ios or react-native run-android
-    ```
-## Roadmap
+3. Add the Lndmobile.aar & Lndmobile.framework files to the project:
+    - Add the Lndmobile.aar file to `moonshine/android/Lndmobile`
+    - Add the Lndmobile.framework file to `moonshine/ios/lightning`
+
+4. Start the project:
+    - iOS: `react-native run-ios`
+    - Android: `react-native run-android`
+### Roadmap
 
 * 0.1.0 Alpha - *Complete*
     * Bitcoin/Litecoin Mainnet & Testnet supported
@@ -67,14 +59,14 @@ If you are looking for secure cold storage solutions please consider purchasing 
         * This allows users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo excludes it's amount from the wallet's total balance.
 * 0.3.0 Alpha
     * *Complete (0.2.0)* - Sign & Verify Messages
-    * Add support for Lightning via Neutrino
+    * *In Progress* - Add support for Lightning via Neutrino
     * Transition to TypeScript
     * Add a UTXO selector to create custom transactions
         * This will allow users to select from a list of available utxo's to include in their transaction.
     * Add support for additional currencies in the settings
     * Allow users to manually select which public Electrum servers to randomly use if not connecting to their own node
     
-## Contributing
+### Contributing
 
 1. Fork it (<https://github.com/coreyphillips/moonshine>)
 2. Create your feature branch (`git checkout -b feature/fooBar`)
@@ -82,19 +74,19 @@ If you are looking for secure cold storage solutions please consider purchasing 
 4. Push to the branch (`git push origin feature/fooBar`)
 5. Create a new Pull Request
 
-## Altcoin Support
+### Altcoin Support
 Please be aware and take note that my primary focus is on expanding the core functionality of this wallet and not on adding altcoins. However, for those wishing to add a specific altcoin for personal use, I have created the following guide so that you may fork off in a proper fashion:
 [Altcoin Implementation Guide](https://gist.github.com/coreyphillips/91de5d15964797054988522664cc3150)
  
  If you have any questions regarding this guide I'm always happy to help so don't hesitate to reach out.
 
-## Support
+### Support
 
 Supported Derivation Paths: m/0' | 44' | 49' | 84' /0'/0'
 
 If you have any questions, feature requests, etc., please feel free to create an issue on [Github](https://github.com/coreyphillips/moonshine/issues), reach out to me on [Twitter](https://twitter.com/coreylphillips) or send an email to corey@ferrymanfin.com.
 
-## Meta
+### Meta
 
 Corey Phillips – [@coreylphillips](https://twitter.com/coreylphillips)
 
@@ -102,9 +94,9 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
 
 [https://github.com/coreyphillips/moonshine](https://github.com/coreyphillips/moonshine)
 
-## License [MIT](https://github.com/coreyphillips/moonshine/blob/master/LICENSE)
+### License [MIT](https://github.com/coreyphillips/moonshine/blob/master/LICENSE)
 
-## Acknowledgments
+### Acknowledgments
 * Giant shoutout to the authors and contributors of the following projects along with everyone who has taken the time to provide feedback and help me through this process of learning and development. You are all awesome:
     * [bitcoinjs-lib](https://github.com/bitcoinjs/bitcoinjs-lib)
         * For providing a powerful library with detailed documentation capable of handling all of the necessary client-side, Bitcoin-related heavy-lifting.
