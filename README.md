@@ -29,7 +29,7 @@ If you are looking for secure cold storage solutions please consider purchasing 
     git clone https://github.com/coreyphillips/moonshine
     cd moonshine
     git checkout 79d1e65879dac8dc2fd5bcd4401ec8e462100813
-    yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../
+    yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../ && cd ios && pod install && cd ..
     react-native run ios or react-native run-android
     ```
 #### With LND:

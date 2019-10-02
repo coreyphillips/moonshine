@@ -10,6 +10,7 @@ import thunk from "redux-thunk";
 import logger from "redux-logger";
 import { PersistGate } from "redux-persist/integration/react";
 import LinearGradient from "react-native-linear-gradient";
+import AsyncStorage from "@react-native-community/async-storage";
 
 const {
 	Constants: {
@@ -21,11 +22,9 @@ const Provider = require("react-redux").Provider;
 const { persistStore, persistReducer } = require("redux-persist");
 const createStoreWithMiddleware = applyMiddleware(thunk, logger)(createStore);
 
-import storage from 'redux-persist/lib/storage'; // defaults to localStorage for web and AsyncStorage for react-native
-
 const persistConfig = {
 	key: 'root',
-	storage,
+	storage: AsyncStorage,
 };
 
 const persistedReducer = persistReducer(persistConfig, reducers);

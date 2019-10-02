@@ -5,7 +5,7 @@ import {
 import AsyncStorage from "@react-native-community/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 import * as Keychain from "react-native-keychain";
-import { decode as atob } from 'base-64';
+//import { decode as atob } from 'base-64';
 import "../../shim";
 import { randomBytes } from "react-native-randombytes";
 
@@ -427,7 +427,7 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 			} catch (e) {}
 			
 			const mnemonic = keychainResult.data.password;
-			const seed = bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
+			const seed = await bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
 			const root = bip32.fromSeed(seed, network);
 			let txb = new bitcoin.TransactionBuilder(network);
 
@@ -549,9 +549,8 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 			} catch (e) {}
 			
 			const mnemonic = keychainResult.data.password;
-			const seed = bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
+			const seed = await bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
 			const root = bip32.fromSeed(seed, network);
-
 			let addresses = [];
 			let changeAddresses = [];
 
@@ -796,35 +795,6 @@ const decodeOpReturnMessage = (opReturn = "") => {
 	}
 };
 
-const base64UrlToHex = (input: string) => {
-	const raw = atob(base64UrlToBase64(input));
-	let HEX = '';
-	
-	for (let i = 0; i < raw.length; i++) {
-		const hexChar = raw.charCodeAt(i).toString(16);
-		HEX += (hexChar.length === 2 ? hexChar : '0' + hexChar);
-	}
-	return HEX.toUpperCase();
-};
-
-const base64UrlToBase64 = (input: string) => {
-	// Replace non-url compatible chars with base64 standard chars
-	input = input
-		.replace(/-/g, '+')
-		.replace(/_/g, '/');
-	
-	// Pad out with standard base64 required padding characters
-	const pad = input.length % 4;
-	if (pad) {
-		if (pad === 1) {
-			throw new Error('InvalidLengthError: Input base64url string is the wrong length to determine padding');
-		}
-		input += new Array(5-pad).join('=');
-	}
-	
-	return input;
-};
-
 const signMessage = async ({ message = "", addressType = "bech32", path = "m/84'/0'/0'/0/0", selectedWallet = "wallet0", selectedCrypto = "bitcoin" } = {}) => {
 	try {
 		if (message === "") return { error: true, data: "No message to sign." };
@@ -844,7 +814,7 @@ const signMessage = async ({ message = "", addressType = "bech32", path = "m/84'
 		} catch (e) {}
 		
 		const mnemonic = keychainResult.data.password;
-		const seed = bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
+		const seed = await bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
 		const root = bip32.fromSeed(seed, network);
 		const keyPair = root.derivePath(path);
 		const privateKey = keyPair.privateKey;
@@ -929,7 +899,6 @@ const loginWithBitid = async ({ url = "", addressType = "bech32", keyDerivationP
 };
 
 module.exports = {
-	base64UrlToHex,
 	getItem,
 	setItem,
 	setKeychainValue,
