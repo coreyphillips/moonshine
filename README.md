@@ -27,7 +27,7 @@ If you are looking for secure cold storage solutions please consider purchasing 
     - Option 1 - Generate them locally:
         - To generate these files, please follow the instructions detailed in the README of Lightning Lab's Lightning App [here.](https://github.com/lightninglabs/lightning-app/tree/master/mobile)
     - Option 2 - Download pre-generated files:
-        - If you do not wish to generate these files locally you can download them [here](https://github.com/coreyphillips/moonshine/releases/tag/v0.2.0-1) instead. However, I highly recommend you opt for option 1.
+        - If you do not wish to generate these files locally you can download them [here](https://github.com/coreyphillips/moonshine/releases/tag/v0.2.0-2) instead. However, I highly recommend you opt for option 1.
 2. Clone Moonshine and Install Dependencies:
    ```
     git clone https://github.com/coreyphillips/moonshine
