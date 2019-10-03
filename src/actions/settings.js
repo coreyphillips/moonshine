@@ -12,7 +12,7 @@ export const updateSettings = (payload) => ({
 	payload
 });
 
-export const updatePeersList = ({ peerList = [], coin = "bitcoin"} = {}) => (dispatch: any) => {
+export const updatePeersList = ({ peerList = [], coin = "bitcoin"} = {}) => (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (errorTitle = "", errorMsg = "") => {
 			resolve({ error: true, errorTitle, errorMsg });
@@ -44,7 +44,7 @@ export const updatePeersList = ({ peerList = [], coin = "bitcoin"} = {}) => (dis
 	});
 };
 
-export const wipeDevice = () => (dispatch: any) => {
+export const wipeDevice = () => (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (errorTitle = "", errorMsg = "") => {
 			resolve({ error: true, errorTitle, errorMsg });

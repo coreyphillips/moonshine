@@ -54,7 +54,7 @@ const getExchangeRate = ({ selectedCoin = "bitcoin", selectedCurrency = "usd", s
 	});
 };
 
-const deleteWallet = ({ wallet } = {}) => async (dispatch: any) => {
+const deleteWallet = ({ wallet } = {}) => async (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({error: true, data});
@@ -77,7 +77,7 @@ const deleteWallet = ({ wallet } = {}) => async (dispatch: any) => {
 	});
 };
 
-const createWallet = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressAmount = 2, changeAddressAmount = 2, mnemonic = "", generateAllAddresses = true, keyDerivationPath = "84" } = {}) => async (dispatch: any) => {
+const createWallet = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressAmount = 2, changeAddressAmount = 2, mnemonic = "", generateAllAddresses = true, keyDerivationPath = "84" } = {}) => async (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({error: true, data});
@@ -159,7 +159,7 @@ const createWallet = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressA
 	});
 };
 
-const resetUtxos = ({wallet = "wallet0", addresses = [], changeAddresses = [], currentBlockHeight = 0, selectedCrypto = "bitcoin"} = {}) => async (dispatch: any) => {
+const resetUtxos = ({wallet = "wallet0", addresses = [], changeAddresses = [], currentBlockHeight = 0, selectedCrypto = "bitcoin"} = {}) => async (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({error: true, data});
@@ -200,7 +200,7 @@ const resetUtxos = ({wallet = "wallet0", addresses = [], changeAddresses = [], c
 	});
 };
 
-const addTransaction = ({ wallet = "wallet0", transaction = {}, selectedCrypto = "bitcoin", rbfData = {} } = {}) => async (dispatch: any) => {
+const addTransaction = ({ wallet = "wallet0", transaction = {}, selectedCrypto = "bitcoin", rbfData = {} } = {}) => async (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({ error: true, data });
@@ -223,7 +223,7 @@ const addTransaction = ({ wallet = "wallet0", transaction = {}, selectedCrypto =
 	});
 };
 
-const updateBalance = ({ wallet = "wallet0", utxos = [], blacklistedUtxos = [], selectedCrypto = "bitcoin" } = {}) => async (dispatch: any) => {
+const updateBalance = ({ wallet = "wallet0", utxos = [], blacklistedUtxos = [], selectedCrypto = "bitcoin" } = {}) => async (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({ error: true, data });
@@ -265,7 +265,7 @@ const updateBalance = ({ wallet = "wallet0", utxos = [], blacklistedUtxos = [], 
 	});
 };
 
-const updateBlockHeight = ({ selectedCrypto = "bitcoin" } = {}) => async (dispatch: any) => {
+const updateBlockHeight = ({ selectedCrypto = "bitcoin" } = {}) => async (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({ error: true, data });
@@ -297,7 +297,7 @@ const updateBlockHeight = ({ selectedCrypto = "bitcoin" } = {}) => async (dispat
 	});
 };
 
-const addAddresses = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressAmount = 5, changeAddressAmount = 5, addressIndex = 0, changeAddressIndex = 0, keyDerivationPath = "84" }) => async (dispatch: any) => {
+const addAddresses = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressAmount = 5, changeAddressAmount = 5, addressIndex = 0, changeAddressIndex = 0, keyDerivationPath = "84" }) => async (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({error: true, data});
@@ -327,7 +327,7 @@ const addAddresses = ({ wallet = "wallet0", selectedCrypto = "bitcoin", addressA
 	});
 };
 
-const toggleUtxoBlacklist = ({ transaction = "", selectedWallet = "wallet0", selectedCrypto = "" } = {}) => async (dispatch: any) => {
+const toggleUtxoBlacklist = ({ transaction = "", selectedWallet = "wallet0", selectedCrypto = "" } = {}) => async (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({error: true, data});
@@ -350,7 +350,7 @@ const toggleUtxoBlacklist = ({ transaction = "", selectedWallet = "wallet0", sel
 	});
 };
 
-const initialImportSync = ({ wallet = "wallet0", selectedCrypto = "bitcoin", currentBlockHeight = 0, keyDerivationPath = "84" }) => async (dispatch: any) => {
+const initialImportSync = ({ wallet = "wallet0", selectedCrypto = "bitcoin", currentBlockHeight = 0, keyDerivationPath = "84" }) => async (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({ error: true, data });
@@ -446,7 +446,7 @@ const initialImportSync = ({ wallet = "wallet0", selectedCrypto = "bitcoin", cur
 	});
 };
 
-const updateRbfData = ({ wallet = "wallet0", selectedCrypto = "", rbfData = {} } = {}) => async (dispatch: any) => {
+const updateRbfData = ({ wallet = "wallet0", selectedCrypto = "", rbfData = {} } = {}) => async (dispatch) => {
 	return new Promise(async (resolve) => {
 		try {
 			const payload = {
@@ -464,7 +464,7 @@ const updateRbfData = ({ wallet = "wallet0", selectedCrypto = "", rbfData = {} }
 	});
 };
 
-const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAddresses = [], addressIndex = 0, changeAddressIndex = 0, selectedCrypto = "bitcoin", currentBlockHeight = 0, keyDerivationPath = "84", addressType = "bech32" } = {}) => async (dispatch: any) => {
+const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAddresses = [], addressIndex = 0, changeAddressIndex = 0, selectedCrypto = "bitcoin", currentBlockHeight = 0, keyDerivationPath = "84", addressType = "bech32" } = {}) => async (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (data) => {
 			resolve({ error: true, data });
@@ -513,10 +513,10 @@ const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAdd
 				
 				if (transactions.error === false && transactions.data.length) allTransactions = allTransactions.concat(transactions.data);
 				
-				addressIndex = transactions.lastUsedAddress !== null ? transactions.lastUsedAddress + 1 : addressIndex;
+				if (transactions.lastUsedAddress !== null) addressIndex = transactions.lastUsedAddress + 1;
 				foundLastUsedAddress = transactions.lastUsedAddress === null || transactions.lastUsedAddress < addresses.length - 1;
 				
-				changeAddressIndex = transactions.lastUsedChangeAddress !== null ? transactions.lastUsedChangeAddress + 1 : changeAddressIndex;
+				if (transactions.lastUsedChangeAddress !== null) changeAddressIndex =  transactions.lastUsedChangeAddress + 1;
 				foundLastUsedChangeAddress = transactions.lastUsedChangeAddress === null || transactions.lastUsedChangeAddress < changeAddresses.length - 1;
 				
 				allAddresses = [];

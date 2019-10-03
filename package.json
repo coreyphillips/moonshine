@@ -4,13 +4,13 @@
   "description": "An open-source, non-custodial, Bitcoin/Litecoin Electrum wallet for iOS & Android.",
   "author": "Corey Phillips",
   "license": "MIT",
-  "homepage": "https://github.com/coreyphillips/bitbip",
+  "homepage": "https://github.com/coreyphillips/moonshine",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/coreyphillips/bitbip.git"
+    "url": "git+https://github.com/coreyphillips/moonshine.git"
   },
   "bugs": {
-    "url": "https://github.com/coreyphillips/bitbip/issues"
+    "url": "https://github.com/coreyphillips/moonshine/issues"
   },
   "scripts": {
     "android": "react-native run-android",
@@ -43,8 +43,8 @@
     "prop-types": "^15.7.2",
     "protobufjs": "^6.8.8",
     "query-string": "^6.8.3",
-    "react": "16.9.0",
-    "react-native": "0.61.1",
+    "react": "^16.10.1",
+    "react-native": "^0.61.2",
     "react-native-camera": "git+https://git@github.com/react-native-community/react-native-camera.git",
     "react-native-crypto": "^2.2.0",
     "react-native-keychain": "^4.0.0",
@@ -85,6 +85,7 @@
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.15.0",
+    "eslint-plugin-react-hooks": "^2.1.1",
     "eslint-plugin-react-native": "^3.7.0",
     "jest": "^24.9.0",
     "metro-react-native-babel-preset": "^0.56.0",

@@ -948,7 +948,7 @@ SendTransaction.defaultProps = {
 };
 
 SendTransaction.propTypes = {
-	refreshWallet: PropTypes.func.isRequired, // ({ ignoreLoading: bool })
+	refreshWallet: PropTypes.func.isRequired,
 	onClose: PropTypes.func.isRequired
 };
 
@@ -956,34 +956,6 @@ SendTransaction.propTypes = {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1
-	},
-	xButton: {
-		position: "absolute",
-		alignItems: "center",
-		left: 0,
-		right: 0,
-		bottom: Platform.OS === "ios" ? 60 : 30,
-		zIndex: 200
-	},
-	copiedContainer: {
-		flex: 1,
-		backgroundColor: colors.white,
-		position: "absolute",
-		left: 0,
-		top: 0,
-		bottom: 0,
-		right: 0
-	},
-	copied: {
-		flex: 1,
-		alignItems: "center",
-		justifyContent: "center"
-	},
-	copiedText: {
-		...systemWeights.bold,
-		color: colors.purple,
-		fontSize: 16,
-		textAlign: "center"
 	},
 	text: {
 		...systemWeights.regular,
@@ -1004,67 +976,6 @@ const styles = StyleSheet.create({
 		fontSize: 26,
 		textAlign: "center"
 	},
-	textInputRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center"
-	},
-	textInput: {
-		flex: 1,
-		height: 30,
-		borderTopLeftRadius: 5,
-		borderBottomLeftRadius: 5,
-		paddingLeft: 5,
-		backgroundColor: colors.white,
-		paddingTop: 0,
-		paddingBottom: 0,
-		color: colors.purple,
-		fontWeight: "bold"
-	},
-	cameraIcon: {
-		alignItems: "flex-end"
-	},
-	rotatedIcon: {
-		transform: [{ rotate: "90deg"}],
-		marginRight: 3
-	},
-	boldPurpleText: {
-		...systemWeights.bold,
-		color: colors.purple,
-		fontSize: 16
-	},
-	purpleText: {
-		...systemWeights.light,
-		color: colors.purple,
-		fontSize: 16
-	},
-	amountText: {
-		textAlign: "right",
-		...systemWeights.regular,
-		color: colors.purple,
-		fontSize: 16
-	},
-	leftIconContainer: {
-		height: 30,
-		alignItems: "center",
-		justifyContent: "center",
-		paddingHorizontal: 5,
-		borderWidth: 1,
-		borderColor: colors.white,
-		backgroundColor: colors.white
-	},
-	rightIconContainer: {
-		backgroundColor: "transparent",
-		alignItems: "center",
-		justifyContent: "center",
-		borderWidth: 1,
-		borderColor: colors.white,
-		paddingHorizontal: 5,
-		borderTopRightRadius: 5,
-		borderBottomRightRadius: 5,
-		borderLeftColor: colors.purple,
-		height: 30
-	},
 	sliderRow: {
 		flexDirection: "row",
 		alignItems: "center",
@@ -1073,9 +984,6 @@ const styles = StyleSheet.create({
 	slider: {
 		flex: 1,
 		height: 30
-	},
-	featherIcon: {
-		alignItems: "flex-end"
 	},
 	row: {
 		flexDirection: "row",
