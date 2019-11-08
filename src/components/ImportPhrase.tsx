@@ -5,7 +5,8 @@ import {
 	TextInput,
 	Dimensions,
 	Animated,
-	TouchableOpacity
+	TouchableOpacity,
+	Easing
 } from 'react-native';
 import PropTypes from "prop-types";
 import Camera from "./Camera";
@@ -60,6 +61,7 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 					{
 						toValue: display ? 1 : 0,
 						duration,
+						easing: Easing.inOut(Easing.ease),
 						useNativeDriver: true
 					}
 				).start(async () => {

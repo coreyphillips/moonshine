@@ -1,5 +1,5 @@
 import React, {memo, useState} from 'react';
-import {Animated, StyleSheet, TextInput, View, Text} from 'react-native';
+import {Animated, StyleSheet, TextInput, View, Text, Easing} from 'react-native';
 import PropTypes from "prop-types";
 import XButton from "./XButton";
 import Button from "./Button";
@@ -24,7 +24,7 @@ const _VerifyMessage = (
 		onBack = () => null,
 		selectedCrypto = "bitcoin"
 	}: ImportPhraseComponent) => {
-	const [data, useData] = useState({ address: "", message: "", signature: "", isValid: false });
+	const [data, setData] = useState({ address: "", message: "", signature: "", isValid: false });
 	const [animationOpacity] = useState(new Animated.Value(0));
 	
 	const getAnimation = () => {
@@ -41,12 +41,13 @@ const _VerifyMessage = (
 	
 	const _verifyMessage = () => {
 		const isValid = verifyMessage({ ...data, selectedCrypto });
-		useData({ ...data, isValid });
+		setData({ ...data, isValid });
 		Animated.timing(
 			animationOpacity,
 			{
 				toValue: 1,
 				duration: 250,
+				easing: Easing.inOut(Easing.ease),
 				useNativeDriver: true
 			}
 		).start(() => {
@@ -68,7 +69,7 @@ const _VerifyMessage = (
 						autoCapitalize="none"
 						autoCompleteType="off"
 						autoCorrect={false}
-						onChangeText={(address) => useData({ ...data, address })}
+						onChangeText={(address) => setData({ ...data, address })}
 						value={data.address}
 						multiline={false}
 						returnKeyType = { "next" }
@@ -86,7 +87,7 @@ const _VerifyMessage = (
 						autoCapitalize="none"
 						autoCompleteType="off"
 						autoCorrect={false}
-						onChangeText={(message) => useData({ ...data, message })}
+						onChangeText={(message) => setData({ ...data, message })}
 						value={data.message}
 						multiline={true}
 						ref={(input) => {
@@ -103,7 +104,7 @@ const _VerifyMessage = (
 						autoCapitalize="none"
 						autoCompleteType="off"
 						autoCorrect={false}
-						onChangeText={(signature) => useData({ ...data, signature })}
+						onChangeText={(signature) => setData({ ...data, signature })}
 						value={data.signature}
 						multiline={true}
 					/>

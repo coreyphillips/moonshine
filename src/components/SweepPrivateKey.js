@@ -7,7 +7,8 @@ import {
 	LayoutAnimation,
 	Dimensions,
 	Platform,
-	InteractionManager
+	InteractionManager,
+	Easing
 } from "react-native";
 import PropTypes from "prop-types";
 import Slider from "@react-native-community/slider";
@@ -710,6 +711,7 @@ class SendTransaction extends PureComponent {
 						{
 							toValue: 0,
 							duration: 400,
+							easing: Easing.inOut(Easing.ease),
 							useNativeDriver: true
 						}
 					).start(async () => {
@@ -740,6 +742,7 @@ class SendTransaction extends PureComponent {
 					{
 						toValue: display ? 1 : 0,
 						duration,
+						easing: Easing.inOut(Easing.ease),
 						useNativeDriver: true
 					}
 				).start(async () => {

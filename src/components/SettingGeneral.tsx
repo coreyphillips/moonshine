@@ -16,8 +16,7 @@ interface SettingGeneralComponent {
 	value?: string, //Text for Column Two
 	col1Loading?: boolean,
 	col2Loading?: boolean,
-	col1Image?: string,
-	col1ImageColor?: string,
+	col1Image?: string|object,
 	col2Image?: string,
 	rowStyle?: object,
 	col1Style?: object,
@@ -25,7 +24,7 @@ interface SettingGeneralComponent {
 	titleStyle?: object, //Style for Column One Text
 	valueStyle?: object //Style for Column Two Text
 }
-const _SettingGeneral = ({ title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", rowStyle = {}, onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle = {} }: SettingGeneralComponent) => {
+const _SettingGeneral = ({ title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col2Image = "", rowStyle = {}, onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle = {} }: SettingGeneralComponent) => {
 	try {
 		return (
 			<TouchableOpacity onPress={() => onPress(value)} activeOpacity={1} style={styles.rowContainer}>
@@ -40,9 +39,8 @@ const _SettingGeneral = ({ title = "", value = "", col1Loading = false, col2Load
 					</View>}
 					{!col1Loading && col1Image !== "" &&
 					<View style={[styles.col1, col1Style]}>
-						<MaterialCommunityIcons name={col1Image} size={50} color={col1ImageColor} />
-					</View>
-					}
+						{col1Image}
+					</View>}
 					
 					{!col2Loading && col2Image === "" &&
 					<View style={[styles.col2, col2Style]}>
@@ -73,8 +71,7 @@ _SettingGeneral.propTypes = {
 	value: PropTypes.string,
 	col1Loading: PropTypes.bool,
 	col2Loading: PropTypes.bool,
-	col1Image: PropTypes.string,
-	col1ImageColor: PropTypes.string,
+	col1Image: PropTypes.string || PropTypes.object,
 	col2Image: PropTypes.string,
 	rowStyle: PropTypes.object,
 	col1Style: PropTypes.object,

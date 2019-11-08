@@ -1,5 +1,5 @@
 import React, {memo, useState} from 'react';
-import {Animated, StyleSheet, TextInput, TouchableOpacity, View, Text} from 'react-native';
+import {Animated, StyleSheet, TextInput, TouchableOpacity, View, Text, Easing} from 'react-native';
 import PropTypes from "prop-types";
 import XButton from "./XButton";
 import Button from "./Button";
@@ -40,10 +40,10 @@ const _SignMessage = (
 	}: ImportPhraseComponent) => {
 	
 	const [message, setMessage] = useState("");
-	const [signature, useSignature] = useState("");
+	const [signature, setSignature] = useState("");
 	const [signatureOpacity] = useState(new Animated.Value(0));
-	const [selectedAddressIndex, useSelectedAddressIndex] = useState(0);
-	const [displayAddressModal, useDisplayAddressModal] = useState(false);
+	const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
+	const [displayAddressModal, setDisplayAddressModal] = useState(false);
 	
 	const _signMessage = async () => {
 		try {
@@ -56,12 +56,13 @@ const _SignMessage = (
 					selectedCrypto
 				});
 			if (!signMessageResponse.error) {
-				useSignature(signMessageResponse.data.signature);
+				setSignature(signMessageResponse.data.signature);
 				Animated.timing(
 					signatureOpacity,
 					{
 						toValue: 1,
 						duration: 500,
+						easing: Easing.inOut(Easing.ease),
 						useNativeDriver: true
 					}
 				).start();
@@ -93,7 +94,7 @@ const _SignMessage = (
 					<Text style={styles.header}>Sign message using:</Text>
 					<View style={{ paddingVertical: 2.5 }} />
 					<TouchableOpacity
-						onPress={() => useDisplayAddressModal(true)}
+						onPress={() => setDisplayAddressModal(true)}
 						style={styles.pathButton}
 					>
 						<Text style={styles.text}>{path}</Text>
@@ -145,7 +146,7 @@ const _SignMessage = (
 			
 			<DefaultModal
 				isVisible={displayAddressModal}
-				onClose={() => useDisplayAddressModal(false)}
+				onClose={() => setDisplayAddressModal(false)}
 				contentStyle={styles.modalContent}
 			>
 				{addresses.map(({ address, path }, i) => (
@@ -153,8 +154,8 @@ const _SignMessage = (
 						key={`${address}${i}`}
 						style={styles.pathRow}
 						onPress={() => {
-							useSelectedAddressIndex(i);
-							useDisplayAddressModal(false)
+							setSelectedAddressIndex(i);
+							setDisplayAddressModal(false);
 						}}
 					>
 						<Text style={[styles.header, { color: colors.purple, textAlign: "left" }]}>{path}</Text>

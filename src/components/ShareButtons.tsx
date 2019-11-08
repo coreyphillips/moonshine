@@ -4,7 +4,8 @@ import {
 	Text,
 	View,
 	Animated,
-	Clipboard, Share
+	Clipboard, Share,
+	Easing
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
@@ -62,6 +63,7 @@ const _ShareButtons = (
 				{
 					toValue: 1,
 					duration: 500,
+					easing: Easing.inOut(Easing.ease),
 					useNativeDriver: true
 				}
 			).start(async () => {
@@ -71,6 +73,7 @@ const _ShareButtons = (
 						{
 							toValue: 0,
 							duration,
+							easing: Easing.inOut(Easing.ease),
 							useNativeDriver: true
 						}
 					).start();

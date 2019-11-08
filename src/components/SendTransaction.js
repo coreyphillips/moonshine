@@ -11,7 +11,8 @@ import {
 	Dimensions,
 	Platform,
 	InteractionManager,
-	Keyboard
+	Keyboard,
+	Easing
 } from "react-native";
 import PropTypes from "prop-types";
 import Slider from "@react-native-community/slider";
@@ -149,6 +150,7 @@ class SendTransaction extends Component {
 					{
 						toValue: display ? 1 : 0,
 						duration,
+						easing: Easing.inOut(Easing.ease),
 						useNativeDriver: true
 					}
 				).start(async () => {
@@ -487,6 +489,7 @@ class SendTransaction extends Component {
 				{
 					toValue: 1,
 					duration: 500,
+					easing: Easing.inOut(Easing.ease),
 					useNativeDriver: true
 				}
 			).start(async () => {
@@ -496,6 +499,7 @@ class SendTransaction extends Component {
 						{
 							toValue: 0,
 							duration,
+							easing: Easing.inOut(Easing.ease),
 							useNativeDriver: true
 						}
 					).start();
@@ -692,6 +696,7 @@ class SendTransaction extends Component {
 					{
 						toValue: 0,
 						duration: 400,
+						easing: Easing.inOut(Easing.ease),
 						useNativeDriver: true
 					}
 				).start(async () => {

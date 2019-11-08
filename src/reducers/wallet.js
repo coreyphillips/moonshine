@@ -26,9 +26,7 @@ module.exports = (state = {
 	selectedCurrency: "usd",
 	selectedWallet: "wallet0",
 	walletOrder: [],
-	wallets: {
-		wallet0: defaultWalletShape
-	},
+	wallets: {},
 	selectedTransaction: "",
 	availableCoins,
 	exchangeRate: zeroValueItems,
@@ -370,9 +368,7 @@ module.exports = (state = {
 				selectedCurrency: "usd",
 				selectedWallet: "wallet0",
 				walletOrder: [],
-				wallets: {
-					wallet0: defaultWalletShape
-				},
+				wallets: {},
 				selectedTransaction: "",
 				availableCoins,
 				exchangeRate: zeroValueItems,

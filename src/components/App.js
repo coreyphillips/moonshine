@@ -16,7 +16,8 @@ import {
 	Text,
 	TouchableOpacity,
 	TouchableWithoutFeedback,
-	View
+	View,
+	Easing
 } from "react-native";
 import {systemWeights} from "react-native-typography";
 import EvilIcon from "react-native-vector-icons/EvilIcons";
@@ -296,7 +297,7 @@ export default class App extends Component {
 			//Start listener to detect if the app is in the background or foreground
 			AppState.addEventListener("change", this._handleAppStateChange);
 			//Setup Layout Animation for Android
-			if (Platform.OS === "android") UIManager.setLayoutAnimationEnabledExperimental && UIManager.setLayoutAnimationEnabledExperimental(true);
+			if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) UIManager.setLayoutAnimationEnabledExperimental(true);
 		} catch (e) {
 		}
 		
@@ -935,14 +936,16 @@ export default class App extends Component {
 						this.state.upperContentFlex,
 						{
 							toValue: upperContentFlex,
-							duration: duration
+							duration: duration,
+							easing: Easing.inOut(Easing.ease)
 						}
 					),
 					Animated.timing(
 						this.state.lowerContentFlex,
 						{
 							toValue: lowerContentFlex,
-							duration: duration
+							duration: duration,
+							easing: Easing.inOut(Easing.ease)
 						}
 					)
 				]).start(() => {
@@ -992,6 +995,7 @@ export default class App extends Component {
 									{
 										toValue: display ? 1 : 0,
 										duration,
+										easing: Easing.inOut(Easing.ease),
 										useNativeDriver: true
 									}
 								),
@@ -1043,6 +1047,7 @@ export default class App extends Component {
 					{
 						toValue: display ? 1 : 0,
 						duration,
+						easing: Easing.inOut(Easing.ease),
 						useNativeDriver: true
 					}
 				).start(async () => {

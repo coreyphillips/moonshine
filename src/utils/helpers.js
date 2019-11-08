@@ -578,25 +578,6 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 					} catch (e) {}
 				})
 			);
-
-			/*
-			for (let i = addressIndex; i < addressAmount+addressIndex; i++) {
-				const addressPath = `m/49'/${networkValue}'/0'/0/${i}`;
-				const addressKeypair = root.derivePath(addressPath);
-				const address = await getAddress(addressKeypair, network, addressType);
-				console.log(`Log: Created address ${i}: ${address}`);
-				addresses.push({ address, path: addressPath });
-			}
-
-			//Generate Change Addresses
-			for (let i = changeAddressIndex; i < changeAddressAmount+changeAddressIndex; i++) {
-				const changeAddressPath = `m/49'/${networkValue}'/0'/1/${i}`;
-				const changeAddressKeypair = root.derivePath(changeAddressPath);
-				const address = await getAddress(changeAddressKeypair, network, type)
-				console.log(`Log: Created changeAddress ${i}: ${address}`);
-				changeAddresses.push({ address, path: changeAddressPath });
-			}
-			*/
 			resolve({ error: false, data: { addresses, changeAddresses } });
 		} catch (e) {
 			console.log(e);
@@ -736,9 +717,6 @@ const formatNumber = (num) => {
 };
 
 const removeAllButFirstInstanceOfPeriod = (s) => {
-	//s = s.replace(/[^^]./g, '')
-	//return = s.replace(/[^0-9.]/g, ""); //Best so far
-
 	function removeDecimals( str ) {
 		return str.replace( /^([^.]*\.)(.*)$/, function ( a, b, c ) {
 			return b + c.replace( /\./g, '' );

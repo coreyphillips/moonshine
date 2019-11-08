@@ -336,9 +336,7 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 					messages
 				};
 				transactions.push(transaction);
-			} catch (e) {
-				//console.log(e);
-			}
+			} catch (e) {}
 		}));
 		return { error: false, data: transactions, lastUsedAddress, lastUsedChangeAddress };
 	} catch (e) {
@@ -353,8 +351,6 @@ const electrumUtxoHelper = async ({ addresses = [], changeAddresses = [], curren
 		let balance = 0;
 		const allAddresses = addresses.concat(changeAddresses);
 		const allUtxos = await electrum.listUnspentAddressScriptHashes({ addresses: allAddresses, coin: selectedCrypto });
-
-		//if (allUtxos.error === true) return({ error: true, data: allUtxos });
 
 		await Promise.all(allUtxos.error === false && allUtxos.data.map((utxo) => {
 			balance = balance+Number(utxo.value);

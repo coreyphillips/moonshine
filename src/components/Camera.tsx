@@ -21,7 +21,7 @@ interface CameraComponent {
 	onClose: Function
 }
 const _Camera = ({ onBarCodeRead = () => null, onClose = () => null }: CameraComponent) => {
-	const [_data, useData] = useState("");
+	const [_data, setData] = useState("");
 	const notAuthorizedView = (
 		<View style={styles.notAuthorizedView}>
 			<EvilIcon name={"exclamation"} size={60} color={colors.white} />
@@ -41,7 +41,7 @@ const _Camera = ({ onBarCodeRead = () => null, onClose = () => null }: CameraCom
 				style={styles.container}
 				onBarCodeRead={({ data }) => {
 					if (_data !== data) {
-						useData(data);
+						setData(data);
 						onBarCodeRead(data);
 					}
 				}}

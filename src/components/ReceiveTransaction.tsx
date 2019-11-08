@@ -1,20 +1,13 @@
-import React, {useState, useEffect, memo} from "react";
+import React, {useEffect, memo} from "react";
 import {
 	StyleSheet,
-	Text,
 	View,
-	Share,
-	Clipboard,
-	Animated,
 	LayoutAnimation,
 	Platform
 } from "react-native";
 import PropTypes from "prop-types";
-import { systemWeights } from "react-native-typography";
-import LinearGradient from "react-native-linear-gradient";
 import QRCode from 'react-native-qrcode-svg';
 import ShareButtons from "./ShareButtons";
-import Button from "./Button";
 
 const {
 	Constants: {
@@ -39,24 +32,6 @@ const formatUri = ({ selectedCrypto, address }: FormatUri = {
 	try {
 		return `${selectedCrypto}:${address}`;
 	} catch (e) {return `${selectedCrypto}:`;}
-};
-
-const onSharePress = ({selectedCrypto, address}: Default = {
-	selectedCrypto: "Bitcoin", address: ""
-}): void => {
-	try {
-		selectedCrypto = capitalize(selectedCrypto);
-		Share.share({
-			message: address,
-			url: "google.com",
-			title: `My ${selectedCrypto} Address.`
-		}, {
-			// Android only:
-			dialogTitle: `My ${selectedCrypto} Address.`
-		});
-	} catch (e) {
-		console.log(e);
-	}
 };
 
 interface ReceiveTransactionComponent extends Default, FormatUri {
