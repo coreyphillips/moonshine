@@ -144,7 +144,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.kisswallet"
+        applicationId "com.moonshine"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 30
