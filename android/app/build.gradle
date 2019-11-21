@@ -144,10 +144,10 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.moonshine"
+        applicationId "com.kisswallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 30
+        versionCode 31
         versionName "0.2.0"
         multiDexEnabled true
         missingDimensionStrategy 'react-native-camera', 'general'
