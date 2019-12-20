@@ -4,7 +4,20 @@
     "cashyes.zapto.org s t",
     "electrumx.nmdps.net s t",
     "ndnd.selfhost.eu s t",
-    "oneweek.duckdns.org s t"
+    "oneweek.duckdns.org s t",
+    "E-X.not.fyi s t",
+    "electrum.vom-stausee.de s t",
+    "electrum.hsmiths.com s t",
+    "helicarrier.bauerj.eu s t",
+    "electrum.hodlister.co s",
+    "electrum3.hodlister.co s",
+    "btc.usebsv.com s50006",
+    "fortress.qtornado.com s443 t",
+    "ecdsa.net s110 t",
+    "e2.keff.org s t",
+    "currentlane.lovebitco.in s t",
+    "electrum.jochen-hoenicke.de s50005 t50003",
+    "vps5.hsmiths.com s"
   ],
   "bitcoinTestnet": [
     "testnet.hsmiths.com t53011 s53012",
@@ -17,7 +30,10 @@
     "electrum-ltc.bysh.me t50001 s50002",
     "electrum-ltc.villocq.com t60001 s60002",
     "electrum.ltc.xurious.com t50001 s50002",
-    "node.ispol.sk t50003 s50004"
+    "node.ispol.sk t50003 s50004",
+    "ex.lug.gs t s444",
+    "electrum-ltc.ddns.net t s",
+    "electrum-ltc.wilv.in t s"
   ],
   "litecoinTestnet": [
     "electrum-ltc.bysh.me s51002 t51001",

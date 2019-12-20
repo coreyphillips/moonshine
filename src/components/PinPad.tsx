@@ -43,6 +43,19 @@ interface PinComponent {
 	pinSetup?: boolean, //true pushes the user through the pin setup process.
 	style?: object
 }
+
+const PinPadButton = ({ num, onPress }: { num: number, onPress: Function }) => {
+	return (
+		<TouchableOpacity onPress={onPress} activeOpacity={ACTIVE_OPACITY} style={styles.buttonContainer}>
+			<Text
+				style={styles.button}
+			>
+				{num}
+			</Text>
+		</TouchableOpacity>
+	);
+};
+
 const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice = () => null, pinAttemptsRemaining = 5, onFailure = () => null, pinSetup = false, style = {} }: PinComponent) => {
 	let _digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 	_digits = shuffleArray(_digits);
@@ -170,18 +183,6 @@ const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice 
 		}
 	};
 
-	const PinPadButton = ({ num }: { num: number }) => {
-		return (
-			<TouchableOpacity onPress={()=> handlePress(num)} activeOpacity={ACTIVE_OPACITY} style={styles.buttonContainer}>
-				<Text
-					style={styles.button}
-				>
-					{num}
-				</Text>
-			</TouchableOpacity>
-		);
-	};
-
 	const getDots = (): string => {
 		try {
 			if (value.length > 4) {
@@ -247,28 +248,28 @@ const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice 
 			</View>
 
 			<View style={styles.row}>
-				<PinPadButton num={digits[0]} />
-				<PinPadButton num={digits[1]} />
-				<PinPadButton num={digits[2]} />
+				<PinPadButton onPress={()=> handlePress(digits[0])} num={digits[0]} />
+				<PinPadButton onPress={()=> handlePress(digits[1])} num={digits[1]} />
+				<PinPadButton onPress={()=> handlePress(digits[2])} num={digits[2]} />
 			</View>
 
 			<View style={styles.row}>
-				<PinPadButton num={digits[3]} />
-				<PinPadButton num={digits[4]} />
-				<PinPadButton num={digits[5]} />
+				<PinPadButton onPress={()=> handlePress(digits[3])} num={digits[3]} />
+				<PinPadButton onPress={()=> handlePress(digits[4])} num={digits[4]} />
+				<PinPadButton onPress={()=> handlePress(digits[5])} num={digits[5]} />
 			</View>
 
 			<View style={styles.row}>
-				<PinPadButton num={digits[6]} />
-				<PinPadButton num={digits[7]} />
-				<PinPadButton num={digits[8]} />
+				<PinPadButton onPress={()=> handlePress(digits[6])} num={digits[6]} />
+				<PinPadButton onPress={()=> handlePress(digits[7])} num={digits[7]} />
+				<PinPadButton onPress={()=> handlePress(digits[8])} num={digits[8]} />
 			</View>
 
 			<View style={styles.row}>
 				<TouchableOpacity onPress={() => handleClear()} activeOpacity={ACTIVE_OPACITY} style={[styles.buttonContainer, { borderWidth: 0 }]}>
 					<Text style={styles.button}>C</Text>
 				</TouchableOpacity>
-				<PinPadButton num={digits[9]} />
+				<PinPadButton onPress={()=> handlePress(digits[9])} num={digits[9]} />
 				<TouchableOpacity onPress={handleRemove} activeOpacity={ACTIVE_OPACITY} style={[styles.buttonContainer, { borderWidth: 0 }]}>
 					<EvilIcons name={"chevron-left"} size={55} color={colors.white} />
 				</TouchableOpacity>

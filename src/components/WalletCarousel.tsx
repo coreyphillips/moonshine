@@ -66,7 +66,6 @@ const _WalletCarousel = ({ wallet = { wallets: {}, selectedWallet: "wallet0", wa
 	};
 	
 	const updateActiveSlide = (index = 0) => setActiveSlide(index);
-	const wallets = Object.keys(wallet.wallets);
 	const walletOrder = wallet.walletOrder;
 	return (
 		<View style={styles.container}>
@@ -88,7 +87,7 @@ const _WalletCarousel = ({ wallet = { wallets: {}, selectedWallet: "wallet0", wa
 					decelerationRate={0.9}
 				/>
 				<Pagination
-					dotsLength={wallets.length}
+					dotsLength={walletOrder.length}
 					activeDotIndex={activeSlide}
 					containerStyle={styles.paginationContainer}
 					dotColor={'rgba(255, 255, 255, 0.92)'}
