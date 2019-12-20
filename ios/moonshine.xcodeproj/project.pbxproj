@@ -63,7 +63,7 @@
 		00E356EE1AD99517003FC87E /* moonshineTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = moonshineTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* moonshineTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = moonshineTests.m; sourceTree = "<group>"; };
-		13B07F961A680F5B00A75B9A /* moonshine.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = moonshine.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* Moonshine.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Moonshine.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = moonshine/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = moonshine/AppDelegate.m; sourceTree = "<group>"; };
 		13B07FB21A68108700A75B9A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
@@ -242,7 +242,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* moonshine.app */,
+				13B07F961A680F5B00A75B9A /* Moonshine.app */,
 				00E356EE1AD99517003FC87E /* moonshineTests.xctest */,
 				2D02E47B1E0B4A5D006451C7 /* moonshine-tvOS.app */,
 				2D02E4901E0B4A5D006451C7 /* moonshine-tvOSTests.xctest */,
@@ -309,7 +309,7 @@
 			);
 			name = moonshine;
 			productName = moonshine;
-			productReference = 13B07F961A680F5B00A75B9A /* moonshine.app */;
+			productReference = 13B07F961A680F5B00A75B9A /* Moonshine.app */;
 			productType = "com.apple.product-type.application";
 		};
 		2D02E47A1E0B4A5D006451C7 /* moonshine-tvOS */ = {
@@ -868,7 +868,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.kisswallet;
-				PRODUCT_NAME = moonshine;
+				PRODUCT_NAME = Moonshine;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -894,7 +894,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.kisswallet;
-				PRODUCT_NAME = moonshine;
+				PRODUCT_NAME = Moonshine;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
