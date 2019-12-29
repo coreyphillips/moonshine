@@ -832,6 +832,9 @@ export default class App extends Component {
 		}
 		//Background -> Foreground
 		if (this.state.appState.match(/inactive|background/) && nextAppState === "active" && !this.state.displayCamera) {
+			this.setState({appState: nextAppState});
+			//Return if the desired app state and components are already set.
+			if (this.state.displayBiometrics || this.state.displayPin) return;
 			if (this.props.settings.biometrics || this.props.settings.pin) {
 				const items = [
 					{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false},
@@ -845,15 +848,13 @@ export default class App extends Component {
 				];
 				this.updateItems(items);
 				this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-				
 				try {
 					//Check if Biometrics is Enabled
 					if (this.props.settings.biometrics) {
 						this.onBiometricsPress();
 						return;
 					}
-				} catch (e) {
-				}
+				} catch (e) {}
 				
 				try {
 					//Check if Pin is Enabled
@@ -861,14 +862,12 @@ export default class App extends Component {
 						this.onPinPress();
 						return;
 					}
-				} catch (e) {
-				}
+				} catch (e) {}
 			}
 			try {
 				//Resume normal operations
 				this.launchDefaultFuncs({displayLoading: false, resetView: false});
-			} catch (e) {
-			}
+			} catch (e) {}
 		}
 		if (this.state.appState !== nextAppState) this.setState({appState: nextAppState});
 	};

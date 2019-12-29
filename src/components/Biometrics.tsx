@@ -22,10 +22,9 @@ interface General {
 }
 const GetIcon = ({ biometricTypeSupported = "", retryAuthentication = () => null }: General) => {
 	try {
-		const _retryAuthentication = () => retryAuthentication();
 		if (biometricTypeSupported === "FaceID") {
 			return (
-				<TouchableOpacity activeOpacity={1} onPress={_retryAuthentication} style={styles.container}>
+				<TouchableOpacity activeOpacity={1} onPress={retryAuthentication} style={styles.container}>
 					<MaterialCommunityIcons name={"face"} size={65} color={colors.white} />
 					<Text style={styles.text}>
 						FaceID Enabled
@@ -36,7 +35,7 @@ const GetIcon = ({ biometricTypeSupported = "", retryAuthentication = () => null
 		}
 		if (biometricTypeSupported === "TouchID") {
 			return (
-				<TouchableOpacity activeOpacity={1} onPress={_retryAuthentication} style={styles.container}>
+				<TouchableOpacity activeOpacity={1} onPress={retryAuthentication} style={styles.container}>
 					<Ionicons name={"ios-finger-print"} size={65} color={colors.white} />
 					<Text style={styles.text}>
 						TouchID Enabled
@@ -46,7 +45,7 @@ const GetIcon = ({ biometricTypeSupported = "", retryAuthentication = () => null
 			);
 		}
 		return(
-			<TouchableOpacity activeOpacity={1} onPress={_retryAuthentication} style={styles.container}>
+			<TouchableOpacity activeOpacity={1} onPress={retryAuthentication} style={styles.container}>
 				<Ionicons name={"ios-finger-print"} size={65} color={colors.white} />
 				<Text style={styles.text}>
 					It appears that your device does not support Biometric security.
