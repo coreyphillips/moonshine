@@ -29,9 +29,11 @@ interface FormatUri extends Default {
 const formatUri = ({ selectedCrypto, address }: FormatUri = {
 	selectedCrypto: "bitcoin", address: ""
 }) => {
+	let coin = "bitcoin";
+	try {coin = selectedCrypto.toLowerCase().replace("testnet", "");} catch (e) {}
 	try {
-		return `${selectedCrypto}:${address}`;
-	} catch (e) {return `${selectedCrypto}:`;}
+		return `${coin}:${address}`;
+	} catch (e) {return `${coin}:`;}
 };
 
 interface ReceiveTransactionComponent extends Default, FormatUri {

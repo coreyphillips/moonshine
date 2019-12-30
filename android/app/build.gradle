@@ -147,7 +147,7 @@ android {
         applicationId "com.kisswallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 31
+        versionCode 33
         versionName "0.2.0"
         multiDexEnabled true
         missingDimensionStrategy 'react-native-camera', 'general'
@@ -159,12 +159,6 @@ android {
             universalApk true  // If true, also generate a universal APK
             include "armeabi-v7a", "x86", "arm64-v8a", "x86_64"
         }
-    }
-    packagingOptions {
-        // exclude ARMEABI native so file, ARMEABI has been removed in NDK r17.
-        //exclude "lib/armeabi/**"
-        // Make sure libjsc.so does not packed in APK
-        exclude "**/libjsc.so"
     }
 
     signingConfigs {
@@ -208,6 +202,13 @@ android {
             }
 
         }
+    }
+
+    packagingOptions {
+        // exclude ARMEABI native so file, ARMEABI has been removed in NDK r17.
+        //exclude "lib/armeabi/**"
+        // Make sure libjsc.so does not packed in APK
+        exclude "**/libjsc.so"
     }
 }
 

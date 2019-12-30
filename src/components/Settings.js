@@ -25,6 +25,7 @@ import SettingGeneral from "./SettingGeneral";
 import SignMessage from "./SignMessage";
 import VerifyMessage from "./VerifyMessage";
 import * as electrum from "../utils/electrum";
+import BackupPhrase from './BackupPhrase';
 
 const {
 	Constants: {
@@ -494,13 +495,15 @@ class Settings extends PureComponent {
 			const selectedWallet = this.props.wallet.selectedWallet;
 			const walletIndex = this.props.wallet.walletOrder.indexOf(selectedWallet);
 			const walletName = `Wallet ${walletIndex}`;
-			if (this.props.wallet.wallets[selectedWallet].hasBackedUpWallet) {
-				return `${walletName} last backed up on\n${moment(this.props.wallet.wallets[selectedWallet].walletBackupTimestamp).format('l @ h:mm a')}.`;
-			} else {
+			try {
+				if (this.hasBackedUpWallet()) {
+					return `${walletName} last backed up on\n${moment(this.props.wallet.wallets[selectedWallet].walletBackupTimestamp).format('l @ h:mm a')}.`;
+				}
 				return "Wallet has not\nbeen backed up.";
-			}
+			} catch (e) {return "Wallet has not\nbeen backed up.";}
 		} catch (e) {
 			console.log(e);
+			return "Wallet has not\nbeen backed up.";
 		}
 	};
 	
@@ -844,10 +847,8 @@ class Settings extends PureComponent {
 	
 	getBackupPhrase = () => {
 		const backupPhrase = this.state.backupPhrase.split(" ");
-		let phrase = "";
-		for (let i = 0; i < backupPhrase.length; i++) {
-			try { if (backupPhrase[i]) phrase = phrase.concat(`${i + 1}.   ${backupPhrase[i]}\n`); } catch (e) {}
-		}
+		let phrase = [];
+		backupPhrase.forEach((word, i) => phrase.push({ id: i+1, word: backupPhrase[i] }));
 		return phrase;
 	};
 	
@@ -858,6 +859,12 @@ class Settings extends PureComponent {
 		} catch (e) {
 			return "?";
 		}
+	};
+	
+	hasBackedUpWallet = () => {
+		try {
+			return this.props.wallet.wallets[this.props.wallet.selectedWallet].hasBackedUpWallet;
+		} catch (e) {return false;}
 	};
 	
 	render() {
@@ -1031,11 +1038,11 @@ class Settings extends PureComponent {
 								title="Backup Wallet"
 								value={this.getBackupWalletValue()}
 								onPress={() => this.toggleBackupPhrase({ selectedWallet, display: true })}
-								rowStyle={this.props.wallet.wallets[selectedWallet].hasBackedUpWallet ? { backgroundColor: colors.white } : { backgroundColor: colors.red }}
-								col1Image={<MaterialCommunityIcons name="wallet" size={50} color={this.props.wallet.wallets[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white} />}
+								rowStyle={this.hasBackedUpWallet() ? { backgroundColor: colors.white } : { backgroundColor: colors.red }}
+								col1Image={<MaterialCommunityIcons name="wallet" size={50} color={this.hasBackedUpWallet() ? colors.purple : colors.white} />}
 								col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 }}
-								titleStyle={{ color: this.props.wallet.wallets[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white }}
-								valueStyle={{ color: this.props.wallet.wallets[selectedWallet].hasBackedUpWallet ? colors.purple : colors.white, fontSize: 16, textAlign: "center", fontWeight: this.props.settings.hasBackedUpWallet ? "normal" : "bold" }}
+								titleStyle={{ color: this.hasBackedUpWallet() ? colors.purple : colors.white }}
+								valueStyle={{ color: this.hasBackedUpWallet() ? colors.purple : colors.white, fontSize: 16, textAlign: "center", fontWeight: this.hasBackedUpWallet() ? "normal" : "bold" }}
 							/>
 							
 							<SettingGeneral
@@ -1062,12 +1069,9 @@ class Settings extends PureComponent {
 				{this.state.displayBackupPhrase &&
 				<Animated.View style={[styles.settingContainer, { opacity: this.state.backupPhraseOpacity }]}>
 					<Text style={[styles.headerText, { position: "absolute", top: 20, left: 0, right: 0 }]}>{this.getWalletName()}</Text>
-					<SettingGeneral
-						value={this.getBackupPhrase()}
+					<BackupPhrase
+						phrase={this.getBackupPhrase()}
 						onPress={() => this.toggleBackupPhrase({ selectedWallet, display: false })}
-						col1Style={{ flex: 0.1 }}
-						col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 20 }}
-						valueStyle={{ color: colors.purple, textAlign: "left", paddingHorizontal: 20, fontWeight: "bold" }}
 					/>
 				</Animated.View>
 				}

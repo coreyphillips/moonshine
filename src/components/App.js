@@ -1721,7 +1721,7 @@ export default class App extends Component {
 								<Animated.View style={[styles.settings, {opacity: this.state.biometricsOpacity}]}>
 									<Biometrics
 										biometricTypeSupported={this.props.settings.biometricTypeSupported}
-										retryAuthentication={this.state.displayBiometricAuthenticationRetry ? this.authenticateUserWithBiometrics : () => null}
+										retryAuthentication={this.authenticateUserWithBiometrics}
 									/>
 								</Animated.View>}
 								

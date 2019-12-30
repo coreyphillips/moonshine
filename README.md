@@ -32,7 +32,7 @@ If you are looking for secure cold storage solutions please consider purchasing 
    ```
     git clone https://github.com/coreyphillips/moonshine
     cd moonshine
-    yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../ && cd ios && pod install && cd ..
+    yarn install
     ```
 3. Add the Lndmobile.aar & Lndmobile.framework files to the project:
     - Add the Lndmobile.aar file to `moonshine/android/Lndmobile`
@@ -68,8 +68,7 @@ If you are looking for secure cold storage solutions please consider purchasing 
     * Add a UTXO selector to create custom transactions
         * This will allow users to select from a list of available utxo's to include in their transaction.
     * Add support for additional currencies in the settings
-    * Allow users to manually select which public Electrum servers to randomly use if not connecting to their own node
-    
+
 ### Contributing
 
 1. Fork it (<https://github.com/coreyphillips/moonshine>)
