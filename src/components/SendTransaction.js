@@ -105,6 +105,17 @@ class SendTransaction extends Component {
 			//Set Maximum Fee (recommendedFee * 4) to prevent any user accidents.
 			//Set Recommended Fee as Starting Fee
 			this.calculateFees();
+			
+			try {
+				//If a transaction amount is already specified check that the user has enough funds and update the local amount accordingly.
+				if (this.props.transaction.amount) {
+					if (this.hasEnoughFunds()) {
+						this.updateAmount(this.props.transaction.amount);
+					} else {
+						alert(`It appears that\nyou do not have enough funds\nto cover the requested transaction.`);
+					}
+				}
+			} catch (e) {}
 		};
 		
 		if (Platform.OS === "ios") {

@@ -1547,8 +1547,14 @@ export default class App extends Component {
 					await this.restartElectrum({coin});
 				}
 				
-				//Pass the transaction data forward for use.
-				this.props.updateTransaction(qrCodeData.data);
+				//Pass the transaction data forward for use in the SendTransaction component.
+				let { address, amount } = qrCodeData.data;
+				//Ensure the amount is correctly formatted in sats
+				if (amount % 1 !== 0) amount = bitcoinUnits(Number(qrCodeData.data.amount), "BTC").to("satoshi").value();
+				//Set amount to 0 if the requested amount is greater than the current balance.
+				if (amount > this.getCryptoBalance()) amount = 0;
+				this.props.updateTransaction({ address, amount });
+				
 				//Trigger the onSendPress animation to expose the transaction view.
 				this.onSendPress();
 			});
