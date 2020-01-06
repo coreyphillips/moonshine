@@ -24,6 +24,49 @@ const disconnectFromPeer = async ({ id, coin }) => {
 	}
 };
 
+const subscribeHeader = async ({ coin, id } = {}) => {
+	try {
+		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
+		api.mainClient[coin].subscribe.on('blockchain.headers.subscribe', (data) => {
+			rn_bridge.channel.send(JSON.stringify({id, error: false, method: "subscribeHeader", data, coin}));
+		});
+	} catch (e) {
+		rn_bridge.channel.send(JSON.stringify({id, error: true, method: "subscribeHeader", data: e, coin}));
+	}
+};
+
+const subscribeAddress = async ({ coin, id, address = "" } = {}) => {
+	try {
+		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
+		
+		await api.mainClient[coin].subscribe.on('blockchain.scripthash.subscribe', (data) => {
+			rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "subscribeAddress", data }));
+		});
+		
+		const response = await api.mainClient[coin].blockchainScripthash_subscribe(address);
+		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "subscribeAddress", data: response}));
+	} catch (e) {
+		rn_bridge.channel.send(JSON.stringify({ id, error: true, method: "subscribeAddress", data: e }));
+	}
+};
+
+const unSubscribeAddress = async ({ id, coin, scriptHashes = [] } = {}) => {
+	try {
+		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
+		let responses = [];
+		await Promise.all(
+			scriptHashes.map(async (scriptHash) => {
+				try {
+					const response = await api.mainClient[coin].blockchainScripthash_unsubscribe(scriptHash);
+					responses.push(response);
+				} catch (e) {}
+			})
+		);
+		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "unSubscribeAddress", data: responses}));
+	} catch (e) {
+		rn_bridge.channel.send(JSON.stringify({ id, error: true, method: "unSubscribeAddress", data: e, scriptHashes }));
+	}
+};
 
 const connectToPeer = async ({ id, peers = [], customPeers = [], coin = "bitcoin" } = {}) => {
 	try {
@@ -626,5 +669,8 @@ module.exports = {
 	getTransactionHex,
 	getTransaction,
 	getTransactions,
-	getFeeEstimate
+	getFeeEstimate,
+	subscribeHeader,
+	subscribeAddress,
+	unSubscribeAddress
 };
