@@ -73,7 +73,7 @@ const bip39 = require("bip39");
 this.subscribedAddress = ""; //Holds currently subscribed address
 this.headersAreSubscribed = false; //Determines whether wallet is subscribed to new headers
 this.subscribedWithPeer = ""; //Holds what peer we are subscribed to new headers with
-
+this.authenticating = false; //Determines whether the app is currently authenticating. This attempts to address issue #5.
 export default class App extends Component {
 	
 	state = {
@@ -262,7 +262,7 @@ export default class App extends Component {
 	};
 	
 	launchDefaultFuncs = async ({displayLoading = true, resetView = true} = {}) => {
-		
+		this.authenticating = false;
 		const items = [
 			{stateId: "displayBiometrics", opacityId: "biometricsOpacity", display: false},
 			{stateId: "displayPin", opacityId: "pinOpacity", display: false},
@@ -755,6 +755,8 @@ export default class App extends Component {
 	};
 	
 	authenticateUserWithBiometrics = () => {
+		if (this.authenticating) return;
+		this.authenticating = true;
 		const optionalConfigObject = {
 			unifiedErrors: false // use unified error messages (default false)
 		};
@@ -885,6 +887,7 @@ export default class App extends Component {
 	_handleAppStateChange = async (nextAppState) => {
 		//Foreground -> Background
 		if (this.state.appState.match(/active/) && nextAppState.match(/inactive|background/) && !this.state.displayCamera) {
+			if (this.authenticating) return;
 			electrum.stop({coin: this.props.wallet.selectedCrypto});
 			//Clear/Remove Wallet Refresh Timer
 			clearInterval(this._refreshWallet);
@@ -894,36 +897,23 @@ export default class App extends Component {
 		if (this.state.appState.match(/inactive|background/) && nextAppState === "active" && !this.state.displayCamera) {
 			this.setState({appState: nextAppState});
 			//Return if the desired app state and components are already set.
-			if (this.state.displayBiometrics || this.state.displayPin) return;
-			if (this.props.settings.biometrics || this.props.settings.pin) {
-				const items = [
-					{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false},
-					{stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250},
-					{stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false},
-					{stateId: "displaySettings", opacityId: "settingsOpacity", display: false},
-					{stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false},
-					{stateId: "displayTransactionDetail", opacityId: "transactionDetailOpacity", display: false},
-					{stateId: "displayCamera", opacityId: "cameraOpacity", display: false},
-					{stateId: "displayReceiveTransaction", opacityId: "receiveTransactionOpacity", display: false}
-				];
-				this.updateItems(items);
-				this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
-				try {
-					//Check if Biometrics is Enabled
-					if (this.props.settings.biometrics) {
-						this.onBiometricsPress();
-						return;
-					}
-				} catch (e) {}
-				
-				try {
-					//Check if Pin is Enabled
-					if (this.props.settings.pin) {
-						this.onPinPress();
-						return;
-					}
-				} catch (e) {}
-			}
+			if (this.state.displayBiometrics || this.state.displayPin || this.authenticating) return;
+			try {
+				//Check if Biometrics is Enabled
+				if (this.props.settings.biometrics) {
+					this.onBiometricsPress();
+					return;
+				}
+			} catch (e) {}
+			
+			try {
+				//Check if Pin is Enabled
+				if (this.props.settings.pin) {
+					this.onPinPress();
+					return;
+				}
+			} catch (e) {}
+			
 			try {
 				//Resume normal operations
 				this.launchDefaultFuncs({displayLoading: false, resetView: false});
