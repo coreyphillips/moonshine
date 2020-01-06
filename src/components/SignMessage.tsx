@@ -76,7 +76,7 @@ const _SignMessage = (
 	let shareMessage = `Address: ${addresses[selectedAddressIndex].address}\n\n Message: ${message}\n\n Signature: ${signature}`;
 	
 	let path = getBaseDerivationPath({ keyDerivationPath: derivationPath, selectedCrypto });
-	try {path = addresses[selectedAddressIndex].path} catch (e) {}
+	try {path = addresses[selectedAddressIndex].path;} catch (e) {}
 	
 	let shortendAddress = "";
 	try {
