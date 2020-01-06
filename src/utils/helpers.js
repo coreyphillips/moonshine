@@ -831,9 +831,8 @@ const verifyMessage = ({ message = "", address = "", signature = "", selectedCry
 
 const getBaseDerivationPath = ({ keyDerivationPath = "84", selectedCrypto = "bitcoin" }) => {
 	try {
-		const networkType = getNetworkType(selectedCrypto);
-		const networkValue = networkType === "testnet" ? "1" : "0";
-		return `m/${keyDerivationPath}'/0'/0'/${networkValue}/0`;
+		const networkValue = networks.defaultWalletShape.coinTypePath[selectedCrypto];
+		return `m/${keyDerivationPath}'/${networkValue}'/0'/0/0`;
 	} catch (e) {
 		return { error: true, data: e };
 	}

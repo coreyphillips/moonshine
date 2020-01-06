@@ -102,6 +102,12 @@ const defaultWalletShape = {
 		litecoin: "84",
 		litecoinTestnet: "84"
 	},
+	coinTypePath: {
+		bitcoin: "0",
+		bitcoinTestnet: "1",
+		litecoin: "2",
+		litecoinTestnet: "1"
+	},
 	addressType: { //Accepts bech32, segwit, legacy
 		bitcoin: "bech32",
 		bitcoinTestnet: "bech32",
