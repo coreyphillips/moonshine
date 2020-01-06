@@ -313,7 +313,7 @@ const getAddressScriptHashBalance = ({ address = "", id = Math.random(), coin = 
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			const result = getAddressScriptHash({ address, coin });
+			const result = await getAddressScriptHash({ address, coin });
 			if (result.error) return resolve({ error: true, method, data: result.data });
 			const scriptHash = result.data;
 			nodejs.channel.send(JSON.stringify({ method, scriptHash, coin, id }));
