@@ -344,26 +344,26 @@ class SendTransaction extends PureComponent {
 				//Get addresses from the private key
 				const keyPair = bitcoin.ECPair.fromWIF(privateKey, networks[network]);
 				const bech32Address = await getAddress(keyPair, networks[network], "bech32"); //Bech32
-				const p2shAddress = await getAddress(keyPair, networks[network], "p2sh"); //(3) Address
-				const p2pkhAddress = await getAddress(keyPair, networks[network], "p2pkh");//(1) Address
+				const p2shAddress = await getAddress(keyPair, networks[network], "segwit"); //(3) Address
+				const p2pkhAddress = await getAddress(keyPair, networks[network], "legacy");//(1) Address
 
 				//Get the balance for each address.
 				this.setState({ loadingMessage: `Private Key Detected.\nFetching Bech32 address balance...`, loadingProgress: 0.3 });
 				const bech32BalanceResult = await Promise.all([
-					electrum.getAddressScriptHashBalance({address: bech32Address, id: 6, network: networks[network], coin: network}), //Bech32 format demands we use the scriptHash variant of the getAddressBalance function
-					electrum.getAddressScriptHashMempool({address: bech32Address, id: 5, network: networks[network], coin: network})
+					electrum.getAddressScriptHashBalance({address: bech32Address, id: 6, coin: network}),
+					electrum.getAddressScriptHashMempool({address: bech32Address, id: 5, coin: network})
 				]);
 
 				this.setState({ loadingMessage: `Private Key Detected.\nFetching P2SH address balance...`, loadingProgress: 0.4 });
 				const p2shBalanceResult = await Promise.all([
-					electrum.getAddressBalance({address: p2shAddress, id: 1, coin: network}),
-					electrum.getMempool({address: p2shAddress, id: 3, coin: network}),
+					electrum.getAddressScriptHashBalance({address: p2shAddress, id: 1, coin: network}),
+					electrum.getAddressScriptHashMempool({address: p2shAddress, id: 3, coin: network}),
 				]);
 
 				this.setState({ loadingMessage: `Private Key Detected.\nFetching P2PKH address balance...`, loadingProgress: 0.5 });
 				const p2pkhBalanceResult = await Promise.all([
-					electrum.getAddressBalance({address: p2pkhAddress, id: 2, coin: network}),
-					electrum.getMempool({address: p2pkhAddress, id: 4, coin: network})
+					electrum.getAddressScriptHashBalance({address: p2pkhAddress, id: 2, coin: network}),
+					electrum.getAddressScriptHashMempool({address: p2pkhAddress, id: 4, coin: network})
 				]);
 
 				let balance = 0;
