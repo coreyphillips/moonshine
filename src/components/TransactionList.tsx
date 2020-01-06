@@ -19,6 +19,82 @@ const {
 	}
 } = require("../../ProjectData.json");
 
+interface DisplayItemComponent {
+	transaction: {
+		item: Transaction
+	},
+	selectedCrypto: string,
+	exchangeRate: number | string,
+	blockHeight: number,
+	onTransactionPress: Function,
+	cryptoUnit: string,
+	isBlacklisted: boolean
+}
+const _DisplayItem = (
+	{
+		transaction = {
+			item: { hash: "", timestamp: 0, type: "", status: "sent", block: 0, messages: [], sentAmount: 0, amount: 0 }
+		},
+		selectedCrypto = "bitcoin",
+		exchangeRate = "0",
+		blockHeight = 0,
+		onTransactionPress = () => null,
+		cryptoUnit = "satoshi",
+		isBlacklisted = false
+	}: DisplayItemComponent) => {
+	
+	try {
+		const hash = transaction.item.hash;
+		const timestamp = transaction.item.timestamp;
+		const type = transaction.item.type;
+		const block = transaction.item.block;
+		//Include the fee in the amount if the user sent the transaction.
+		const amount = type === "sent" ? transaction.item.sentAmount : transaction.item.amount;
+		const messages = transaction.item.messages;
+		return (
+			<View style={styles.transaction}>
+				<TransactionRow
+					id={hash}
+					coin={selectedCrypto}
+					address={hash}
+					amount={amount}
+					messages={messages}
+					label=""
+					date={timestamp}
+					type={type}
+					cryptoUnit={cryptoUnit}
+					exchangeRate={exchangeRate}
+					transactionBlockHeight={block}
+					currentBlockHeight={blockHeight}
+					onTransactionPress={onTransactionPress}
+					isBlacklisted={isBlacklisted}
+				/>
+			</View>
+		);
+		
+	} catch (e) {
+		console.log(e);
+	}
+};
+
+const DisplayItem = memo(
+	_DisplayItem,
+	(prevProps, nextProps) => {
+		if (!prevProps || !nextProps) return true;
+		return prevProps.blockHeight === nextProps.blockHeight &&
+			prevProps.cryptoUnit === nextProps.cryptoUnit &&
+			prevProps.transaction.item.hash === nextProps.transaction.item.hash &&
+			prevProps.transaction.item.messages === nextProps.transaction.item.messages &&
+			prevProps.transaction.item.amount === nextProps.transaction.item.amount &&
+			prevProps.transaction.item.sentAmount === nextProps.transaction.item.sentAmount &&
+			prevProps.transaction.item.status === nextProps.transaction.item.status &&
+			prevProps.transaction.item.type === nextProps.transaction.item.type &&
+			prevProps.transaction.item.timestamp === nextProps.transaction.item.timestamp &&
+			prevProps.isBlacklisted === nextProps.isBlacklisted;
+	}
+);
+
+
 type Transaction = {
 	hash: string,
 	timestamp: number,
@@ -53,65 +129,7 @@ const _TransactionList = (
 	}: TransactionListComponent) => {
 	
 	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
-
-	interface DisplayItemComponent {
-		transaction: {
-			item: Transaction
-		},
-		selectedCrypto: string,
-		exchangeRate: number | string,
-		blockHeight: number,
-		onTransactionPress: Function,
-		cryptoUnit: string,
-		isBlacklisted: boolean
-	}
-	const DisplayItem = (
-		{
-			transaction = {
-				item: { hash: "", timestamp: 0, type: "", status: "sent", block: 0, messages: [], sentAmount: 0, amount: 0 }
-			},
-			selectedCrypto = "bitcoin",
-			exchangeRate = "0",
-			blockHeight = 0,
-			onTransactionPress = () => null,
-			cryptoUnit = "satoshi",
-			isBlacklisted = false
-		}: DisplayItemComponent) => {
-		
-		try {
-			const hash = transaction.item.hash;
-			const timestamp = transaction.item.timestamp;
-			const type = transaction.item.type;
-			const block = transaction.item.block;
-			//Include the fee in the amount if the user sent the transaction.
-			const amount = type === "sent" ? transaction.item.sentAmount : transaction.item.amount;
-			const messages = transaction.item.messages;
-			return (
-				<View style={styles.transaction}>
-					<TransactionRow
-						id={hash}
-						coin={selectedCrypto}
-						address={hash}
-						amount={amount}
-						messages={messages}
-						label=""
-						date={timestamp}
-						type={type}
-						cryptoUnit={cryptoUnit}
-						exchangeRate={exchangeRate}
-						transactionBlockHeight={block}
-						currentBlockHeight={blockHeight}
-						onTransactionPress={onTransactionPress}
-						isBlacklisted={isBlacklisted}
-					/>
-				</View>
-			);
-			
-		} catch (e) {
-			console.log(e);
-		}
-	};
-
+	
 	const displayEmptyComponent = () => {
 		try {
 			return (
@@ -163,22 +181,22 @@ const _TransactionList = (
 				contentContainerStyle={{ paddingBottom: 60 }}
 				data={transactions}
 				extraData={getTransactions()}
-				keyExtractor={(transaction, index) => `${transaction.hash}${index}`}
+				keyExtractor={(transaction) => `${transaction.hash}`}
 				ListEmptyComponent={displayEmptyComponent()}
 				renderItem={(transaction): any => {
 					let isBlacklisted = false;
 					try { isBlacklisted = blacklistedUtxos.includes(transaction.item.hash); } catch (e) {}
 					return (
-						DisplayItem({
-							transaction,
-							selectedCrypto,
-							exchangeRate,
-							blockHeight,
-							onTransactionPress,
-							cryptoUnit,
-							isBlacklisted
-						})
-					);
+						<DisplayItem
+							transaction={transaction}
+							selectedCrypto={selectedCrypto}
+							exchangeRate={exchangeRate}
+							blockHeight={blockHeight}
+							onTransactionPress={onTransactionPress}
+							cryptoUnit={cryptoUnit}
+							isBlacklisted={isBlacklisted}
+						/>
+						);
 				}}
 				refreshControl={
 					<RefreshControl
@@ -242,7 +260,12 @@ const TransactionList = memo(
 	_TransactionList,
 	(prevProps, nextProps) => {
 		if (!prevProps || !nextProps) return true;
-		return prevProps === nextProps;
+		return prevProps === nextProps &&
+			prevProps.blockHeight === nextProps.blockHeight &&
+			prevProps.cryptoUnit === nextProps.cryptoUnit &&
+			prevProps.transactions === nextProps.transactions &&
+			prevProps.blacklistedUtxos === nextProps.blacklistedUtxos &&
+			prevProps.selectedCrypto === nextProps.selectedCrypto;
 	}
 );
 
