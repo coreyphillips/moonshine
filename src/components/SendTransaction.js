@@ -54,6 +54,7 @@ const {
 
 const moment = require("moment");
 const { width, height } = Dimensions.get("window");
+const MAX_MESSAGE_LENGTH = 80;
 
 class SendTransaction extends Component {
 	constructor(props) {
@@ -875,14 +876,14 @@ class SendTransaction extends Component {
 
 					<View style={styles.textInputRow}>
 						<TextInput
-							maxLength={80}
+							maxLength={MAX_MESSAGE_LENGTH}
 							autoCapitalize="none"
 							autoCompleteType="off"
 							autoCorrect={false}
 							placeholder="Anything entered here will be public"
 							style={[styles.textInput, { borderRadius: 5 }]}
 							selectionColor={colors.lightPurple}
-							onChangeText={(message) => this.props.updateTransaction({ message })}
+							onChangeText={(message) => message.length <= MAX_MESSAGE_LENGTH ? this.props.updateTransaction({ message }) : null}
 							value={this.props.transaction.message}
 						>
 						</TextInput>
