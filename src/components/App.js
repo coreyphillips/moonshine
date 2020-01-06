@@ -65,11 +65,14 @@ const {
 	getExchangeRate,
 	validatePrivateKey,
 	getTransactionSize,
-	loginWithBitid
+	loginWithBitid,
+	vibrate
 } = require("../utils/helpers");
 const {width} = Dimensions.get("window");
 const bip39 = require("bip39");
-const moment = require("moment");
+this.subscribedAddress = ""; //Holds currently subscribed address
+this.headersAreSubscribed = false; //Determines whether wallet is subscribed to new headers
+this.subscribedWithPeer = ""; //Holds what peer we are subscribed to new headers with
 
 export default class App extends Component {
 	
@@ -268,7 +271,7 @@ export default class App extends Component {
 		await this.updateItems(items);
 		
 		//Attempt to migrate any old wallets to the new wallet model
-		await this.migrateToNewWalletModel();
+		//await this.migrateToNewWalletModel();
 		
 		//Determine if the user has any existing wallets. Create a new wallet if so.
 		let walletLength = 0;
@@ -329,11 +332,20 @@ export default class App extends Component {
 		}
 	};
 	
-	refreshWallet = async ({ignoreLoading = false, reconnectToElectrum = true} = {}) => {
+	refreshWallet = async ({ignoreLoading = false, reconnectToElectrum = true, skipSubscribeActions = false} = {}) => {
 		//This helps to prevent the app from disconnecting and stalling when attempting to connect to an electrum server after some time.
 		//await nodejs.start("main.js");
 		
 		try {
+			
+			if (this.headersAreSubscribed === false && skipSubscribeActions === true) {
+				skipSubscribeActions = false;
+			}
+			if (reconnectToElectrum === true && this.headersAreSubscribed === true) {
+				this.headersAreSubscribed = false;
+				skipSubscribeActions = false;
+			}
+			
 			//Enable the loading state
 			if (this.state.loadingTransactions !== true) this.setState({loadingTransactions: true});
 			const {selectedWallet, selectedCrypto, selectedCurrency} = this.props.wallet;
@@ -385,23 +397,9 @@ export default class App extends Component {
 				//Remove any pre-existing instance of this._refreshWallet
 				clearInterval(this._refreshWallet);
 				
-				//Set an interval to run this.refreshWallet approximately every 2 minutes.
+				//Set an interval to update the exchange rate approximately every 2 minutes.
 				this._refreshWallet = setInterval(async () => {
-					const currentTime = new Date();
-					const seconds = (currentTime.getTime() - this.startDate.getTime()) / 1000;
-					let end = moment();
-					let difference = 0;
-					try {
-						end = this.props.wallet.wallets[selectedWallet].lastUsedAddress[selectedCrypto];
-					} catch (e) {
-					}
-					try {
-						difference = getDifferenceBetweenDates({start: moment(), end});
-					} catch (e) {
-					}
-					if (seconds > 10 && difference >= 1.8) {
-						await this.refreshWallet();
-					}
+					this.setExchangeRate({selectedCrypto, selectedService, selectedCurrency}); //Set the exchange rate for the selected currency
 				}, 60 * 2000);
 			}
 			
@@ -451,6 +449,10 @@ export default class App extends Component {
 			//Get & Set Current Block Height
 			await this.props.updateBlockHeight({selectedCrypto});
 			const currentBlockHeight = this.props.wallet.blockHeight[selectedCrypto];
+			if (!skipSubscribeActions && !this.headersAreSubscribed) {
+				this.headersAreSubscribed = true;
+				this.subscribeHeader();
+			}
 			
 			let utxoLength = 1;
 			try {
@@ -485,6 +487,9 @@ export default class App extends Component {
 				keyDerivationPath,
 				addressType
 			});
+			
+			//Subscribe to received transactions for the next available address
+			if (!skipSubscribeActions) this.subscribeAddress();
 			
 			//Update status of the user-facing loading message and progress bar
 			if (ignoreLoading === false) this.setState({loadingMessage: "Updating UTXO's", loadingProgress: 0.8});
@@ -682,6 +687,8 @@ export default class App extends Component {
 				}
 			}
 			
+			//Subscribe to received transactions for the next available address
+			if (!skipSubscribeActions) this.subscribeAddress();
 			//Cease the loading state.
 			InteractionManager.runAfterInteractions(() => {
 				if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
@@ -692,6 +699,59 @@ export default class App extends Component {
 				if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
 			});
 		}
+	};
+	
+	//Subscribe to new blocks. Refresh wallet when a new block is found.
+	subscribeHeader = async () => {
+		try {
+			if (this.headersAreSubscribed === true && this.subscribedWithPeer === this.props.settings.currentPeer["host"]) return;
+			const { selectedCrypto } = this.props.wallet;
+			const onReceive = (data) => {
+				try {
+					//Refresh the wallet when a new block is detected.
+					if (__DEV__) console.log(data);
+					this.refreshWallet({ ignoreLoading: true, reconnectToElectrum: false, skipSubscribeActions: true });
+				} catch (e) {
+					console.log(e);
+				}
+			};
+			electrum.subscribeHeader({ id: Math.random(), coin: selectedCrypto, onReceive });
+			this.subscribedWithPeer = this.props.settings.currentPeer["host"];
+			this.headersAreSubscribed = true;
+		} catch (e) {console.log(e);}
+	};
+	
+	//Subscribe to received transactions for the next available address
+	subscribeAddress = async () => {
+		try {
+			const { selectedCrypto } = this.props.wallet;
+			const nextAvailableAddress = this.getNextAvailableAddress();
+			if (nextAvailableAddress === this.subscribedAddress) return;
+			this.subscribedAddress = nextAvailableAddress;
+			if (__DEV__) console.log(`Subscribed to address: ${nextAvailableAddress}`);
+			const scriptHash = await electrum.getAddressScriptHash({
+				address: nextAvailableAddress,
+				coin: selectedCrypto
+			});
+			const onReceive = async (data) => {
+				try {
+					//Only refresh the wallet if a new transaction is detected.
+					if (Array.isArray(data.data)) {
+						vibrate(2000); //Vibrate to notify user.
+						this.refreshWallet({ reconnectToElectrum: true }); //Refresh wallet.
+						//this.subscribeAddress();
+					}
+				} catch (e) {
+					console.log(e);
+				}
+			};
+			electrum.subscribeAddress({
+				id: scriptHash.data,
+				address: scriptHash.data,
+				coin: selectedCrypto,
+				onReceive
+			});
+		} catch (e) {console.log(e);}
 	};
 	
 	authenticateUserWithBiometrics = () => {
@@ -1589,7 +1649,7 @@ export default class App extends Component {
 	};
 	
 	//Returns the next available empty address of the selected crypto.
-	getQrCodeAddress = () => {
+	getNextAvailableAddress = () => {
 		try {
 			const {selectedWallet, selectedCrypto} = this.props.wallet;
 			const addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
@@ -1797,7 +1857,7 @@ export default class App extends Component {
 									style={[styles.ReceiveTransaction, {opacity: this.state.receiveTransactionOpacity}]}
 								>
 									<ReceiveTransaction
-										address={this.getQrCodeAddress()}
+										address={this.getNextAvailableAddress()}
 										selectedCrypto={this.props.wallet.selectedCrypto}
 										size={200}
 									/>
