@@ -68,6 +68,9 @@ const {
 	loginWithBitid,
 	vibrate
 } = require("../utils/helpers");
+const {
+	defaultWalletShape
+} = require("../utils/networks");
 const {width} = Dimensions.get("window");
 const bip39 = require("bip39");
 this.subscribedAddress = ""; //Holds currently subscribed address
@@ -221,42 +224,38 @@ export default class App extends Component {
 	};
 	
 	//TODO: Remove this in version 1.0.0
-	migrateToNewWalletModel = async () => {
+	retainPreviousDerivationPath = async () => {
+		const retainPath = async () => {
+			try {
+				let wallets = {};
+				//Retain the old paths for all existing wallets.
+				await Promise.all(this.props.wallet.walletOrder.map(async (wallet) => {
+					try {
+						wallets[wallet] = {
+							...this.props.wallet.wallets[wallet],
+							coinTypePath: {
+								...defaultWalletShape.coinTypePath,
+								litecoin: 0,
+								litecoinTestnet: 1
+							}
+						};
+					} catch (e) {}
+				}));
+				await this.props.updateWallet({
+					...this.props.wallet,
+					wallets
+				});
+			} catch (e) {}
+		};
 		return new Promise(async (resolve) => {
 			try {
-				//Update to the new wallet model and add walletOrder
-				if (Array.isArray(this.props.wallet.wallets)) {
-					let wallets = {};
-					await Promise.all(
-						this.props.wallet.wallets.map(async (wallet) => {
-							wallets[wallet] = this.props.wallet[wallet];
-						})
-					);
-					await this.props.updateWallet({
-						...this.props.wallet,
-						walletOrder: this.props.wallet.wallets,
-						wallets
-					});
-					resolve({error: false});
-				} else {
-					//The app has already switched to the new wallet model.
-					//Check if walletOrder exists and create it if necessary.
-					let walletOrderExists = false;
-					try {
-						if (Array.isArray(this.props.wallet.walletOrder)) walletOrderExists = true;
-					} catch (e) {
-					}
-					if (!walletOrderExists) {
-						await this.props.updateWallet({
-							...this.props.wallet,
-							walletOrder: Object.keys(this.props.wallet.wallets)
-						});
-						resolve({error: false});
-					}
-					resolve({error: false});
-				}
+				const {selectedWallet} = this.props.wallet;
+				if (this.props.wallet.wallets[selectedWallet]["coinTypePath"]) return resolve({error: false});
+				await retainPath();
+				resolve({error: false});
 			} catch (e) {
-				resolve({error: true});
+				await retainPath();
+				resolve({error: false});
 			}
 		});
 	};
@@ -270,9 +269,6 @@ export default class App extends Component {
 		];
 		await this.updateItems(items);
 		
-		//Attempt to migrate any old wallets to the new wallet model
-		//await this.migrateToNewWalletModel();
-		
 		//Determine if the user has any existing wallets. Create a new wallet if so.
 		let walletLength = 0;
 		try {
@@ -283,6 +279,9 @@ export default class App extends Component {
 			this.createWallet("wallet0", true);
 			return;
 		}
+		
+		//Attempt to migrate to the new derivation path
+		await this.retainPreviousDerivationPath();
 		
 		try {
 			const onBack = () => {
