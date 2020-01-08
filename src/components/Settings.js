@@ -10,11 +10,13 @@ import {
 	ActivityIndicator,
 	Platform,
 	TextInput,
-	Easing
-} from "react-native";
+	Easing,
+	Linking,
+} from 'react-native';
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import FontAwesome from "react-native-vector-icons/FontAwesome";
 import DefaultModal from "./DefaultModal";
 import XButton from "./XButton";
 import PinPad from "./PinPad";
@@ -1050,6 +1052,14 @@ class Settings extends PureComponent {
 								col1Loading={this.state.rescanningWallet}
 								col1Image={<MaterialCommunityIcons name="radar" size={50} color={colors.purple} />}
 								onPress={this.rescanWallet}
+								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
+								col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", textAlign: "center" }}
+							/>
+							
+							<SettingGeneral
+								value={`Need Some Help?\nsupport@ferrymanfin.com`}
+								col1Image={<FontAwesome name="support" size={50} color={colors.purple} />}
+								onPress={() => Linking.openURL("mailto:support@ferrymanfin.com?subject=Requesting Some Help").catch((e) => console.log(e))}
 								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
