@@ -34,7 +34,7 @@ const _DefaultModal = ({ isVisible = false, onClose = () => null, style = {}, co
 			backdropOpacity={0.1}
 			propagateSwipe={true}
 		>
-			<View style={[styles.modalContainer, { ...style }]}>
+			<View style={[styles.modalContainer, style]}>
 				{type === "ScrollView" &&
 				<ScrollView  style={[styles.modalScrollView, { ...contentStyle }]}>
 					{children}
@@ -60,10 +60,9 @@ _DefaultModal.protoTypes = {
 
 const styles = StyleSheet.create({
 	modalContainer: {
-		flex: 1,
 		alignSelf: "center",
-		marginBottom: 80,
-		marginTop: 25
+		width: "100%",
+		height: "80%"
 	},
 	modalScrollView: {
 		flex: 1,

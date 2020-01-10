@@ -45,6 +45,8 @@ import * as electrum from "../utils/electrum";
 import nodejs from "nodejs-mobile-react-native";
 import bitcoinUnits from "bitcoin-units";
 import DefaultModal from "./DefaultModal";
+import Welcome from "./Welcome";
+import BackupPhrase from './BackupPhrase';
 //import ElectrumTesting from "./ElectrumTesting";
 const uuidv4 = require("uuid/v4");
 const {UIManager} = NativeModules;
@@ -56,7 +58,6 @@ const {
 } = require("../../ProjectData.json");
 const {
 	parsePaymentRequest,
-	getDifferenceBetweenDates,
 	isOnline,
 	getNetworkType,
 	pauseExecution,
@@ -66,11 +67,16 @@ const {
 	validatePrivateKey,
 	getTransactionSize,
 	loginWithBitid,
-	vibrate
+	vibrate,
+	getKeychainValue
 } = require("../utils/helpers");
 const {
 	defaultWalletShape
 } = require("../utils/networks");
+const moment = require("moment");
+const {
+	version
+} = require("../../package");
 const {width} = Dimensions.get("window");
 const bip39 = require("bip39");
 this.subscribedAddress = ""; //Holds currently subscribed address
@@ -128,6 +134,11 @@ export default class App extends Component {
 		
 		displayBitidModal: false,
 		bitidData: { uri: "", host: "" },
+		
+		displayWelcomeModal: false,
+		
+		displayBackupPhrase: false,
+		backupPhrase: [],
 		
 		appState: AppState.currentState,
 		appHasLoaded: false,
@@ -235,8 +246,8 @@ export default class App extends Component {
 							...this.props.wallet.wallets[wallet],
 							coinTypePath: {
 								...defaultWalletShape.coinTypePath,
-								litecoin: 0,
-								litecoinTestnet: 1
+								litecoin: "0",
+								litecoinTestnet: "1"
 							}
 						};
 					} catch (e) {}
@@ -258,6 +269,28 @@ export default class App extends Component {
 				resolve({error: false});
 			}
 		});
+	};
+	
+	//TODO Remove this in 1.0.0
+	hasIncorrectPath = () => {
+		try {
+			const {selectedWallet} = this.props.wallet;
+			const wallet = this.props.wallet.wallets[selectedWallet];
+			return wallet.coinTypePath["litecoin"] === "0" && wallet.confirmedBalance["litecoin"] > 0;
+		} catch (e) {
+			return true;
+		}
+	};
+	
+	isNewVersion = () => {
+		try {
+			if (version === this.props.settings.version) return false;
+			this.props.updateSettings({ version });
+			return true;
+		} catch (e) {
+			try {this.props.updateSettings({ version });} catch (e) {}
+			return true;
+		}
 	};
 	
 	launchDefaultFuncs = async ({displayLoading = true, resetView = true} = {}) => {
@@ -282,6 +315,9 @@ export default class App extends Component {
 		
 		//Attempt to migrate to the new derivation path
 		await this.retainPreviousDerivationPath();
+		
+		//Display Welcome modal if a new version has been released.
+		if (this.isNewVersion()) this.setState({ displayWelcomeModal: true });
 		
 		try {
 			const onBack = () => {
@@ -1515,6 +1551,12 @@ export default class App extends Component {
 		} catch (e) {}
 	};
 	
+	_closeWelcomeModal = () => {
+		try {
+			this.setState({ displayWelcomeModal: false });
+		} catch (e) {}
+	};
+	
 	_loginWithBitid = async () => {
 		try {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
@@ -1744,6 +1786,45 @@ export default class App extends Component {
 		}
 	};
 	
+	hasBackedUpWallet = () => {
+		try {
+			return this.props.wallet.wallets[this.props.wallet.selectedWallet].hasBackedUpWallet;
+		} catch (e) {return false;}
+	};
+	
+	toggleBackupPhrase = async () => {
+		try {
+			if (this.state.isAnimating || !this.state.appHasLoaded) return;
+			const { selectedWallet } = this.props.wallet;
+			if (!selectedWallet) return;
+			const displayBackupPhrase = this.state.displayBackupPhrase;
+			if (!displayBackupPhrase) {
+				//Fetch Recovery Phrase
+				const keychainResult = await getKeychainValue({key: selectedWallet});
+				if (keychainResult.error === true) return;
+				const mnemonic = keychainResult.data.password;
+				const backupPhrase = mnemonic.split(" ");
+				let phrase = [];
+				backupPhrase.forEach((word, i) => phrase.push({ id: i+1, word: backupPhrase[i] }));
+				await this.setState({ backupPhrase: phrase, displayBackupPhrase: !displayBackupPhrase });
+				this.props.updateWallet({
+					wallets: {
+						...this.props.wallet.wallets,
+						[selectedWallet]: {
+							...this.props.wallet.wallets[selectedWallet],
+							hasBackedUpWallet: true,
+							walletBackupTimestamp: moment()
+						}
+					}
+				});
+			} else {
+				this.setState({backupPhrase: "", displayBackupPhrase: false});
+			}
+		} catch (e) {
+			console.log(e);
+		}
+	};
+	
 	render() {
 		//return <ElectrumTesting />;
 		return (
@@ -1818,15 +1899,18 @@ export default class App extends Component {
 								</Animated.View>}
 								
 								<Animated.View style={[styles.priceHeader, {opacity: this.state.priceHeaderOpacity}]}>
-									<TouchableOpacity onPress={this.onSelectCoinPress} style={{
+									<TouchableOpacity onPress={this.hasBackedUpWallet() ? this.onSelectCoinPress : this.toggleBackupPhrase} style={{
 										position: "absolute",
 										top: 0,
-										paddingTop: 10,
-										paddingBottom: 20,
-										paddingHorizontal: 30
+										paddingVertical: 5,
+										paddingHorizontal: 15,
+										backgroundColor: "transparent",
+										borderRadius: 10,
+										borderColor: this.hasBackedUpWallet() ? "transparent" : colors.white,
+										borderWidth: 1.5
 									}}
 									>
-										<Text style={styles.cryptoValue}>{this.getWalletName()}</Text>
+										<Text style={styles.cryptoValue}>{this.hasBackedUpWallet() ? this.getWalletName() : `${this.getWalletName()} is not backed up.\nTap to backup now.`}</Text>
 									</TouchableOpacity>
 									<Header
 										fiatValue={this.getFiatBalance()}
@@ -1971,6 +2055,46 @@ export default class App extends Component {
 						onPress={this.resetView}
 					/>
 				</Animated.View>}
+				
+				<DefaultModal
+					isVisible={this.state.displayWelcomeModal}
+					onClose={this._closeWelcomeModal}
+					type="ScrollView"
+					style={styles.modal}
+					contentStyle={styles.modalContent}
+				>
+					<Welcome>
+						{this.state.displayWelcomeModal && this.hasIncorrectPath() &&
+							<View>
+								<Text style={[styles.boldText, { color: colors.red, fontSize: 22, marginTop: 10 }]}>
+									Attention Litecoin Users
+								</Text>
+								<Text style={[styles.text, { textAlign: "left", color: colors.red, fontSize: 22, marginTop: 10 }]}>
+									Litecoin's derivation path will be updated in the next build. Please move your LTC out of the wallet prior to updating to the next version. Otherwise, the app will not automatically detect your funds.
+								</Text>
+								<Text style={[styles.text, { textAlign: "left", color: colors.red, fontSize: 22, marginTop: 5 }]}>
+									While this type of change is an expected part of participating in a beta, I apologize for the inconvenience. If you have any questions please reach out at support@ferrymanfin.com.
+								</Text>
+							</View>
+						}
+					</Welcome>
+				</DefaultModal>
+
+				<DefaultModal
+					isVisible={this.state.displayBackupPhrase}
+					onClose={this.toggleBackupPhrase}
+					type="View"
+					style={styles.modal}
+					contentStyle={styles.modalContent}
+				>
+					<View style={{ flex: 1, justifyContent: "center" }}>
+						<Text style={[styles.boldText, { position: "absolute", top: 20, left: 0, right: 0 }]}>{this.getWalletName()}</Text>
+						<BackupPhrase
+							phrase={this.state.backupPhrase}
+							onPress={this.toggleBackupPhrase}
+						/>
+					</View>
+				</DefaultModal>
 				
 				<DefaultModal
 					isVisible={this.state.displayBitidModal}
@@ -2131,9 +2255,6 @@ const styles = StyleSheet.create({
 		backgroundColor: "transparent"
 	},
 	modal: {
-		flex: 0,
-		height: "40%",
-		width: "100%",
 	},
 	modalContent: {
 		borderWidth: 5,
@@ -2145,7 +2266,7 @@ const styles = StyleSheet.create({
 		minWidth: "20%",
 		paddingHorizontal: 15,
 		paddingVertical: 9,
-	},
+	}
 });
 
 const connect = require("react-redux").connect;
