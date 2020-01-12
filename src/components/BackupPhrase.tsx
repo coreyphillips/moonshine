@@ -59,7 +59,7 @@ const styles = StyleSheet.create({
 		backgroundColor: colors.white,
 		borderRadius: 15,
 		alignSelf: "center",
-		marginBottom: 20
+		marginVertical: 20
 	},
 	listItem: {
 		flexDirection: "row"

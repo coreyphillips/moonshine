@@ -2088,7 +2088,6 @@ export default class App extends Component {
 					contentStyle={styles.modalContent}
 				>
 					<View style={{ flex: 1, justifyContent: "center" }}>
-						<Text style={[styles.boldText, { position: "absolute", top: 20, left: 0, right: 0 }]}>{this.getWalletName()}</Text>
 						<BackupPhrase
 							phrase={this.state.backupPhrase}
 							onPress={this.toggleBackupPhrase}
