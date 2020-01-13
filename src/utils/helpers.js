@@ -24,7 +24,8 @@ const bip21 = require("bip21");
 const Url = require("url-parse");
 const {
 	availableCoins,
-	supportsRbf
+	supportsRbf,
+	defaultWalletShape
 } = require("../utils/networks");
 
 export const setItem = async (key, value) => {
@@ -533,8 +534,7 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 			resolve({error: true, data});
 		};
 		try {
-			const networkType = getNetworkType(selectedCrypto); //Returns mainnet or testnet
-			const networkValue = networkType === "testnet" ? 1 : 0; //Used to modify the derivation path accordingly
+			const coinTypePath = defaultWalletShape.coinTypePath[selectedCrypto];
 			const network = networks[selectedCrypto]; //Returns the network object based on the selected crypto.
 			const keychainResult = await getKeychainValue({ key: wallet });
 			addressType = addressType.toLowerCase();
@@ -560,7 +560,7 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 			await Promise.all(
 				addressArray.map(async (item, i) => {
 					try {
-						const addressPath = `m/${keyDerivationPath}'/${networkValue}'/0'/0/${i + addressIndex}`;
+						const addressPath = `m/${keyDerivationPath}'/${coinTypePath}'/0'/0/${i + addressIndex}`;
 						const addressKeypair = root.derivePath(addressPath);
 						const address = await getAddress(addressKeypair, network, addressType);
 						//console.log(`Log: Created address ${i + addressIndex}: ${address}`);
@@ -570,7 +570,7 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 				}),
 				changeAddressArray.map(async (item, i) => {
 					try {
-						const changeAddressPath = `m/${keyDerivationPath}'/${networkValue}'/0'/1/${i + changeAddressIndex}`;
+						const changeAddressPath = `m/${keyDerivationPath}'/${coinTypePath}'/0'/1/${i + changeAddressIndex}`;
 						const changeAddressKeypair = root.derivePath(changeAddressPath);
 						const address = await getAddress(changeAddressKeypair, network, addressType);
 						changeAddresses.push({ address, path: changeAddressPath });

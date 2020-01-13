@@ -871,12 +871,11 @@ class Settings extends PureComponent {
 	
 	render() {
 		const { selectedWallet, selectedCrypto } = this.props.wallet;
+		const coinTypePath = defaultWalletShape.coinTypePath[selectedCrypto];
 		let coinDataLabel = "?";
 		try {coinDataLabel = getCoinData({ selectedCrypto, cryptoUnit: "BTC" });} catch (e) {}
 		let keyDerivationPath = "84";
 		try {keyDerivationPath = this.props.wallet.wallets[selectedWallet].keyDerivationPath[selectedCrypto];} catch (e) {}
-		let isTestnet = true;
-		try {isTestnet = selectedCrypto.includes("Testnet");} catch (e) {}
 		let addressType = "bech32";
 		try {addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];} catch (e) {}
 		const cryptoLabel = capitalize(selectedCrypto);
@@ -997,7 +996,7 @@ class Settings extends PureComponent {
 							
 							{this.MultiOptionRow({
 								title: "Key Derivation Path",
-								subTitle: `m/${keyDerivationPath}'/0'/0'/${isTestnet ? 1 : 0}/0`,
+								subTitle: `m/${keyDerivationPath}'/${coinTypePath}'/0'/0/0`,
 								currentValue: keyDerivationPath,
 								options:[
 									{value: "0", onPress: () => this.updateKeyDerivationPath({ keyDerivationPath: "0" }) },
