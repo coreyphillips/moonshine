@@ -41,33 +41,34 @@ If you are looking for secure cold storage solutions please consider purchasing 
 4. Start the project:
     - iOS: `react-native run-ios`
     - Android: `react-native run-android`
-### Roadmap
-
-* 0.1.0 Alpha - *Complete*
+### Feature Roadmap
+* Complete:
     * Bitcoin/Litecoin Mainnet & Testnet supported
     * Bech32 support
     * Multiple wallet support
     * Electrum
-        * Support for both random and custom peer selection
+        * Support for both random and custom peers
     * Encrypted storage
     * Biometric + Pin authentication
     * Custom fee selection
     * Import mnemonic phrases via manual entry or scanning
-* 0.2.0 Alpha - *Complete*
-    * Implement RBF functionality
+    * RBF functionality
     * Add BIP39 Passphrase functionality
     * Add support for Segwit-compatible & legacy addresses in settings
     * Allow users to select the key derivation path in settings
-    * Support individual private key sweeping functionality
+    * Support individual private key sweeping
     * *Partially Complete (0.1.1)* - Add support for UTXO blacklisting - Blacklist functionality can be accessed via the Transaction Detail view for now.
         * This allows users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo excludes it's amount from the wallet's total balance.
-* 0.3.0 Alpha
-    * *Complete (0.2.0)* - Sign & Verify Messages
-    * *In Progress* - Add support for Lightning via Neutrino
-    * Transition to TypeScript
+    * Ability to Sign & Verify Messages
+    * Support BitID for passwordless authentication
+
+* In Progress:
     * Add a UTXO selector to create custom transactions
         * This will allow users to select from a list of available utxo's to include in their transaction.
-    * Add support for additional currencies in the settings
+    * Add support for additional fiat currencies in the settings
+
+For a complete, up-to-date list of in-progress features please refer to Moonshine's [issue page.](https://github.com/coreyphillips/moonshine/issues)
+If you do not see a feature that you want feel free to create a new issue requesting it or reach out at support@ferrymanfin.com and let me know.
 
 ### Contributing
 
@@ -87,7 +88,16 @@ Please be aware and take note that my primary focus is on expanding the core fun
 
 Supported Derivation Paths: m/0' | 44' | 49' | 84' /0'/0'
 
-If you have any questions, feature requests, etc., please feel free to create an issue on [Github](https://github.com/coreyphillips/moonshine/issues), reach out to me on [Twitter](https://twitter.com/coreylphillips) or send an email to corey@ferrymanfin.com.
+Again, if you have any questions, feature requests, etc., please feel free to create an issue on [Github](https://github.com/coreyphillips/moonshine/issues), reach out to me on [Twitter](https://twitter.com/coreylphillips) or send an email to corey@ferrymanfin.com.
+
+### Donate
+
+I built this app to learn and have fun. I never intend to monetize or turn a profit on this app so if you found it useful, cool or interesting please consider donating:
+
+ - **Bitcoin:** bc1qm6knmtrk5jfyt57rwkm8j74kxskxyrl504tlc9
+ - **Bitcoin Testnet:** tb1qxvg88t7a498yfdxgs4rjaz3r75dyr64h5r5wd7
+ - **Litecoin:** ltc1qrctkm565xale82pjt6nsxsyvvmln2qz8dpf6q9
+ - **Litecoin Testnet:** tltc1qxvg88t7a498yfdxgs4rjaz3r75dyr64hdtksah
 
 ### Meta
 

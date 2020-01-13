@@ -35,6 +35,12 @@
       "darkPurple": "#57158f",
       "mediumPurple": "#5d2390",
       "lightPurple": "#a25ad7"
+    },
+    "donationAddresses": {
+      "bitcoin": "bc1qm6knmtrk5jfyt57rwkm8j74kxskxyrl504tlc9",
+      "bitcoinTestnet": "tb1qxvg88t7a498yfdxgs4rjaz3r75dyr64h5r5wd7",
+      "litecoin": "ltc1qrctkm565xale82pjt6nsxsyvvmln2qz8dpf6q9",
+      "litecoinTestnet": "tltc1qxvg88t7a498yfdxgs4rjaz3r75dyr64hdtksah"
     }
   }
 }

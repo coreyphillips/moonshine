@@ -271,17 +271,6 @@ export default class App extends Component {
 		});
 	};
 	
-	//TODO Remove this in 1.0.0
-	hasIncorrectPath = () => {
-		try {
-			const {selectedWallet} = this.props.wallet;
-			const wallet = this.props.wallet.wallets[selectedWallet];
-			return wallet.coinTypePath["litecoin"] === "0" && wallet.confirmedBalance["litecoin"] > 0;
-		} catch (e) {
-			return true;
-		}
-	};
-	
 	isNewVersion = () => {
 		try {
 			if (version === this.props.settings.version) return false;
@@ -1147,9 +1136,12 @@ export default class App extends Component {
 	};
 	
 	//Handles the series of animations necessary when the user taps "Send"
-	onSendPress = async () => {
+	onSendPress = async ({ address = "", amount = 0 } = {}) => {
 		try {
 			if (this.state.isAnimating || !this.state.appHasLoaded) return;
+			
+			if (address || amount) await this.props.updateTransaction({ address, amount });
+			
 			//Open Send State
 			const items = [
 				{stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250},
@@ -1157,7 +1149,8 @@ export default class App extends Component {
 				{stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 250},
 				{stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200},
 				{stateId: "displayXButton", opacityId: "xButtonOpacity", display: true},
-				{stateId: "displayTextInput", opacityId: "textInputOpacity", display: true, duration: 600}
+				{stateId: "displayTextInput", opacityId: "textInputOpacity", display: true, duration: 600},
+				{stateId: "displaySettings", opacityId: "settingsOpacity", display: false},
 			];
 			this.updateItems(items);
 			this.updateFlex({upperContentFlex: 1, lowerContentFlex: 0});
@@ -1895,6 +1888,7 @@ export default class App extends Component {
 										createNewWallet={this.createNewWallet}
 										onBack={this.resetView}
 										refreshWallet={this.refreshWallet}
+										onSendPress={this.onSendPress}
 									/>
 								</Animated.View>}
 								
@@ -2063,21 +2057,7 @@ export default class App extends Component {
 					style={styles.modal}
 					contentStyle={styles.modalContent}
 				>
-					<Welcome>
-						{this.state.displayWelcomeModal && this.hasIncorrectPath() &&
-							<View>
-								<Text style={[styles.boldText, { color: colors.red, fontSize: 22, marginTop: 10 }]}>
-									Attention Litecoin Users
-								</Text>
-								<Text style={[styles.text, { textAlign: "left", color: colors.red, fontSize: 22, marginTop: 10 }]}>
-									Litecoin's derivation path will be updated in the next build. Please move your LTC out of the wallet prior to updating to the next version. Otherwise, the app will not automatically detect your funds.
-								</Text>
-								<Text style={[styles.text, { textAlign: "left", color: colors.red, fontSize: 22, marginTop: 5 }]}>
-									While this type of change is an expected part of participating in a beta, I apologize for the inconvenience. If you have any questions please reach out at support@ferrymanfin.com.
-								</Text>
-							</View>
-						}
-					</Welcome>
+					<Welcome />
 				</DefaultModal>
 
 				<DefaultModal

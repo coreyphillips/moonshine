@@ -17,6 +17,7 @@ import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
+import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import DefaultModal from "./DefaultModal";
 import XButton from "./XButton";
 import PinPad from "./PinPad";
@@ -31,7 +32,8 @@ import BackupPhrase from './BackupPhrase';
 
 const {
 	Constants: {
-		colors
+		colors,
+		donationAddresses
 	}
 } = require("../../ProjectData.json");
 
@@ -117,6 +119,14 @@ const walletHelpItems = [
 		title: "Rescan Wallet:",
 		text: `Tapping this item prompts the wallet to rescan all addresses based on the selected "Key Derivation Path" starting at 0.`
 	},
+	{
+		title: "Support:",
+		text: "Tapping this will prompt you to send an email to support. Please utilize this option and reach out if you have any questions whatsoever."
+	},
+	{
+		title: "Donate:",
+		text: `Tapping this will redirect you to the "Send Transaction" view with a pre-filled address to donate to. I built this app to learn and have fun. I never intend to monetize or turn a profit on this app so if you found it useful please consider donating.`
+	}
 ];
 
 class Settings extends PureComponent {
@@ -869,6 +879,22 @@ class Settings extends PureComponent {
 		} catch (e) {return false;}
 	};
 	
+	requestHelp = () => {
+		try {
+			Linking.openURL("mailto:support@ferrymanfin.com?subject=Requesting Some Help").catch((e) => console.log(e));
+		} catch (e) {}
+	};
+	
+	donate = async () => {
+		try {
+			const { selectedCrypto } = this.props.wallet;
+			let address = "";
+			try {address = donationAddresses[selectedCrypto];} catch (e) {}
+			if (!address) return;
+			this.props.onSendPress({ address });
+		} catch (e) {}
+	};
+	
 	render() {
 		const { selectedWallet, selectedCrypto } = this.props.wallet;
 		const coinTypePath = defaultWalletShape.coinTypePath[selectedCrypto];
@@ -932,7 +958,7 @@ class Settings extends PureComponent {
 								value="Import Mnemonic Phrase"
 								onPress={() => this.toggleImportPhrase({ display: true })}
 								col1Image={<MaterialCommunityIcons name="import" size={50} color={colors.purple} />}
-								col2Style={{flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10}}
+								col2Style={{flex: 1.2, alignItems: "center", justifyContent: "center", paddingRight: 10}}
 								titleStyle={{color: colors.purple}}
 								valueStyle={{color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold"}}
 							/>
@@ -942,7 +968,7 @@ class Settings extends PureComponent {
 								value="Electrum Options"
 								onPress={() => this.toggleElectrumOptions({ display: true })}
 								col1Image={<MaterialCommunityIcons name="alpha-e-box" size={50} color={colors.purple} />}
-								col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 }}
+								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", paddingRight: 10 }}
 								titleStyle={{ color: colors.purple }}
 								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 							/>
@@ -1041,7 +1067,7 @@ class Settings extends PureComponent {
 								onPress={() => this.toggleBackupPhrase({ selectedWallet, display: true })}
 								rowStyle={this.hasBackedUpWallet() ? { backgroundColor: colors.white } : { backgroundColor: colors.red }}
 								col1Image={<MaterialCommunityIcons name="wallet" size={50} color={this.hasBackedUpWallet() ? colors.purple : colors.white} />}
-								col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingRight: 10 }}
+								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", paddingRight: 10 }}
 								titleStyle={{ color: this.hasBackedUpWallet() ? colors.purple : colors.white }}
 								valueStyle={{ color: this.hasBackedUpWallet() ? colors.purple : colors.white, fontSize: 16, textAlign: "center", fontWeight: this.hasBackedUpWallet() ? "normal" : "bold" }}
 							/>
@@ -1052,15 +1078,23 @@ class Settings extends PureComponent {
 								col1Image={<MaterialCommunityIcons name="radar" size={50} color={colors.purple} />}
 								onPress={this.rescanWallet}
 								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
-								col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", textAlign: "center" }}
+								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
 							
 							<SettingGeneral
 								value={`Need Some Help?\nsupport@ferrymanfin.com`}
 								col1Image={<FontAwesome name="support" size={50} color={colors.purple} />}
-								onPress={() => Linking.openURL("mailto:support@ferrymanfin.com?subject=Requesting Some Help").catch((e) => console.log(e))}
+								onPress={this.requestHelp}
 								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
-								col2Style={{ flex: 1, alignItems: "center", justifyContent: "center", textAlign: "center" }}
+								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
+							/>
+							
+							<SettingGeneral
+								value={`Found this app useful?\nPlease consider donating`}
+								col1Image={<FontAwesome5 name="coins" size={40} color={colors.purple} />}
+								onPress={this.donate}
+								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
+								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
 
 							<View style={{ paddingVertical: 70 }} />
@@ -1171,7 +1205,8 @@ Settings.defaultProps = {
 Settings.propTypes = {
 	createNewWallet: PropTypes.func.isRequired,
 	onBack: PropTypes.func.isRequired,
-	refreshWallet: PropTypes.func.isRequired
+	refreshWallet: PropTypes.func.isRequired,
+	onSendPress: PropTypes.func
 };
 
 
