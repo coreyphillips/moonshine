@@ -20,6 +20,8 @@ const {
 const getAnimation = (name = "astronaut") => {
 	try {
 		switch (name) {
+			case "moonshine":
+				return require(`../assets/lottie/moonshine.json`);
 			case "book":
 				return require(`../assets/lottie/loading_book.json`);
 			case "loader":
@@ -71,7 +73,7 @@ const _Loading = ({loadingOpacity = 0, loadingMessage = "Loading State", loading
 				source={getAnimation(animationName)}
 				autoPlay={true}
 				loop={true}
-				style={{ width: 150, height: 150, marginBottom: 10 }}
+				style={{ width: animationName === "moonshine" ? 180 : 150, height: animationName === "moonshine" ? 180 : 150, marginBottom: 10 }}
 			/>
 		);
 	};

@@ -159,7 +159,7 @@ export default class App extends Component {
 		loadingMessage: "",
 		loadingProgress: 0,
 		loadingTransactions: true,
-		loadingAnimationName: "astronaut",
+		loadingAnimationName: "moonshine",
 		isAnimating: false
 	};
 	
@@ -900,7 +900,7 @@ export default class App extends Component {
 				this.setState({
 					loadingMessage: "Finished Creating Wallet",
 					loadingProgress: 0.3,
-					loadingAnimationName: "astronaut"
+					loadingAnimationName: "moonshine"
 				});
 			}
 			this.launchDefaultFuncs({displayLoading: false});
