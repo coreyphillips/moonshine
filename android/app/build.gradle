@@ -147,7 +147,7 @@ android {
         applicationId "com.kisswallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 33
+        versionCode 34
         versionName "0.2.0"
         multiDexEnabled true
         missingDimensionStrategy 'react-native-camera', 'general'
@@ -218,7 +218,6 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'
     // Add v8-android - prebuilt libv8.so into APK
     implementation 'org.chromium:v8-android:+'
-    implementation project(":Lndmobile")
     if (enableHermes) {
         def hermesPath = "../../node_modules/hermes-engine/android/";
         debugImplementation files(hermesPath + "hermes-debug.aar")
