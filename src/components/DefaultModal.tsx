@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
 	modalContainer: {
 		alignSelf: "center",
 		width: "100%",
-		height: "80%"
+		height: "84%"
 	},
 	modalScrollView: {
 		flex: 1,

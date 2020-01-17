@@ -9,13 +9,9 @@ const {
 } = require("../../ProjectData.json");
 
 const updates = [
-	"Moonshine will now automatically refresh when new blocks and transactions for the active wallet are detected.",
-	"FaceID will no longer loop when coming from a background state.",
-	"Private key sweep functionality has been restored for legacy and segwit-compatible addresses.",
-	"The transaction list should no longer flicker on iOS devices.",
-	"Added verbiage to the main screen to encourage users to view and backup their mnemonic phrase if they haven't already.",
-	"Added support email to Settings.",
-	`I added this "Welcome" modal to relay updates and important information when new versions of the app are released.`
+	"Added coin control features to the Send Transaction view.",
+	"Updated Litecoin derivation paths.",
+	"Message signing now works for Litecoin."
 ];
 
 const _Welcome = ({ children }) => {
@@ -30,7 +26,7 @@ const _Welcome = ({ children }) => {
 			<Text style={styles.header}>Welcome!</Text>
 			<View style={{ width: "85%" }}>
 				{children}
-				<Text style={styles.subHeader}>Updates in this build include:</Text>
+				<Text style={[styles.subHeader, { textAlign: "center" }]}>Updates in this build include:</Text>
 				{updates.map((update, i) => <Text key={update} style={styles.text}><Text style={styles.semiBoldText}>{i+1}. </Text>{update}</Text>)}
 				
 				<Text style={styles.subHeader}>Questions?</Text>
@@ -71,7 +67,7 @@ const styles = StyleSheet.create({
 		fontSize: 26
 	},
 	text: {
-		...systemWeights.light,
+		...systemWeights.regular,
 		fontSize: 20,
 		alignSelf: "flex-start",
 		textAlign: "left",
