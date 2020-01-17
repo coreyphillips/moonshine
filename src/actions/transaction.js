@@ -58,6 +58,7 @@ export const getRecommendedFee = ({ coin = "bitcoin", transactionSize = 256 } = 
 			console.log(e);
 			failure();
 		}
+		if (recommendedFee < 1) recommendedFee = 1;
 		const feeTimestamp = moment().format();
 		const data = {
 			recommendedFee,

@@ -1811,7 +1811,7 @@ export default class App extends Component {
 					}
 				});
 			} else {
-				this.setState({backupPhrase: "", displayBackupPhrase: false});
+				this.setState({backupPhrase: [], displayBackupPhrase: false});
 			}
 		} catch (e) {
 			console.log(e);
