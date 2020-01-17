@@ -234,43 +234,6 @@ export default class App extends Component {
 		}
 	};
 	
-	//TODO: Remove this in version 1.0.0
-	retainPreviousDerivationPath = async () => {
-		const retainPath = async () => {
-			try {
-				let wallets = {};
-				//Retain the old paths for all existing wallets.
-				await Promise.all(this.props.wallet.walletOrder.map(async (wallet) => {
-					try {
-						wallets[wallet] = {
-							...this.props.wallet.wallets[wallet],
-							coinTypePath: {
-								...defaultWalletShape.coinTypePath,
-								litecoin: "0",
-								litecoinTestnet: "1"
-							}
-						};
-					} catch (e) {}
-				}));
-				await this.props.updateWallet({
-					...this.props.wallet,
-					wallets
-				});
-			} catch (e) {}
-		};
-		return new Promise(async (resolve) => {
-			try {
-				const {selectedWallet} = this.props.wallet;
-				if (this.props.wallet.wallets[selectedWallet]["coinTypePath"]) return resolve({error: false});
-				await retainPath();
-				resolve({error: false});
-			} catch (e) {
-				await retainPath();
-				resolve({error: false});
-			}
-		});
-	};
-	
 	isNewVersion = () => {
 		try {
 			if (version === this.props.settings.version) return false;
@@ -301,9 +264,6 @@ export default class App extends Component {
 			this.createWallet("wallet0", true);
 			return;
 		}
-		
-		//Attempt to migrate to the new derivation path
-		await this.retainPreviousDerivationPath();
 		
 		//Display Welcome modal if a new version has been released.
 		if (this.isNewVersion()) this.setState({ displayWelcomeModal: true });
