@@ -8,6 +8,7 @@ import * as Keychain from "react-native-keychain";
 //import { decode as atob } from 'base-64';
 import "../../shim";
 import { randomBytes } from "react-native-randombytes";
+import bitcoinUnits from 'bitcoin-units';
 
 const {
 	networks
@@ -650,6 +651,16 @@ const openUrl = (url = "") => {
 	}
 };
 
+const openTxId = (txid = "", selectedCrypto = ""): void => {
+	if (!txid || !selectedCrypto) return;
+	let url = "";
+	if (selectedCrypto === "bitcoin") url = `https://blockstream.info/tx/${txid}`;
+	if (selectedCrypto === "bitcoinTestnet") url = `https://blockstream.info/testnet/tx/${txid}`;
+	if (selectedCrypto === "litecoin") url = `https://chain.so/tx/LTC/${txid}`;
+	if (selectedCrypto === "litecoinTestnet") url = `https://chain.so/tx/LTCTEST/${txid}`;
+	openUrl(url);
+};
+
 const pauseExecution = async (duration = 500) => {
 	return new Promise(async (resolve) => {
 		try {
@@ -875,6 +886,24 @@ const loginWithBitid = async ({ url = "", addressType = "bech32", keyDerivationP
 	}
 };
 
+const getFiatBalance = ({ balance = 0, exchangeRate = 0 } = {}) => {
+	try {
+		bitcoinUnits.setFiat("usd", exchangeRate);
+		const fiatBalance = bitcoinUnits(balance, "satoshi").to("usd").value().toFixed(2);
+		if (isNaN(fiatBalance)) return 0;
+		return Number(fiatBalance);
+	} catch (e) {
+		return 0;
+	}
+};
+
+const sortArrOfObjByKey = (arr = [], key = "", ascending = true) => {
+	try {
+		if (ascending) return arr.sort((a,b) => (a[key] - b[key]));
+		return arr.sort((a,b) => (b[key] - a[key]));
+	} catch (e) {return arr;}
+};
+
 module.exports = {
 	getItem,
 	setItem,
@@ -902,6 +931,7 @@ module.exports = {
 	getNetworkType,
 	capitalize,
 	openUrl,
+	openTxId,
 	pauseExecution,
 	vibrate,
 	shuffleArray,
@@ -914,5 +944,7 @@ module.exports = {
 	verifyMessage,
 	decodeURLParams,
 	getBaseDerivationPath,
-	loginWithBitid
+	loginWithBitid,
+	getFiatBalance,
+	sortArrOfObjByKey
 };

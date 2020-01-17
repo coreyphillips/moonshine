@@ -79,7 +79,8 @@ const DefaultModal = memo(
 	(prevProps, nextProps) => {
 		if (!prevProps || !nextProps) return true;
 		return (
-			nextProps.isVisible === prevProps.isVisible
+			nextProps.isVisible === prevProps.isVisible &&
+			nextProps.children === prevProps.children
 		);
 	}
 );

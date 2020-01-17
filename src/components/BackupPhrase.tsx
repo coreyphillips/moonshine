@@ -18,10 +18,10 @@ const ListItem = ({ id = 0, word = "" } = {}) => {
 };
 
 interface BackupPhraseComponent {
-	onPress: Function,
+	onPress: () => null,
 	phrase: [{id: number, word: string}]
 }
-const _BackupPhrase = ({ phrase = [], onPress = () => null }: BackupPhraseComponent) => {
+const _BackupPhrase = ({ phrase = [{ id: 0, word: "" }], onPress = () => null }: BackupPhraseComponent) => {
 	let p1, p2 = [];
 	try {
 		const halfway = Math.floor(phrase.length / 2);

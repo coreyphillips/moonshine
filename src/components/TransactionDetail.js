@@ -24,6 +24,7 @@ const {
 const {
 	capitalize,
 	openUrl,
+	openTxId,
 	formatNumber,
 	createTransaction,
 	getTransactionSize
@@ -117,16 +118,6 @@ class TransactionDetail extends PureComponent {
 				</View>
 			);
 		} catch (e) {}
-	};
-	
-	openTxId = (txid): void => {
-		let url = "";
-		const selectedCrypto = this.props.wallet.selectedCrypto;
-		if (selectedCrypto === "bitcoin") url = `https://blockstream.info/tx/${txid}`;
-		if (selectedCrypto === "bitcoinTestnet") url = `https://blockstream.info/testnet/tx/${txid}`;
-		if (selectedCrypto === "litecoin") url = `https://chain.so/tx/LTC/${txid}`;
-		if (selectedCrypto === "litecoinTestnet") url = `https://chain.so/tx/LTCTEST/${txid}`;
-		openUrl(url);
 	};
 	
 	openBlock = (block): void => {
@@ -524,7 +515,7 @@ class TransactionDetail extends PureComponent {
 						{type === "received" && this.Row({ title: "Received By\nAddress:", onPress: () => this.openAddress(address), value: address, valueStyle: { textDecorationLine: "underline" } })}
 						{type === "received" && <View style={styles.separator} />}
 						
-						{this.Row({ title: "TxId:", value: hash, onPress: () => this.openTxId(hash), valueStyle: { textDecorationLine: "underline" } })}
+						{this.Row({ title: "TxId:", value: hash, onPress: () => openTxId(hash, selectedCrypto), valueStyle: { textDecorationLine: "underline" } })}
 						<View style={styles.separator} />
 						
 						{this.isActiveUtxo() &&

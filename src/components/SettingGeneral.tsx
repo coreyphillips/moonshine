@@ -71,7 +71,7 @@ _SettingGeneral.propTypes = {
 	value: PropTypes.string,
 	col1Loading: PropTypes.bool,
 	col2Loading: PropTypes.bool,
-	col1Image: PropTypes.string || PropTypes.object,
+	col1Image: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
 	col2Image: PropTypes.string,
 	rowStyle: PropTypes.object,
 	col1Style: PropTypes.object,
