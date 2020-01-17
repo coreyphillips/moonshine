@@ -43,6 +43,7 @@ const getCryptoUnitLabel = (
 };
 
 interface HeaderComponent {
+	compress: boolean,
 	fiatSymbol: string,
 	selectedCrypto: string,
 	selectedWallet: string,
@@ -57,7 +58,7 @@ interface HeaderComponent {
 	cryptoValue: number | string,
 	cryptoUnit: string
 }
-const _Header = ({fiatSymbol = "$", selectedCrypto = "bitcoin", onSelectCoinPress = () => null, isOnline = true, exchangeRate = 0, walletName = "", selectedCryptoStyle = {}, activeOpacity = 0.6, fontSize = 60, fiatValue = 0, cryptoValue = 0, cryptoUnit = "satoshi"}: HeaderComponent) => {
+const _Header = ({compress = false, fiatSymbol = "$", selectedCrypto = "bitcoin", onSelectCoinPress = () => null, isOnline = true, exchangeRate = 0, walletName = "", selectedCryptoStyle = {}, activeOpacity = 0.6, fontSize = 60, fiatValue = 0, cryptoValue = 0, cryptoUnit = "satoshi"}: HeaderComponent) => {
 	try {
 		if (isNaN(fiatValue)) fiatValue = 0;
 		if (cryptoValue === 0 && cryptoUnit === "BTC") {
@@ -78,8 +79,8 @@ const _Header = ({fiatSymbol = "$", selectedCrypto = "bitcoin", onSelectCoinPres
 	return (
 		<TouchableOpacity style={styles.container} activeOpacity={activeOpacity} onPress={_onSelectCoinPress}>
 			{walletName !== "" &&
-			<Text style={[styles.cryptoValue, { fontSize: fontSize/2.5 }]}>{walletName}</Text>}
-			<Text style={[styles.cryptoValue, { fontSize: fontSize/2.5, ...selectedCryptoStyle }]}>{getCryptoLabel({selectedCrypto})}</Text>
+			<Text style={[styles.cryptoValue, { fontSize: fontSize/2.5 }]}>{walletName}{compress && `: ${getCryptoLabel({selectedCrypto})}`}</Text>}
+			{!compress && <Text style={[styles.cryptoValue, { fontSize: fontSize/2.5, ...selectedCryptoStyle }]}>{getCryptoLabel({selectedCrypto})}</Text>}
 			<View style={styles.row}>
 				<View style={{ flexDirection: "row", alignItems: "center", left: -4 }}>
 					<Text style={[styles.fiatSymbol, { fontSize: fontSize/1.5 }]}>{fiatSymbol} </Text>
@@ -101,6 +102,7 @@ const _Header = ({fiatSymbol = "$", selectedCrypto = "bitcoin", onSelectCoinPres
 };
 
 _Header.propTypes = {
+	compress: PropTypes.bool,
 	fiatValue: PropTypes.number,
 	fiatSymbol: PropTypes.string,
 	cryptoValue: PropTypes.number,
