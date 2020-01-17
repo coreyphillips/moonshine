@@ -94,10 +94,10 @@ Again, if you have any questions, feature requests, etc., please feel free to cr
 
 I built this app to learn and have fun. I never intend to monetize or turn a profit on this app so if you found it useful, cool or interesting please consider donating:
 
- - **Bitcoin:** bc1qm6knmtrk5jfyt57rwkm8j74kxskxyrl504tlc9
- - **Bitcoin Testnet:** tb1qxvg88t7a498yfdxgs4rjaz3r75dyr64h5r5wd7
- - **Litecoin:** ltc1qrctkm565xale82pjt6nsxsyvvmln2qz8dpf6q9
- - **Litecoin Testnet:** tltc1qxvg88t7a498yfdxgs4rjaz3r75dyr64hdtksah
+ - **Bitcoin:** [bc1qm6knmtrk5jfyt57rwkm8j74kxskxyrl504tlc9](https://blockstream.info/address/bc1qm6knmtrk5jfyt57rwkm8j74kxskxyrl504tlc9)
+ - **Bitcoin Testnet:** [tb1qxvg88t7a498yfdxgs4rjaz3r75dyr64h5r5wd7](https://blockstream.info/testnet/address/tb1qxvg88t7a498yfdxgs4rjaz3r75dyr64h5r5wd7)
+ - **Litecoin:** [ltc1qrctkm565xale82pjt6nsxsyvvmln2qz8dpf6q9](https://sochain.com/address/LTC/ltc1qrctkm565xale82pjt6nsxsyvvmln2qz8dpf6q9)
+ - **Litecoin Testnet:** [tltc1qxvg88t7a498yfdxgs4rjaz3r75dyr64hdtksah](https://sochain.com/address/LTCTEST/tltc1qxvg88t7a498yfdxgs4rjaz3r75dyr64hdtksah)
 
 ### Meta
 
