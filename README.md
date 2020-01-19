@@ -23,22 +23,13 @@ As with any hot wallet, please ensure that you keep only a small, responsible am
 If you are looking for secure cold storage solutions please consider purchasing a [Trezor](https://wallet.trezor.io) or a [Ledger](https://www.ledger.com/)
 
 ### Installation
-1. First and foremost, we need to generate the Lndmobile.aar & Lndmobile.framework files.
-    - Option 1 - Generate them locally:
-        - To generate these files, please follow the instructions detailed in the README of Lightning Lab's Lightning App [here.](https://github.com/lightninglabs/lightning-app/tree/master/mobile)
-    - Option 2 - Download pre-generated files:
-        - If you do not wish to generate these files locally you can download them [here](https://github.com/coreyphillips/moonshine/releases/tag/v0.2.0-2) instead. However, I highly recommend you opt for option 1.
-2. Clone Moonshine and Install Dependencies:
+1. Clone Moonshine and Install Dependencies:
    ```
     git clone https://github.com/coreyphillips/moonshine
     cd moonshine
     yarn install
     ```
-3. Add the Lndmobile.aar & Lndmobile.framework files to the project:
-    - Add the Lndmobile.aar file to `moonshine/android/Lndmobile`
-    - Add the Lndmobile.framework file to `moonshine/ios/lightning`
-
-4. Start the project:
+2. Start the project:
     - iOS: `react-native run-ios`
     - Android: `react-native run-android`
 ### Feature Roadmap
