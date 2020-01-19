@@ -241,9 +241,9 @@ PODS:
     - ReactCommon/jscallinvoker (= 0.61.1)
   - RNCAsyncStorage (1.7.1):
     - React
-  - RNKeychain (4.0.4):
+  - RNKeychain (4.0.5):
     - React
-  - RNSVG (9.13.6):
+  - RNSVG (11.0.1):
     - React
   - RNVectorIcons (6.6.0):
     - React
@@ -411,8 +411,8 @@ SPEC CHECKSUMS:
   React-RCTVibration: 8be61459e3749d1fb02cf414edd05b3007622882
   ReactCommon: 4fba5be89efdf0b5720e0adb3d8d7edf6e532db0
   RNCAsyncStorage: 44395cb9c7c1523104c2b499eb426ef7aff82bca
-  RNKeychain: 79cfca6cd5030bbabcd1a2c009531b84e358116d
-  RNSVG: 8ba35cbeb385a52fd960fd28db9d7d18b4c2974f
+  RNKeychain: 840f8e6f13be0576202aefcdffd26a4f54bfe7b5
+  RNSVG: 67f1f12dae2cef6ed59a42cae74a6b8f5a9e7b46
   RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
   Yoga: d8c572ddec8d05b7dba08e4e5f1924004a177078
