@@ -826,9 +826,32 @@ class SendTransaction extends Component {
 		}
 	};
 	
-	toggleCoinControlModal = () => {
+	toggleCoinControlModal = async () => {
 		try {
-			if (this.state.displayCoinControlModal && this.state.cryptoUnitAmount > 0 && this.state.whiteListedUtxos >= this.state.cryptoUnitAmount) this.onMaxPress();
+			//If the coin control modal is being toggled off.
+			if (this.state.displayCoinControlModal) {
+				const fee = Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee);
+				const cryptoUnitAmount = Number(this.state.cryptoUnitAmount); //Amount entered via the "Amount" TextInput
+				const whiteListedUtxosBalance = this.state.whiteListedUtxosBalance;
+				const spendMaxAmount = this.state.spendMaxAmount; //Determines if the "Max" button is enabled.
+				const totalAmount = cryptoUnitAmount+fee; //Total amount the user needs to be able to spend.
+				
+				if (cryptoUnitAmount > 0 && whiteListedUtxosBalance > 0) {
+					//If the user has previously entered a larger balance than what is now available, toggle the "Max" button on.
+					if (totalAmount >= whiteListedUtxosBalance) {
+						if (spendMaxAmount) await this.onMaxPress();
+						this.onMaxPress();
+					}
+					
+					//Toggle the "Max" button off if it is enabled and the whitelisted balance is greater than the inputted value.
+					//This is to prevent the user from accidentally sending more than they intended.
+					if (spendMaxAmount && totalAmount <= whiteListedUtxosBalance) this.onMaxPress();
+				}
+				
+				//Toggle the "Max" button off if it is enabled and there's no whitelisted balance.
+				if (spendMaxAmount && whiteListedUtxosBalance === 0) this.onMaxPress();
+			}
+			
 			this.setState({ displayCoinControlModal: !this.state.displayCoinControlModal });
 		} catch (e) {}
 	};
@@ -867,7 +890,7 @@ class SendTransaction extends Component {
 			<View style={styles.container}>
 				<View style={{ flex: 1 }}>
 					<Header
-						compress={this.state.displayCoinCointrolButton}
+						compress={true}
 						fontSize={45}
 						activeOpacity={1}
 						onSelectCoinPress={Keyboard.dismiss}
