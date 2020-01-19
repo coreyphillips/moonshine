@@ -128,7 +128,7 @@ const _TransactionList = (
 		onTransactionPress = () => null
 	}: TransactionListComponent) => {
 	
-	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
+	//if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
 	
 	const displayEmptyComponent = () => {
 		try {
