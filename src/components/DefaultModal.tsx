@@ -25,7 +25,7 @@ interface DefaultModalComponent {
 }
 const _DefaultModal = ({ isVisible = false, onClose = () => null, style = {}, contentStyle = {}, type = "ScrollView", children = {} }: DefaultModalComponent) => {
 	
-	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
+	//if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
 	
 	return (
 		<Modal
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
 	modalContainer: {
 		alignSelf: "center",
 		width: "100%",
-		height: "84%"
+		height: Platform.OS === "ios" ? "80%" : "84%"
 	},
 	modalScrollView: {
 		flex: 1,
