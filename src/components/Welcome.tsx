@@ -64,11 +64,11 @@ const styles = StyleSheet.create({
 		...systemWeights.semibold,
 		color: colors.purple,
 		textAlign: "center",
-		fontSize: 26
+		fontSize: 24
 	},
 	text: {
 		...systemWeights.regular,
-		fontSize: 20,
+		fontSize: 18,
 		alignSelf: "flex-start",
 		textAlign: "left",
 		marginTop: 10,
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
 	},
 	semiBoldText: {
 		...systemWeights.semibold,
-		fontSize: 20,
+		fontSize: 18,
 		alignSelf: "flex-start",
 		textAlign: "left",
 		marginTop: 10,
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
 	},
 	subHeader: {
 		...systemWeights.light,
-		fontSize: 20,
+		fontSize: 18,
 		alignSelf: "flex-start",
 		textAlign: "left",
 		color: colors.purple,
