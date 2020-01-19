@@ -61,13 +61,10 @@ If you are looking for secure cold storage solutions please consider purchasing 
         * This allows users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo excludes it's amount from the wallet's total balance.
     * Ability to Sign & Verify Messages
     * Support BitID for passwordless authentication
+    * Coin Control
+        * This can be accessed from the Send Transaction view and basically allows users to select from a list of available UTXO's to include in their transaction.
 
-* In Progress:
-    * Add a UTXO selector to create custom transactions
-        * This will allow users to select from a list of available utxo's to include in their transaction.
-    * Add support for additional fiat currencies in the settings
-
-For a complete, up-to-date list of in-progress features please refer to Moonshine's [issue page.](https://github.com/coreyphillips/moonshine/issues)
+For an up-to-date list of features that are in progress please refer to Moonshine's [issue page.](https://github.com/coreyphillips/moonshine/issues)
 If you do not see a feature that you want feel free to create a new issue requesting it or reach out at support@ferrymanfin.com and let me know.
 
 ### Contributing
