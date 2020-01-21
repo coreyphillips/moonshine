@@ -28,7 +28,7 @@ module.exports = (state = {
 	pin: false,
 	pinAttemptsRemaining: 5,
 	selectedService: "coingecko", //Exchange Rate Data Source (coincap, coingecko)
-	testnet: true,
+	testnet: false,
 	cryptoUnit: "satoshi", //BTC, mBTC, μBTC or satoshi
 	peers, //A list of peers acquired from default electrum servers using the getPeers method. Takes { host: "", port: "", protocol: "ssl" } Default ports for BTC are: "s": "50002" && "t": "50001"
 	customPeers, //A list of peers added by the user to connect to by default in lieu of the default peer list. Takes { host: "", port: "", protocol: "ssl" } Default ports for BTC are: "s": "50002" && "t": "50001"
