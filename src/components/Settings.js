@@ -18,6 +18,7 @@ import { systemWeights } from "react-native-typography";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import Foundation from "react-native-vector-icons/Foundation";
 import DefaultModal from "./DefaultModal";
 import XButton from "./XButton";
 import PinPad from "./PinPad";
@@ -29,6 +30,7 @@ import SignMessage from "./SignMessage";
 import VerifyMessage from "./VerifyMessage";
 import * as electrum from "../utils/electrum";
 import BackupPhrase from './BackupPhrase';
+import BroadcastTransaction from "./BroadcastTransaction";
 
 const {
 	Constants: {
@@ -112,6 +114,10 @@ const walletHelpItems = [
 		text: "This option allows you to sign and share messages using any address from your currently selected wallet and also allows you to verify messages by providing the proper address, message and signature."
 	},
 	{
+		title: "Broadcast Transaction:",
+		text: "This option allows you to broadcast a raw transaction to the network."
+	},
+	{
 		title: "Wallet Backup:",
 		text: "Tapping this item displays the mnemonic phrase for the currently selected wallet. This phrase is meant to be kept secret and should be written down and stored in a safe place in case you lose access to your wallet and need to recover your funds."
 	},
@@ -145,6 +151,9 @@ class Settings extends PureComponent {
 			
 			displayImportPhrase: false,
 			importPhraseOpacity: new Animated.Value(0),
+			
+			displayBroadcastTransaction: false,
+			broadcastTransactionOpacity: new Animated.Value(0),
 			
 			displaySignMessage: false,
 			signMessageOpacity: new Animated.Value(0),
@@ -498,6 +507,10 @@ class Settings extends PureComponent {
 				this.updateItems(items);
 				return;
 			}
+			if (this.state.displayBroadcastTransaction) {
+				this.toggleBroadcastTransaction({ display: false });
+				return;
+			}
 			this.props.onBack();
 		} catch (e) {}
 	};
@@ -556,6 +569,18 @@ class Settings extends PureComponent {
 		try {
 			const items = [
 				{ stateId: "displayImportPhrase", opacityId: "importPhraseOpacity", display },
+				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: !display },
+			];
+			this.updateItems(items);
+		} catch (e) {
+		
+		}
+	};
+	
+	toggleBroadcastTransaction = async ({ display = false }) => {
+		try {
+			const items = [
+				{ stateId: "displayBroadcastTransaction", opacityId: "broadcastTransactionOpacity", display },
 				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: !display },
 			];
 			this.updateItems(items);
@@ -1062,6 +1087,16 @@ class Settings extends PureComponent {
 							})}
 							
 							<SettingGeneral
+								title=""
+								value="Broadcast Transaction"
+								onPress={() => this.toggleBroadcastTransaction({ display: true })}
+								col1Image={<Foundation name="mobile-signal" size={50} color={colors.purple} />}
+								col2Style={{flex: 1.2, alignItems: "center", justifyContent: "center", paddingRight: 10}}
+								titleStyle={{color: colors.purple}}
+								valueStyle={{color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold"}}
+							/>
+							
+							<SettingGeneral
 								title="Backup Wallet"
 								value={this.getBackupWalletValue()}
 								onPress={() => this.toggleBackupPhrase({ selectedWallet, display: true })}
@@ -1080,6 +1115,13 @@ class Settings extends PureComponent {
 								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
+							
+							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+								<View style={[styles.header, { marginBottom: 5 }]}>
+									<Text style={[styles.title, { color: colors.white, fontWeight: "bold" }]}>Support</Text>
+								</View>
+								<View style={{ height: 1.5, backgroundColor: colors.white, width: "80%" }} />
+							</View>
 							
 							<SettingGeneral
 								value={`Need Some Help?\nsupport@ferrymanfin.com`}
@@ -1122,6 +1164,18 @@ class Settings extends PureComponent {
 				{this.state.displayImportPhrase &&
 				<Animated.View style={[styles.settingContainer, { opacity: this.state.importPhraseOpacity, zIndex: 500 }]}>
 					<ImportPhrase onBack={this.onBack} createNewWallet={this.props.createNewWallet} />
+				</Animated.View>
+				}
+				
+				{this.state.displayBroadcastTransaction &&
+				<Animated.View style={[styles.settingContainer, { opacity: this.state.broadcastTransactionOpacity, zIndex: 500 }]}>
+					<BroadcastTransaction
+						onBack={this.onBack}
+						selectedCrypto={this.props.wallet.selectedCrypto}
+						sendTransactionFallback={this.props.settings.sendTransactionFallback}
+						broadcastTransaction={this.props.sendTransaction}
+						refreshWallet={this.props.refreshWallet}
+					/>
 				</Animated.View>
 				}
 				
