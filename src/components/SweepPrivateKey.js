@@ -187,12 +187,12 @@ class SendTransaction extends PureComponent {
 		try {
 			const selectedCrypto = this.props.wallet.selectedCrypto;
 			const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
-			const result = await this.props.getRecommendedFee();
 			let utxos = [];
 			utxos = utxos.concat(this.state.privateKeyData.bech32Utxos);
 			utxos = utxos.concat(this.state.privateKeyData.p2shUtxos);
 			utxos = utxos.concat(this.state.privateKeyData.p2pkhUtxos);
 			const transactionSize = getTransactionSize(utxos.length, 1);
+			const result = await this.props.getRecommendedFee({ coin: selectedCrypto, transactionSize });
 
 			//Ensure we have a valid recommendedFee
 			if (result.data.recommendedFee && !isNaN(Number(result.data.recommendedFee))) {
