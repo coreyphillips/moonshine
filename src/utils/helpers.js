@@ -814,7 +814,7 @@ const signMessage = async ({ message = "", addressType = "bech32", path = "m/84'
 		
 		let signature = "";
 		if (addressType === "legacy") {
-			signature = bitcoinMessage.sign(message, privateKey, keyPair);
+			signature = bitcoinMessage.sign(message, privateKey, keyPair, messagePrefix);
 		} else {
 			signature = bitcoinMessage.sign(message, privateKey, keyPair.compressed, messagePrefix, sigOptions);
 		}
