@@ -20,6 +20,7 @@
 		2DCD954D1E0B4F2C00145EB5 /* moonshineTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* moonshineTests.m */; };
 		35F3B5D6B1BC4B8F5327ED60 /* libPods-moonshine-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F660A908FD6746831573962 /* libPods-moonshine-tvOSTests.a */; };
 		3D42D0DC0099A201E6A0D02D /* Pods_moonshineTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B4EF62CFE3928C7D3EC6497F /* Pods_moonshineTests.framework */; };
+		778E344023DF3334006336B0 /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 778E343F23DF3334006336B0 /* logo.png */; };
 		77FD133523CA607800BFC8D0 /* Fontisto.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 77FD132523CA607800BFC8D0 /* Fontisto.ttf */; };
 		77FD133623CA607800BFC8D0 /* Octicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 77FD132623CA607800BFC8D0 /* Octicons.ttf */; };
 		77FD133723CA607800BFC8D0 /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 77FD132723CA607800BFC8D0 /* Feather.ttf */; };
@@ -73,6 +74,7 @@
 		4F660A908FD6746831573962 /* libPods-moonshine-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-moonshine-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		56AAB9A78D0B5CA23721C13A /* Pods-moonshineTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-moonshineTests.debug.xcconfig"; path = "Target Support Files/Pods-moonshineTests/Pods-moonshineTests.debug.xcconfig"; sourceTree = "<group>"; };
 		76E9784A3D68F5120DE01306 /* Pods-moonshineTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-moonshineTests.release.xcconfig"; path = "Target Support Files/Pods-moonshineTests/Pods-moonshineTests.release.xcconfig"; sourceTree = "<group>"; };
+		778E343F23DF3334006336B0 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logo.png; path = moonshine/logo.png; sourceTree = "<group>"; };
 		77FD132523CA607800BFC8D0 /* Fontisto.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Fontisto.ttf; sourceTree = "<group>"; };
 		77FD132623CA607800BFC8D0 /* Octicons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Octicons.ttf; sourceTree = "<group>"; };
 		77FD132723CA607800BFC8D0 /* Feather.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Feather.ttf; sourceTree = "<group>"; };
@@ -157,6 +159,7 @@
 		13B07FAE1A68108700A75B9A /* moonshine */ = {
 			isa = PBXGroup;
 			children = (
+				778E343F23DF3334006336B0 /* logo.png */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				13B07FB01A68108700A75B9A /* AppDelegate.m */,
@@ -412,6 +415,7 @@
 				77FD134323CA607900BFC8D0 /* SimpleLineIcons.ttf in Resources */,
 				77FD133723CA607800BFC8D0 /* Feather.ttf in Resources */,
 				77FD133623CA607800BFC8D0 /* Octicons.ttf in Resources */,
+				778E344023DF3334006336B0 /* logo.png in Resources */,
 				77FD133923CA607900BFC8D0 /* FontAwesome5_Brands.ttf in Resources */,
 				77FD133B23CA607900BFC8D0 /* AntDesign.ttf in Resources */,
 				77FD134423CA607900BFC8D0 /* MaterialIcons.ttf in Resources */,

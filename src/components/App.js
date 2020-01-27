@@ -17,7 +17,8 @@ import {
 	TouchableOpacity,
 	TouchableWithoutFeedback,
 	View,
-	Easing
+	Easing,
+	Linking
 } from "react-native";
 import {systemWeights} from "react-native-typography";
 import EvilIcon from "react-native-vector-icons/EvilIcons";
@@ -70,9 +71,6 @@ const {
 	vibrate,
 	getKeychainValue
 } = require("../utils/helpers");
-const {
-	defaultWalletShape
-} = require("../utils/networks");
 const moment = require("moment");
 const {
 	version
@@ -83,6 +81,7 @@ this.subscribedAddress = ""; //Holds currently subscribed address
 this.headersAreSubscribed = false; //Determines whether wallet is subscribed to new headers
 this.subscribedWithPeer = ""; //Holds what peer we are subscribed to new headers with
 this.authenticating = false; //Determines whether the app is currently authenticating. This attempts to address issue #5.
+this.deepLinkUrl = ""; // Holds url for a deep link event.
 export default class App extends Component {
 	
 	state = {
@@ -245,6 +244,30 @@ export default class App extends Component {
 		}
 	};
 	
+	handleDeepLinking = async (action = "setup") => {
+		try {
+			if (action === "setup") {
+				//If the app was launched via a deep link event attempt to capture and set the url.
+				const url = await Linking.getInitialURL();
+				if (url !== null) this.deepLinkUrl = url;
+				//Respond to deep link event
+				if (this.deepLinkUrl !== "") {
+					this.onBarCodeRead(this.deepLinkUrl);
+					this.deepLinkUrl = "";
+				}
+				//Setup deep linking listener
+				try {
+					Linking.addEventListener('url', this._handleOpenDeepLinkUrl);
+				} catch (e) {
+				}
+			} else {
+				//Remove deep linking
+				Linking.removeEventListener('url', this._handleOpenDeepLinkUrl);
+				this.deepLinkUrl = "";
+			}
+		} catch (e) {}
+	};
+	
 	launchDefaultFuncs = async ({displayLoading = true, resetView = true} = {}) => {
 		this.authenticating = false;
 		const items = [
@@ -304,6 +327,9 @@ export default class App extends Component {
 		if (isConnected) {
 			//Push user to the default view while the rest of the wallet data loads.
 			if (resetView) await this.resetView();
+			
+			this.handleDeepLinking();
+			
 			this.refreshWallet({ignoreLoading: !displayLoading});
 		} else {
 			//Device is offline. Ensure any loading animations are disabled.
@@ -906,6 +932,13 @@ export default class App extends Component {
 		if (this.state.appState !== nextAppState) this.setState({appState: nextAppState});
 	};
 	
+	_handleOpenDeepLinkUrl = (data) => {
+		try {
+			const { url } = data;
+			this.deepLinkUrl = url;
+		} catch (e) {}
+	};
+	
 	async componentDidMount() {
 		//This gets called after redux-persist rehydrates
 		
@@ -948,6 +981,7 @@ export default class App extends Component {
 	
 	componentWillUnmount() {
 		try {
+			this.handleDeepLinking("remove");
 			//Stop Electrum Process
 			electrum.stop({coin: this.props.wallet.selectedCrypto});
 			//Remove Back Button Listener
@@ -1576,7 +1610,7 @@ export default class App extends Component {
 			if (qrCodeData.error) {
 				await this.updateItem({stateId: "displayCamera", opacityId: "cameraOpacity", display: false});
 				await this.resetView();
-				alert(`Unable to parse the following data:\n${qrCodeData.data}`);
+				alert(`Unable to parse the following data:\n${data}`);
 				return;
 			}
 			InteractionManager.runAfterInteractions(async () => {

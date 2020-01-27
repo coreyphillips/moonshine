@@ -166,19 +166,22 @@ const parsePaymentRequest = (data = "") => {
 			if (data) {
 				let validateAddressResult = validateAddress(data);
 				//If is a string and Bitcoin Address
-				if (validateAddressResult.isValid && typeof data === "string" && !data.includes(":" || "?" || "&")) {
+				if (validateAddressResult.isValid && typeof data === "string" && !data.includes(":" || "?" || "&" || "//")) {
 					resolve({ error: false, data: { address: data, coin: validateAddressResult.coin, amount: "", label: "" } });
 					return;
 				}
 
 				//Determine if we need to parse the data.
-				if (data.includes(":" || "?" || "&")) {
+				if (data.includes(":" || "?" || "&" || "//")) {
 					try {
+						//Remove slashes
+						if (data.includes("//")) data = data.replace("//", "");
 						//bip21.decode will throw if anything other than "bitcoin" is passed to it.
 						//Replace any instance of "testnet" or "litecoin" with "bitcoin"
 						const coin = data.substr(0, data.indexOf(':'));
 						if (coin.toLowerCase().includes("testnet")) data = data.replace("testnet", "bitcoin");
 						if (coin.toLowerCase().includes("litecoin")) data = data.replace("litecoin", "bitcoin");
+						if (coin.toLowerCase().includes("moonshine")) data = data.replace("moonshine", "bitcoin");
 						const result = bip21.decode(data);
 						const address = result.address;
 						validateAddressResult = validateAddress(address);
