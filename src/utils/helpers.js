@@ -845,7 +845,11 @@ const verifyMessage = ({ message = "", address = "", signature = "", selectedCry
 	try {
 		const network = networks[selectedCrypto];
 		const messagePrefix = network.messagePrefix;
-		return bitcoinMessage.verify(message, address, signature, messagePrefix);
+		let isValid = false;
+		try { isValid = bitcoinMessage.verify(message, address, signature, messagePrefix); } catch (e) {}
+		//This is a fix for https://github.com/bitcoinjs/bitcoinjs-message/issues/20
+		if (!isValid)  isValid = bitcoinMessage.verifyElectrum(message, address, signature, messagePrefix);
+		return isValid;
 	} catch (e) {
 		console.log(e);
 		return false;
