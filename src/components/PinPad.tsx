@@ -109,9 +109,9 @@ const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice 
 				if (attemptsRemaining <= 1) {
 					//Wipe device. Too many attempts
 					console.log("Pin attempt threshold breached. Wiping device. Hope you made a backup, friend.");
+					vibrate("default");
 					await _wipeDevice();
 					await updateSettings({ pinAttemptsRemaining: 5 });
-					vibrate(2000);
 				} else {
 					//Reduce the amount of pin attempts remaining.
 					const _attemptsRemaining = attemptsRemaining-1;
@@ -158,7 +158,7 @@ const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice 
 					return;
 				} else {
 					//Invalid Pin (Try Again)
-					vibrate(1000);
+					vibrate("notificationWarning");
 					//Randomize The Digits
 					const newDigits = shuffleArray(digits);
 					await setTmpPin("");

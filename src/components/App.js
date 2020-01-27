@@ -747,7 +747,7 @@ export default class App extends Component {
 				try {
 					//Only refresh the wallet if a new transaction is detected.
 					if (Array.isArray(data.data)) {
-						vibrate(2000); //Vibrate to notify user.
+						vibrate("notificationSuccess"); //Vibrate to notify user.
 						this.refreshWallet({ reconnectToElectrum: true }); //Refresh wallet.
 						//this.subscribeAddress();
 					}

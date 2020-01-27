@@ -9,6 +9,7 @@ import * as Keychain from "react-native-keychain";
 import "../../shim";
 import { randomBytes } from "react-native-randombytes";
 import bitcoinUnits from 'bitcoin-units';
+import ReactNativeHapticFeedback from "react-native-haptic-feedback";
 
 const {
 	networks
@@ -676,9 +677,17 @@ const pauseExecution = async (duration = 500) => {
 	});
 };
 
-const vibrate = (duration = 50) => {
+const vibrate = (type = "impactHeavy") => {
 	try {
-		Vibration.vibrate(duration);
+		if (type === "default") {
+			Vibration.vibrate(1000);
+			return;
+		}
+		const options = {
+			enableVibrateFallback: true,
+			ignoreAndroidSystemSettings: false
+		};
+		ReactNativeHapticFeedback.trigger(type, options);
 	} catch (e) {
 		console.log(e);
 	}
