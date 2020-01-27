@@ -354,13 +354,13 @@ class SendTransaction extends PureComponent {
 					electrum.getAddressScriptHashMempool({address: bech32Address, id: 5, coin: network})
 				]);
 
-				this.setState({ loadingMessage: `Private Key Detected.\nFetching P2SH address balance...`, loadingProgress: 0.4 });
+				this.setState({ loadingMessage: `Private Key Detected.\nFetching Segwit address balance...`, loadingProgress: 0.4 });
 				const p2shBalanceResult = await Promise.all([
 					electrum.getAddressScriptHashBalance({address: p2shAddress, id: 1, coin: network}),
 					electrum.getAddressScriptHashMempool({address: p2shAddress, id: 3, coin: network}),
 				]);
 
-				this.setState({ loadingMessage: `Private Key Detected.\nFetching P2PKH address balance...`, loadingProgress: 0.5 });
+				this.setState({ loadingMessage: `Private Key Detected.\nFetching Legacy address balance...`, loadingProgress: 0.5 });
 				const p2pkhBalanceResult = await Promise.all([
 					electrum.getAddressScriptHashBalance({address: p2pkhAddress, id: 2, coin: network}),
 					electrum.getAddressScriptHashMempool({address: p2pkhAddress, id: 4, coin: network})
@@ -430,7 +430,7 @@ class SendTransaction extends PureComponent {
 				console.log(`${p2pkhAddress}: ${p2pkhBalance}`);
 				console.log(`Total Balance: ${balance}`);
 				*/
-				this.setState({ loadingMessage: `Balance Summary:\n\nBech32 Balance: ${bech32Balance}\nP2SH Balance: ${p2shBalance}\nP2PKH Balance: ${p2pkhBalance}`, loadingProgress: 0.7 });
+				this.setState({ loadingMessage: `Balance Summary:\n\nBech32 Balance: ${bech32Balance}\nSegwit Balance: ${p2shBalance}\nLegacy Balance: ${p2pkhBalance}`, loadingProgress: 0.7 });
 
 				//Fetch the utxos for each address
 				let bech32Utxos = [], p2shUtxos = [], p2pkhUtxos = [];
@@ -489,7 +489,7 @@ class SendTransaction extends PureComponent {
 
 				this.getFiatBalance();
 
-				this.setState({ loadingMessage: `Balance Summary:\n\nBech32 Balance: ${bech32Balance}\nP2SH Balance: ${p2shBalance}\nP2PKH Balance: ${p2pkhBalance}`, loadingProgress: 0.85 });
+				this.setState({ loadingMessage: `Balance Summary:\n\nBech32 Balance: ${bech32Balance}\nSegwit Balance: ${p2shBalance}\nLegacy Balance: ${p2pkhBalance}`, loadingProgress: 0.85 });
 
 				resolve({ error: false, data });
 			} catch (e) {
