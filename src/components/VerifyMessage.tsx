@@ -17,7 +17,7 @@ const {
 
 interface ImportPhraseComponent {
 	onBack: Function,
-	verifyMessageData?: {
+	verifyMessageData: {
 		address: string,
 		message: string,
 		signature: string,
@@ -36,12 +36,12 @@ const _VerifyMessage = (
 		selectedCrypto = "bitcoin",
 		updateSettings = () => null
 	}: ImportPhraseComponent) => {
-	const [data, setData] = useState({ ...verifyMessageData, isValid: false });
+	const [dataIsValid, setDataIsValid] = useState(false);
 	const [animationOpacity] = useState(new Animated.Value(0));
 	
 	const getAnimation = () => {
 		try {
-			if (data.isValid) {
+			if (dataIsValid) {
 				return require(`../assets/lottie/correct.json`);
 			} else {
 				return require(`../assets/lottie/incorrect.json`);
@@ -52,8 +52,8 @@ const _VerifyMessage = (
 	};
 	
 	const _verifyMessage = () => {
-		const isValid = verifyMessage({ ...data, selectedCrypto });
-		setData({ ...data, isValid });
+		const isValid = verifyMessage({ ...verifyMessageData, selectedCrypto });
+		setDataIsValid(isValid);
 		Animated.timing(
 			animationOpacity,
 			{
@@ -81,11 +81,8 @@ const _VerifyMessage = (
 						autoCapitalize="none"
 						autoCompleteType="off"
 						autoCorrect={false}
-						onChangeText={async (address) => {
-							await setData({ ...data, address });
-							updateSettings({ verifyMessage: data });
-						}}
-						value={data.address}
+						onChangeText={async (address) => updateSettings({ verifyMessage: { ...verifyMessageData, address }})}
+						value={verifyMessageData.address}
 						multiline={false}
 						returnKeyType="next"
 						onSubmitEditing={() => {
@@ -102,11 +99,8 @@ const _VerifyMessage = (
 						autoCapitalize="none"
 						autoCompleteType="off"
 						autoCorrect={false}
-						onChangeText={async (message) => {
-							await setData({ ...data, message });
-							updateSettings({ verifyMessage: data });
-						}}
-						value={data.message}
+						onChangeText={async (message) => updateSettings({ verifyMessage: { ...verifyMessageData, message }})}
+						value={verifyMessageData.message}
 						multiline={true}
 						ref={(input) => {
 							// @ts-ignore
@@ -122,16 +116,13 @@ const _VerifyMessage = (
 						autoCapitalize="none"
 						autoCompleteType="off"
 						autoCorrect={false}
-						onChangeText={async (signature) => {
-							await setData({ ...data, signature });
-							updateSettings({ verifyMessage: data });
-						}}
-						value={data.signature}
+						onChangeText={async (signature) => updateSettings({ verifyMessage: { ...verifyMessageData, signature } })}
+						value={verifyMessageData.signature}
 						multiline={true}
 					/>
 					
 					<Animated.View style={[styles.animation, {opacity: animationOpacity}]}>
-						<Text style={styles.text}>{data.isValid ? "Valid Signature!" : "Invalid Signature"}</Text>
+						<Text style={styles.text}>{dataIsValid ? "Valid Signature!" : "Invalid Signature"}</Text>
 						<LottieView
 							ref={animation => {
 								// @ts-ignore
@@ -147,13 +138,13 @@ const _VerifyMessage = (
 				
 				<View style={{ paddingVertical: 10 }} />
 				<Animated.View style={styles.sendButton}>
-					<Button title="Verify Message" onPress={_verifyMessage} disabled={!data.address || !data.message || !data.signature}/>
+					<Button title="Verify Message" onPress={_verifyMessage} disabled={!verifyMessageData.address || !verifyMessageData.message || !verifyMessageData.signature} />
 				</Animated.View>
 				
 			</View>
 			
 			<Animated.View style={styles.xButton}>
-				<XButton style={{borderColor: "transparent"}} onPress={onBack}/>
+				<XButton style={{borderColor: "transparent"}} onPress={onBack} />
 			</Animated.View>
 		</View>
 	);
@@ -166,7 +157,7 @@ _VerifyMessage.propTypes = {
 		address: PropTypes.string.isRequired,
 		message: PropTypes.string.isRequired,
 		signature: PropTypes.string.isRequired
-	}),
+	}).isRequired,
 	updateSettings: PropTypes.func.isRequired
 };
 
@@ -234,7 +225,9 @@ const VerifyMessage = memo(
 	_VerifyMessage,
 	(prevProps, nextProps) => {
 		if (!prevProps || !nextProps) return true;
-		return true;
+		return prevProps.verifyMessageData.address === nextProps.verifyMessageData.address &&
+			prevProps.verifyMessageData.message === nextProps.verifyMessageData.message &&
+			prevProps.verifyMessageData.signature === nextProps.verifyMessageData.signature;
 	}
 );
 export default VerifyMessage;

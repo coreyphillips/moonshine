@@ -61,14 +61,14 @@ const _SignMessage = (
 		try {
 			const signMessageResponse = await signMessage(
 				{
-					message,
+					message: signMessageData.message,
 					addressType,
 					path: addresses[selectedAddressIndex].path,
 					selectedWallet,
 					selectedCrypto
 				});
 			if (!signMessageResponse.error) {
-				updateSettings({ signMessage: { message, signature: signMessageResponse.data.signature, selectedAddressIndex } });
+				updateSettings({ signMessage: { message: signMessageData.message, signature: signMessageResponse.data.signature, selectedAddressIndex: signMessageData.selectedAddressIndex } });
 				setSignature(signMessageResponse.data.signature);
 				Animated.timing(
 					signatureOpacity,
@@ -80,7 +80,7 @@ const _SignMessage = (
 					}
 				).start();
 			}
-			console.log(signMessageResponse);
+			if (__DEV__) console.log(signMessageResponse);
 		} catch (e) {}
 	};
 	
@@ -127,11 +127,8 @@ const _SignMessage = (
 					autoCapitalize="none"
 					autoCompleteType="off"
 					autoCorrect={false}
-					onChangeText={(message) => {
-						updateSettings({ signMessage: { message, signature, selectedAddressIndex } });
-						setMessage(message);
-					}}
-					value={message}
+					onChangeText={(message) => updateSettings({ signMessage: { ...signMessageData, message }})}
+					value={signMessageData.message}
 					multiline={true}
 				/>
 				
@@ -157,7 +154,7 @@ const _SignMessage = (
 			</View>
 			
 			<Animated.View style={styles.xButton}>
-				<XButton style={{borderColor: "transparent"}} onPress={onBack}/>
+				<XButton style={{borderColor: "transparent"}} onPress={onBack} />
 			</Animated.View>
 			
 			<DefaultModal
@@ -170,7 +167,7 @@ const _SignMessage = (
 						key={`${address}${i}`}
 						style={styles.pathRow}
 						onPress={() => {
-							updateSettings({ signMessage: { message, signature, selectedAddressIndex: i } });
+							updateSettings({ signMessage: { ...signMessageData, selectedAddressIndex: i } });
 							setSelectedAddressIndex(i);
 							setDisplayAddressModal(false);
 						}}
