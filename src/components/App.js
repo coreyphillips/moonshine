@@ -275,6 +275,7 @@ export default class App extends Component {
 			{stateId: "displayPin", opacityId: "pinOpacity", display: false},
 			{stateId: "displayLoading", opacityId: "loadingOpacity", display: displayLoading}
 		];
+		await pauseExecution(100); //This helps to prevent a flicker on launch.
 		await this.updateItems(items);
 		
 		//Determine if the user has any existing wallets. Create a new wallet if so.
@@ -941,7 +942,6 @@ export default class App extends Component {
 	
 	async componentDidMount() {
 		//This gets called after redux-persist rehydrates
-		
 		//Spin up the nodejs thread
 		await nodejs.start("main.js");
 		
@@ -1048,6 +1048,9 @@ export default class App extends Component {
 						} catch (e) {
 						}
 						try {
+							//Only update if the display state has changed
+							if (this.state[stateId] === display) return;
+							
 							//Set the items to display and hide in the appropriate object.
 							if (display) {
 								itemsToDisplay = {...itemsToDisplay, [stateId]: display};

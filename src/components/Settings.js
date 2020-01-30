@@ -102,10 +102,6 @@ const walletHelpItems = [
 		text: `This option allows you to toggle between multiple address types for Bitcoin & Litecoin. At the time of this writing, the default is "Bech32" which will generate bc1 addresses for Bitcoin, tb1 addresses for Bitcoin Testnet, ltc1 addresses for Litecoin & tltc1 addresses for Litecoin Testnet.`
 	},
 	{
-		title: "Key Derivation Path:",
-		text: "This option allows you to toggle between common derivation paths used by other wallets and is most helpful to those with imported mnemonic phrases from wallets utilizing a different path."
-	},
-	{
 		title: "BIP39 Passphrase:",
 		text: "A BIP39 passphrase is completely optional. When included, the passphrase is mixed with the selected wallet's mnemonic phrase to create a unique master seed. Including a passphrase significantly increases the security of your wallet as an attacker would not only need to know what your mnemonic phrase is they would also need to know the passphrase in order to gain access to your funds. However, this also works the other way around. In order to recover funds you will need both the mnemonic phrase and the passphrase. So long as you understand and are comfortable with this, adding a passphrase is highly recommended."
 	},
@@ -268,7 +264,7 @@ class Settings extends PureComponent {
 			</TouchableOpacity>
 		);
 	}
-	MultiOptionRow({ title = "", subTitle = "", currentValue = "", options = [{ key: "", value: "", onPress: () => null }], subTitleIsLink = false } = {}) {
+	MultiOptionRow({ title = "", subTitle = "", currentValue = "", options = [{ key: "", value: "", onPress: () => null }], subTitleIsLink = false, loading = false } = {}) {
 		const optionsLength = options.length;
 		try {
 			return (
@@ -284,7 +280,8 @@ class Settings extends PureComponent {
 								</TouchableOpacity>}
 							</View>
 							<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginHorizontal: 20 }}>
-								{options.map((option) => this._displayOption({ ...option, optionsLength, currentValue}))}
+								{!loading && options.map((option) => this._displayOption({ ...option, optionsLength, currentValue}))}
+								{loading && <ActivityIndicator size="large" color={colors.lightPurple} />}
 							</View>
 						</View>
 					</View>
@@ -591,6 +588,15 @@ class Settings extends PureComponent {
 	
 	toggleSignMessage = async ({ display = false }) => {
 		try {
+			let hasAddresses = false;
+			try {
+				const { selectedWallet, selectedCrypto } = this.props.wallet;
+				hasAddresses = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto].length > 0;
+			} catch (e) {}
+			if (this.state.rescanningWallet || !hasAddresses) {
+				alert("Currently generating addresses for signing, one moment please.");
+				return;
+			}
 			const items = [
 				{ stateId: "displaySignMessage", opacityId: "signMessageOpacity", display },
 				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: !display },
@@ -922,11 +928,14 @@ class Settings extends PureComponent {
 	
 	render() {
 		const { selectedWallet, selectedCrypto } = this.props.wallet;
+		/*
+		Previously Used For Key Derivation Path Setting.
 		const coinTypePath = defaultWalletShape.coinTypePath[selectedCrypto];
-		let coinDataLabel = "?";
-		try {coinDataLabel = getCoinData({ selectedCrypto, cryptoUnit: "BTC" });} catch (e) {}
 		let keyDerivationPath = "84";
 		try {keyDerivationPath = this.props.wallet.wallets[selectedWallet].keyDerivationPath[selectedCrypto];} catch (e) {}
+		*/
+		let coinDataLabel = "?";
+		try {coinDataLabel = getCoinData({ selectedCrypto, cryptoUnit: "BTC" });} catch (e) {}
 		let addressType = "bech32";
 		try {addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];} catch (e) {}
 		const cryptoLabel = capitalize(selectedCrypto);
@@ -1042,10 +1051,11 @@ class Settings extends PureComponent {
 									{value: "Legacy", onPress: () => this.updateAddressType({ addressType: "legacy" }) },
 									{value: "Segwit", onPress: () => this.updateAddressType({ addressType: "segwit" }) },
 									{value: "Bech32", onPress: () => this.updateAddressType({ addressType: "bech32" }) },
-								]
+								],
+								loading: this.state.rescanningWallet
 							})}
 							
-							{this.MultiOptionRow({
+							{/*this.MultiOptionRow({
 								title: "Key Derivation Path",
 								subTitle: `m/${keyDerivationPath}'/${coinTypePath}'/0'/0/0`,
 								currentValue: keyDerivationPath,
@@ -1055,7 +1065,7 @@ class Settings extends PureComponent {
 									{value: "49", onPress: () => this.updateKeyDerivationPath({ keyDerivationPath: "49" }) },
 									{value: "84", onPress: () => this.updateKeyDerivationPath({ keyDerivationPath: "84" }) },
 								]
-							})}
+							})*/}
 							
 							{!this.state.bip39PassphraseIsSet &&
 							this.TextInputRow({
