@@ -17,14 +17,26 @@ const {
 
 interface ImportPhraseComponent {
 	onBack: Function,
-	selectedCrypto: string
+	verifyMessageData?: {
+		address: string,
+		message: string,
+		signature: string,
+	},
+	selectedCrypto: string,
+	updateSettings: Function
 }
 const _VerifyMessage = (
 	{
 		onBack = () => null,
-		selectedCrypto = "bitcoin"
+		verifyMessageData = {
+			address: "",
+			message: "",
+			signature: "",
+		},
+		selectedCrypto = "bitcoin",
+		updateSettings = () => null
 	}: ImportPhraseComponent) => {
-	const [data, setData] = useState({ address: "", message: "", signature: "", isValid: false });
+	const [data, setData] = useState({ ...verifyMessageData, isValid: false });
 	const [animationOpacity] = useState(new Animated.Value(0));
 	
 	const getAnimation = () => {
@@ -52,7 +64,7 @@ const _VerifyMessage = (
 			}
 		).start(() => {
 			// @ts-ignore
-			this.animation.play()
+			this.animation.play();
 		});
 	};
 	
@@ -69,10 +81,13 @@ const _VerifyMessage = (
 						autoCapitalize="none"
 						autoCompleteType="off"
 						autoCorrect={false}
-						onChangeText={(address) => setData({ ...data, address })}
+						onChangeText={async (address) => {
+							await setData({ ...data, address });
+							updateSettings({ verifyMessage: data });
+						}}
 						value={data.address}
 						multiline={false}
-						returnKeyType = { "next" }
+						returnKeyType="next"
 						onSubmitEditing={() => {
 							// @ts-ignore
 							this.secondTextInput.focus(); }}
@@ -87,7 +102,10 @@ const _VerifyMessage = (
 						autoCapitalize="none"
 						autoCompleteType="off"
 						autoCorrect={false}
-						onChangeText={(message) => setData({ ...data, message })}
+						onChangeText={async (message) => {
+							await setData({ ...data, message });
+							updateSettings({ verifyMessage: data });
+						}}
 						value={data.message}
 						multiline={true}
 						ref={(input) => {
@@ -104,13 +122,16 @@ const _VerifyMessage = (
 						autoCapitalize="none"
 						autoCompleteType="off"
 						autoCorrect={false}
-						onChangeText={(signature) => setData({ ...data, signature })}
+						onChangeText={async (signature) => {
+							await setData({ ...data, signature });
+							updateSettings({ verifyMessage: data });
+						}}
 						value={data.signature}
 						multiline={true}
 					/>
 					
 					<Animated.View style={[styles.animation, {opacity: animationOpacity}]}>
-						<Text style={styles.text}>{ data.isValid ? "Valid Signature!" : "Invalid Signature" }</Text>
+						<Text style={styles.text}>{data.isValid ? "Valid Signature!" : "Invalid Signature"}</Text>
 						<LottieView
 							ref={animation => {
 								// @ts-ignore
@@ -139,7 +160,14 @@ const _VerifyMessage = (
 };
 
 _VerifyMessage.propTypes = {
-	onBack: PropTypes.func.isRequired
+	onBack: PropTypes.func.isRequired,
+	selectedCrypto: PropTypes.string.isRequired,
+	verifyMessageData: PropTypes.shape({
+		address: PropTypes.string.isRequired,
+		message: PropTypes.string.isRequired,
+		signature: PropTypes.string.isRequired
+	}),
+	updateSettings: PropTypes.func.isRequired
 };
 
 const styles = StyleSheet.create({
@@ -172,12 +200,6 @@ const styles = StyleSheet.create({
 		color: colors.purple,
 		fontWeight: "bold"
 	},
-	centerItem: {
-		zIndex: 10,
-		alignItems: "center",
-		justifyContent: "center",
-		marginTop: 10
-	},
 	sendButton: {
 		alignItems: "center",
 		justifyContent: "center",
@@ -189,14 +211,6 @@ const styles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		bottom: 10
-	},
-	header: {
-		...systemWeights.thin,
-		color: colors.white,
-		textAlign: "center",
-		backgroundColor: "transparent",
-		fontSize: 18,
-		fontWeight: "bold"
 	},
 	text: {
 		...systemWeights.semibold,

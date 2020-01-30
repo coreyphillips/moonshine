@@ -27,7 +27,13 @@ interface ImportPhraseComponent {
 	addresses: [{
 		address: string,
 		path: string
-	}]
+	}],
+	signMessageData?: {
+		message: string,
+		signature: string,
+		selectedAddressIndex: number
+	},
+	updateSettings: Function
 }
 const _SignMessage = (
 	{
@@ -36,13 +42,19 @@ const _SignMessage = (
 		selectedWallet = "wallet0",
 		derivationPath = "84",
 		addressType = "bech32", //bech32, segwit or legacy
-		addresses = [{ address: "", path: "" }]
+		addresses = [{ address: "", path: "" }],
+		signMessageData = {
+			message: "",
+			signature: "",
+			selectedAddressIndex: 0
+		},
+		updateSettings = () => null
 	}: ImportPhraseComponent) => {
 	
-	const [message, setMessage] = useState("");
-	const [signature, setSignature] = useState("");
+	const [message, setMessage] = useState(signMessageData.message);
+	const [signature, setSignature] = useState(signMessageData.signature);
 	const [signatureOpacity] = useState(new Animated.Value(0));
-	const [selectedAddressIndex, setSelectedAddressIndex] = useState(0);
+	const [selectedAddressIndex, setSelectedAddressIndex] = useState(signMessageData.selectedAddressIndex);
 	const [displayAddressModal, setDisplayAddressModal] = useState(false);
 	
 	const _signMessage = async () => {
@@ -56,6 +68,7 @@ const _SignMessage = (
 					selectedCrypto
 				});
 			if (!signMessageResponse.error) {
+				updateSettings({ signMessage: { message, signature: signMessageResponse.data.signature, selectedAddressIndex } });
 				setSignature(signMessageResponse.data.signature);
 				Animated.timing(
 					signatureOpacity,
@@ -114,7 +127,10 @@ const _SignMessage = (
 					autoCapitalize="none"
 					autoCompleteType="off"
 					autoCorrect={false}
-					onChangeText={(message) => setMessage(message)}
+					onChangeText={(message) => {
+						updateSettings({ signMessage: { message, signature, selectedAddressIndex } });
+						setMessage(message);
+					}}
 					value={message}
 					multiline={true}
 				/>
@@ -136,7 +152,7 @@ const _SignMessage = (
 				
 				<View style={{ paddingVertical: 10 }} />
 				<Animated.View style={styles.sendButton}>
-					<Button title="Sign Message" onPress={_signMessage} disabled={!message}/>
+					<Button title="Sign Message" onPress={_signMessage} disabled={!message} />
 				</Animated.View>
 			</View>
 			
@@ -154,6 +170,7 @@ const _SignMessage = (
 						key={`${address}${i}`}
 						style={styles.pathRow}
 						onPress={() => {
+							updateSettings({ signMessage: { message, signature, selectedAddressIndex: i } });
 							setSelectedAddressIndex(i);
 							setDisplayAddressModal(false);
 						}}
@@ -173,7 +190,13 @@ _SignMessage.propTypes = {
 	selectedWallet: PropTypes.string.isRequired,
 	derivationPath: PropTypes.string.isRequired,
 	addressType: PropTypes.string.isRequired,
-	addresses: PropTypes.array.isRequired
+	addresses: PropTypes.array.isRequired,
+	signMessageData: PropTypes.shape({
+		message: PropTypes.string.isRequired,
+		signature: PropTypes.string.isRequired,
+		selectedAddressIndex: PropTypes.number.isRequired
+	}),
+	updateSettings: PropTypes.func.isRequired
 };
 
 const styles = StyleSheet.create({
@@ -199,12 +222,6 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		color: colors.purple,
 		fontWeight: "bold"
-	},
-	centerItem: {
-		zIndex: 10,
-		alignItems: "center",
-		justifyContent: "center",
-		marginTop: 10
 	},
 	sendButton: {
 		alignItems: "center",

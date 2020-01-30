@@ -38,6 +38,16 @@ module.exports = (state = {
 	},
 	sendTransactionFallback: true, //If electrum fails to broadcast a transaction for any reason the app will attempt to use an api to broadcast instead. Can be toggled on & off in Settings
 	rbf: true,
+	signMessage: {
+		message: "",
+		signature: "",
+		selectedAddressIndex: 0
+	},
+	verifyMessage: {
+		address: "",
+		message: "",
+		signature: ""
+	},
 	version: ""
 }, action) => {
 	switch (action.type) {
