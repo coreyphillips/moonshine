@@ -48,12 +48,13 @@ If you are looking for secure cold storage solutions please consider purchasing 
     * Add support for Segwit-compatible & legacy addresses in settings
     * Allow users to select the key derivation path in settings
     * Support individual private key sweeping
-    * *Partially Complete (0.1.1)* - Add support for UTXO blacklisting - Blacklist functionality can be accessed via the Transaction Detail view for now.
-        * This allows users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo excludes it's amount from the wallet's total balance.
+    * UTXO blacklisting
+        * Accessible via the Transaction Detail view, this allows users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo excludes it's amount from the wallet's total balance.
     * Ability to Sign & Verify Messages
     * Support BitID for passwordless authentication
     * Coin Control
         * This can be accessed from the Send Transaction view and basically allows users to select from a list of available UTXO's to include in their transaction.
+    * Broadcast raw transactions
 
 For an up-to-date list of features that are in progress please refer to Moonshine's [issue page.](https://github.com/coreyphillips/moonshine/issues)
 If you do not see a feature that you want feel free to create a new issue requesting it or reach out at support@ferrymanfin.com and let me know.
@@ -105,3 +106,5 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
         * For providing a simple and flexible way to interact with the Bitcoin network.
     * [Lightning-App](https://github.com/lightninglabs/lightning-app)
         * For providing the initial inspiration for the main UI of this app and for providing a wonderful guide/example of how to implement Lightning via Neutrino.
+    * Testers!
+        * Thank you for the encouragement, exceptional feedback and help troubleshooting throughout the development process. You are a large part of what makes this community great. Thank you!
