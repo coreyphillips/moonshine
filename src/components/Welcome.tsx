@@ -9,9 +9,15 @@ const {
 } = require("../../ProjectData.json");
 
 const updates = [
-	"Added coin control features to the Send Transaction view.",
-	"Updated Litecoin derivation paths.",
-	"Message signing now works for Litecoin."
+	`Users can now broadcast raw transactions using the "Broadcast Transaction" feature in Settings.`,
+	"Testnet coins are now disabled by default for new installs. They can always be re-enabled via Settings.",
+	"Deep linking is now supported.",
+	"Signatures are now verifying as expected in both Bitcoin Core and Electrum",
+	"Fixed a fee bug that would set the fee to 0 sats in certain scenarios and prevent the user from sending a transaction.",
+	"Added proper haptic feedback to the pin pad.",
+	"Sweeping private keys now works as expected for legacy addresses.",
+	`Removed the "Key Derivation Path" option from Settings. If you need this back for any reason reach out to support@ferrymanfin.com.`,
+	"Users are now able to move in and out of the app while signing or verifying messages with authentication enabled."
 ];
 
 const _Welcome = ({ children }) => {
