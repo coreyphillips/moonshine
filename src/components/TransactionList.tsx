@@ -1,12 +1,10 @@
-import React, {useEffect, memo} from "react";
+import React, {memo} from "react";
 import {
 	StyleSheet,
 	Text,
 	View,
 	FlatList,
-	RefreshControl,
-	LayoutAnimation,
-	Platform
+	RefreshControl
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";

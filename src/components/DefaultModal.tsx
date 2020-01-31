@@ -1,9 +1,8 @@
-import React, { useEffect, memo } from "react";
+import React, { memo } from "react";
 import {
 	StyleSheet,
 	View,
 	ScrollView,
-	LayoutAnimation,
 	Platform
 } from "react-native";
 import PropTypes from "prop-types";

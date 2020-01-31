@@ -1178,33 +1178,6 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		textAlign: "center"
 	},
-	header: {
-		...systemWeights.thin,
-		color: colors.white,
-		textAlign: "center",
-		backgroundColor: "transparent",
-		fontSize: 18,
-		fontWeight: "bold"
-	},
-	coinControlText: {
-		color: colors.darkPurple,
-		...systemWeights.light,
-		fontSize: 22,
-		textAlign: "center"
-	},
-	coinControlHeader: {
-		...systemWeights.thin,
-		textAlign: "center",
-		backgroundColor: "transparent",
-		fontWeight: "bold",
-		color: colors.darkPurple,
-		marginBottom: 10,
-		marginHorizontal: 20,
-		fontSize: 20
-	},
-	separator: {
-		width: "100%", height: 1.5, backgroundColor: colors.darkPurple, marginVertical: 5
-	},
 	text: {
 		...systemWeights.regular,
 		color: colors.white,

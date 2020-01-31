@@ -9,7 +9,6 @@ const {
 } = require("../utils/helpers");
 
 const {
-	defaultWalletShape,
 	availableCoins,
 	zeroValueItems
 } = require("../utils/networks");
