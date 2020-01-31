@@ -51,10 +51,8 @@ const _SignMessage = (
 		updateSettings = () => null
 	}: ImportPhraseComponent) => {
 	
-	const [message, setMessage] = useState(signMessageData.message);
 	const [signature, setSignature] = useState(signMessageData.signature);
 	const [signatureOpacity] = useState(new Animated.Value(0));
-	const [selectedAddressIndex, setSelectedAddressIndex] = useState(signMessageData.selectedAddressIndex);
 	const [displayAddressModal, setDisplayAddressModal] = useState(false);
 	
 	const _signMessage = async () => {
@@ -63,7 +61,7 @@ const _SignMessage = (
 				{
 					message: signMessageData.message,
 					addressType,
-					path: addresses[selectedAddressIndex].path,
+					path: addresses[signMessageData.selectedAddressIndex].path,
 					selectedWallet,
 					selectedCrypto
 				});
@@ -86,14 +84,14 @@ const _SignMessage = (
 	
 	let shareTitle = "My Signature.";
 	try {shareTitle = `My ${capitalize(selectedCrypto)} Signature.`;} catch(e) {}
-	let shareMessage = `Address: ${addresses[selectedAddressIndex].address}\n\n Message: ${message}\n\n Signature: ${signature}`;
+	let shareMessage = `Address: ${addresses[signMessageData.selectedAddressIndex].address}\n\n Message: ${signMessageData.message}\n\n Signature: ${signature}`;
 	
 	let path = getBaseDerivationPath({ keyDerivationPath: derivationPath, selectedCrypto });
-	try {path = addresses[selectedAddressIndex].path;} catch (e) {}
+	try {path = addresses[signMessageData.selectedAddressIndex].path;} catch (e) {}
 	
 	let shortendAddress = "";
 	try {
-		const address = addresses[selectedAddressIndex].address;
+		const address = addresses[signMessageData.selectedAddressIndex].address;
 		const addressLength = address.length;
 		shortendAddress = `${address.substr(0,10)}...${address.substr(addressLength-10,addressLength)}`;
 	} catch (e) {}
@@ -149,7 +147,7 @@ const _SignMessage = (
 				
 				<View style={{ paddingVertical: 10 }} />
 				<Animated.View style={styles.sendButton}>
-					<Button title="Sign Message" onPress={_signMessage} disabled={!message} />
+					<Button title="Sign Message" onPress={_signMessage} disabled={!signMessageData.message} />
 				</Animated.View>
 			</View>
 			
@@ -168,7 +166,6 @@ const _SignMessage = (
 						style={styles.pathRow}
 						onPress={() => {
 							updateSettings({ signMessage: { ...signMessageData, selectedAddressIndex: i } });
-							setSelectedAddressIndex(i);
 							setDisplayAddressModal(false);
 						}}
 					>

@@ -225,9 +225,11 @@ const VerifyMessage = memo(
 	_VerifyMessage,
 	(prevProps, nextProps) => {
 		if (!prevProps || !nextProps) return true;
-		return prevProps.verifyMessageData.address === nextProps.verifyMessageData.address &&
-			prevProps.verifyMessageData.message === nextProps.verifyMessageData.message &&
-			prevProps.verifyMessageData.signature === nextProps.verifyMessageData.signature;
+		try {
+			return prevProps.verifyMessageData.address === nextProps.verifyMessageData.address &&
+				prevProps.verifyMessageData.message === nextProps.verifyMessageData.message &&
+				prevProps.verifyMessageData.signature === nextProps.verifyMessageData.signature;
+		} catch (e) { return false; }
 	}
 );
 export default VerifyMessage;

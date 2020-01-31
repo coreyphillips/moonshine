@@ -169,8 +169,7 @@ class Settings extends PureComponent {
 			bip39PassphraseIsSet: false,
 			bip39Passphrase: "",
 			
-			walletName: "",
-			openSettingOnMount: props.openSettingOnMount || ""
+			walletName: ""
 		};
 	}
 	
@@ -192,8 +191,8 @@ class Settings extends PureComponent {
 		} catch (e) {}
 		//Determine if any particular setting should be launched on mount.
 		try {
-			if (this.state.openSettingOnMount === "verifyMessage") this.toggleVerifyMessage({ display: true });
-			if (this.state.openSettingOnMount === "signMessage") this.toggleSignMessage({ display: true });
+			if (this.props.openSettingOnMount === "verifyMessage") this.toggleVerifyMessage({ display: true });
+			if (this.props.openSettingOnMount === "signMessage") this.toggleSignMessage({ display: true });
 		} catch (e) {}
 	}
 	
@@ -481,6 +480,13 @@ class Settings extends PureComponent {
 				return;
 			}
 			if (this.state.displaySignMessage) {
+				this.props.updateSettings({
+					signMessage: {
+						message: "",
+						signature: "",
+						selectedAddressIndex: 0
+					}
+				});
 				//Hide SignMessage component
 				//Show the Settings View
 				const items = [
@@ -491,6 +497,13 @@ class Settings extends PureComponent {
 				return;
 			}
 			if (this.state.displayVerifyMessage) {
+				this.props.updateSettings({
+					verifyMessage: {
+						address: "",
+						message: "",
+						signature: "",
+					}
+				});
 				//Hide VerifyMessage component
 				//Show the Settings View
 				const items = [
@@ -514,6 +527,7 @@ class Settings extends PureComponent {
 				this.toggleBroadcastTransaction({ display: false });
 				return;
 			}
+			
 			this.props.onBack();
 		} catch (e) {}
 	};
@@ -594,6 +608,7 @@ class Settings extends PureComponent {
 	
 	toggleSignMessage = async ({ display = false }) => {
 		try {
+			//Prevent user from accessing this view if addresses are still being generated.
 			let hasAddresses = false;
 			try {
 				const { selectedWallet, selectedCrypto } = this.props.wallet;
@@ -603,6 +618,7 @@ class Settings extends PureComponent {
 				alert("Currently generating addresses for signing, one moment please.");
 				return;
 			}
+			
 			const items = [
 				{ stateId: "displaySignMessage", opacityId: "signMessageOpacity", display },
 				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: !display },
@@ -952,22 +968,6 @@ class Settings extends PureComponent {
 		}
 	};
 	
-	onVerifyMessageBack =() => {
-		try {
-			const verifyMessage = { address: "", message: "", signature: "" };
-			this.props.updateSettings({ verifyMessage });
-			this.onBack();
-		} catch (e) {}
-	};
-	
-	onSignMessageBack =() => {
-		try {
-			const signMessage = { message: "", signature: "", selectedAddressIndex: 0 };
-			this.props.updateSettings({ signMessage });
-			this.onBack();
-		} catch (e) {}
-	};
-	
 	render() {
 		const { selectedWallet, selectedCrypto } = this.props.wallet;
 		/*
@@ -1239,7 +1239,7 @@ class Settings extends PureComponent {
 						selectedWallet={selectedWallet}
 						derivationPath={this.props.wallet.wallets[selectedWallet].keyDerivationPath[selectedCrypto]}
 						addressType={this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto]}
-						onBack={this.onSignMessageBack}
+						onBack={this.onBack}
 						addresses={this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto]}
 						updateSettings={this.props.updateSettings}
 					/>
@@ -1251,7 +1251,7 @@ class Settings extends PureComponent {
 					<VerifyMessage
 						verifyMessageData={this.getVerifyMessageData()}
 						selectedCrypto={selectedCrypto}
-						onBack={this.onVerifyMessageBack}
+						onBack={this.onBack}
 						updateSettings={this.props.updateSettings}
 					/>
 				</Animated.View>

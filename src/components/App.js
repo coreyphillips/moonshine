@@ -913,7 +913,10 @@ export default class App extends Component {
 			this.setState({appState: nextAppState});
 			
 			//Check if Settings was previously opened, set to true if so.
-			if (this.state.displaySettings) this.settingsWasPreviouslyOpen = true;
+			if (this.state.displaySettings) {
+				//Check if there's any particular option that needs to be re-opened later in Settings.
+				if (this.getOpenSettingOnMount() !== "") this.settingsWasPreviouslyOpen = true;
+			}
 			
 			//Return if the desired app state and components are already set.
 			if (this.state.displayBiometrics || this.state.displayPin || this.authenticating) return;
@@ -1830,8 +1833,8 @@ export default class App extends Component {
 	getOpenSettingOnMount = () => {
 		try {
 			const { verifyMessage, signMessage } = this.props.settings;
-			if (verifyMessage.address || verifyMessage.message || verifyMessage.signature) return "verifyMessage";
-			if (signMessage.message || signMessage.signature || signMessage.selectedAddressIndex) return "signMessage";
+			if (verifyMessage.address !== "" || verifyMessage.message !== "" || verifyMessage.signature !== "") return "verifyMessage";
+			if (signMessage.message !== "" || signMessage.signature !== "") return "signMessage";
 			return "";
 		} catch (e) {return "";}
 	};
