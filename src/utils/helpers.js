@@ -739,12 +739,13 @@ const formatNumber = (num) => {
 	);
 };
 
+const removeDecimals = (str) => {
+	return str.replace( /^([^.]*\.)(.*)$/, function ( a, b, c ) {
+		return b + c.replace( /\./g, '' );
+	});
+};
+
 const removeAllButFirstInstanceOfPeriod = (s) => {
-	function removeDecimals( str ) {
-		return str.replace( /^([^.]*\.)(.*)$/, function ( a, b, c ) {
-			return b + c.replace( /\./g, '' );
-		});
-	}
 	try {
 		if (s.length >= 2 && s.charAt(0) === "0" && s.charAt(1) !== ".") {
 			while (s.charAt(0) === "0" && s.charAt(1) !== ".") {
@@ -754,7 +755,7 @@ const removeAllButFirstInstanceOfPeriod = (s) => {
 		if (s.charAt(0) === "." && s.length === 1) s = "0.";
 		s = removeDecimals(s);
 		const decimalIndex = s.includes(".");
-		if (decimalIndex !== -1) {
+		if (decimalIndex) {
 			s = s.substr(0, decimalIndex + 9);
 		}
 		s = s.replace(/[^\d\.]/g,'');
@@ -902,6 +903,13 @@ const loginWithBitid = async ({ url = "", addressType = "bech32", keyDerivationP
 	}
 };
 
+const sortArrOfObjByKey = (arr = [], key = "", ascending = true) => {
+	try {
+		if (ascending) return arr.sort((a,b) => (a[key] - b[key]));
+		return arr.sort((a,b) => (b[key] - a[key]));
+	} catch (e) {return arr;}
+};
+
 const getFiatBalance = ({ balance = 0, exchangeRate = 0 } = {}) => {
 	try {
 		bitcoinUnits.setFiat("usd", exchangeRate);
@@ -913,11 +921,31 @@ const getFiatBalance = ({ balance = 0, exchangeRate = 0 } = {}) => {
 	}
 };
 
-const sortArrOfObjByKey = (arr = [], key = "", ascending = true) => {
+const cryptoToFiat = ({ amount = 0, exchangeRate = 0 } = {}) => {
 	try {
-		if (ascending) return arr.sort((a,b) => (a[key] - b[key]));
-		return arr.sort((a,b) => (b[key] - a[key]));
-	} catch (e) {return arr;}
+		amount = Number(amount);
+		bitcoinUnits.setFiat("usd", exchangeRate);
+		return bitcoinUnits(amount, "satoshi").to("usd").value().toFixed(2);
+	} catch(e) {
+		console.log(e);
+	}
+};
+
+const satsToBtc = ({amount = 0 } = {}) => {
+	try {
+		amount = Number(amount);
+		return bitcoinUnits(amount, "satoshi").to("BTC").value();
+	} catch (e) {return amount;}
+};
+
+const fiatToCrypto = ({ amount = 0, exchangeRate = 0 } = {}) => {
+	try {
+		amount = Number(amount);
+		bitcoinUnits.setFiat("usd", exchangeRate);
+		return bitcoinUnits(amount, "usd").to("satoshi").value().toFixed(0);
+	} catch (e) {
+		console.log(e);
+	}
 };
 
 module.exports = {
@@ -962,5 +990,9 @@ module.exports = {
 	getBaseDerivationPath,
 	loginWithBitid,
 	getFiatBalance,
-	sortArrOfObjByKey
+	removeDecimals,
+	sortArrOfObjByKey,
+	cryptoToFiat,
+	fiatToCrypto,
+	satsToBtc
 };

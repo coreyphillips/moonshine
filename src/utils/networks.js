@@ -46,6 +46,14 @@ const networks = {
 	}
 };
 
+//Max amount of BTC/LTC.
+const maxCoins = {
+	bitcoin: 2100000000000000,
+	bitcoinTestnet: 2100000000000000,
+	litecoin: 8400000000000000,
+	litecoinTestnet: 8400000000000000
+};
+
 //Returns an array of all available coins from the networks object.
 const availableCoins = Object.keys(networks).map(coin => coin);
 
@@ -172,6 +180,7 @@ module.exports = {
 	networks,
 	availableCoins,
 	defaultWalletShape,
+	maxCoins,
 	supportsRbf,
 	zeroValueItems,
 	arrayTypeItems,
