@@ -54,6 +54,7 @@ const formatUri = ({ selectedCrypto, address, amount }: FormatUri = {
 
 interface ReceiveTransactionComponent extends Default, FormatUri {
 	cryptoUnit: string,
+	exchangeRate: number,
 	size?: number, // Size of QRCode
 	disabled?: boolean // Disable the Copy/Share buttons
 }
