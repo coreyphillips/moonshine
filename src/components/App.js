@@ -1949,6 +1949,8 @@ export default class App extends Component {
 										address={this.getNextAvailableAddress()}
 										selectedCrypto={this.props.wallet.selectedCrypto}
 										size={200}
+										exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]}
+										cryptoUnit={this.props.settings.cryptoUnit}
 									/>
 								</Animated.View>}
 								
