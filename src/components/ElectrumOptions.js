@@ -239,11 +239,11 @@ class ElectrumOptions extends PureComponent {
 	
 	render() {
 		return (
-			<TouchableOpacity activeOpacity={1} style={styles.container}>
+			<View style={styles.container}>
 				<ScrollView style={styles.container} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
 					<TouchableOpacity activeOpacity={1} style={styles.container}>
-						
 						<FlatList
+							contentContainerStyle={{ paddingBottom: height * 0.3 }}
 							data={this.state.availableCoins}
 							extraData={this.state}
 							keyExtractor={(coin, index) => `${index}`}
@@ -267,15 +267,13 @@ class ElectrumOptions extends PureComponent {
 								);
 							}}
 						/>
-						
-						<View style={{ marginVertical: height*0.3 }} />
 					</TouchableOpacity>
 				
 				</ScrollView>
 				<Animated.View style={styles.xButton}>
 					<XButton style={{ borderColor: "transparent" }} onPress={this.props.onBack} />
 				</Animated.View>
-			</TouchableOpacity>
+			</View>
 		);
 	}
 }
