@@ -48,7 +48,9 @@ const {
 	nthIndex,
 	removeAllButFirstInstanceOfPeriod,
 	formatNumber,
-	getFiatBalance
+	getFiatBalance,
+	fiatToCrypto,
+	cryptoToFiat
 } = require("../utils/helpers");
 
 const {
@@ -227,7 +229,7 @@ class SendTransaction extends Component {
 			//Calculate crypto & fiat fees.
 			const fee = Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee);
 			crypto = this.getTotalFee(fee);
-			fiat = this.cryptoToFiat({ amount: crypto });
+			fiat = cryptoToFiat({ amount: crypto, exchangeRate });
 
 			//Return 0 if isNaN is returned.
 			if (isNaN(crypto)) crypto = 0;
@@ -300,18 +302,20 @@ class SendTransaction extends Component {
 			const walletBalance = this.state.cryptoBalance;
 			
 			if (!this.state.spendMaxAmount) {
+				const selectedCrypto = this.props.wallet.selectedCrypto;
+				const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
 				let totalFee = this.getTotalFee(recommendedFee, transactionSize);
 				let cryptoUnitAmount = 0;
 
 				if (walletBalance > totalFee) {
 					const amount = walletBalance - totalFee;
-					const fiatAmount = this.cryptoToFiat({ amount });
+					const fiatAmount = cryptoToFiat({ amount, exchangeRate });
 					cryptoUnitAmount = bitcoinUnits(amount, "satoshi").to(this.props.settings.cryptoUnit).value();
 					this.props.updateTransaction({ fee: parseInt(recommendedFee), amount, fiatAmount, transactionSize });
 				} else {
 					const difference = totalFee - walletBalance;
 					totalFee = difference / 2;
-					const fiatAmount = this.cryptoToFiat({ amount: totalFee });
+					const fiatAmount = cryptoToFiat({ amount: totalFee, exchangeRate });
 					cryptoUnitAmount = bitcoinUnits(totalFee, "satoshi").to(this.props.settings.cryptoUnit).value();
 					this.props.updateTransaction({ fee: parseInt(recommendedFee/2), amount: totalFee, fiatAmount, transactionSize });
 				}
@@ -335,30 +339,6 @@ class SendTransaction extends Component {
 		}
 	};
 
-	cryptoToFiat = ({ amount = 0 }) => {
-		try {
-			const selectedCrypto = this.props.wallet.selectedCrypto;
-			const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
-			amount = Number(amount);
-			bitcoinUnits.setFiat("usd", exchangeRate);
-			return bitcoinUnits(amount, "satoshi").to("usd").value().toFixed(2);
-		} catch(e) {
-			console.log(e);
-		}
-	};
-
-	fiatToCrypto = ({ amount = 0 }) => {
-		try {
-			const selectedCrypto = this.props.wallet.selectedCrypto;
-			const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
-			amount = Number(amount);
-			bitcoinUnits.setFiat("usd", exchangeRate);
-			return bitcoinUnits(amount, "usd").to("satoshi").value().toFixed(0);
-		} catch (e) {
-			console.log(e);
-		}
-	};
-
 	updateFee = (fee = 0) => {
 		try {
 			const selectedCrypto = this.props.wallet.selectedCrypto;
@@ -372,7 +352,7 @@ class SendTransaction extends Component {
 				//Not enough funds to support this fee.
 				if (totalFee >= walletBalance) return;
 				const amount = walletBalance - totalFee;
-				const fiatAmount = this.cryptoToFiat({ amount, exchangeRate });
+				const fiatAmount = cryptoToFiat({ amount, exchangeRate });
 				const cryptoUnitAmount = bitcoinUnits(amount, "satoshi").to(this.props.settings.cryptoUnit).value();
 				this.setState({ cryptoUnitAmount });
 				this.props.updateTransaction({ fee: Number(fee), amount, fiatAmount });
@@ -401,6 +381,8 @@ class SendTransaction extends Component {
 	};
 
 	updateAmount = async (amount = "") => {
+		const selectedCrypto = this.props.wallet.selectedCrypto;
+		const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
 		const cryptoUnit = this.props.settings.cryptoUnit;
 		let fiatAmount = "";
 		let satoshiAmount = "";
@@ -419,11 +401,11 @@ class SendTransaction extends Component {
 
 		if (this.state.displayInCrypto) {
 			satoshiAmount = bitcoinUnits(Number(amount), cryptoUnit).to("satoshi").value();
-			fiatAmount = this.cryptoToFiat({ amount: satoshiAmount });
+			fiatAmount = cryptoToFiat({ amount: satoshiAmount, exchangeRate });
 		} else {
 			//Don't convert the fiatAmount just assign it to the user's input and pass it on
 			fiatAmount = parseFiat(amount);
-			satoshiAmount = this.fiatToCrypto({ amount: Number(amount) });
+			satoshiAmount = fiatToCrypto({ amount: Number(amount), exchangeRate });
 		}
 
 		const fee = Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee);
