@@ -936,7 +936,7 @@ class SendTransaction extends PureComponent {
 
 				<View style={{ flex: Platform.OS === "ios" ? 0.45 : 0.45, justifyContent: "flex-start" }}>
 					<View style={styles.buttonContainer}>
-						<Button title="Sweep" text={`~$${this.state.fiatBalance.balanceMinusFees}`} text2={`${this.state.cryptoBalance.balanceMinusFees || 0} ${this.props.settings.cryptoUnit}`} textStyle={{ paddingTop: 5, ...systemWeights.light, }} onPress={() =>this.sweepPrivateKey(this.state.privateKeyData)} />
+						<Button title="Sweep" text={`~$${this.state.fiatBalance.balanceMinusFees}`} text2={`${this.state.cryptoBalance.balanceMinusFees || 0} ${this.state.cryptoUnitLabel}`} textStyle={{ paddingTop: 5, ...systemWeights.light, }} onPress={() =>this.sweepPrivateKey(this.state.privateKeyData)} />
 					</View>
 				</View>
 
