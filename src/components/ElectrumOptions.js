@@ -37,6 +37,8 @@ class ElectrumInput extends PureComponent {
 		this.props.savePeer(this.props.coin);
 	};
 	
+	clearPeer = () => {this.props.clearPeer(this.props.coin);};
+	
 	render() {
 		let savedHost = "";
 		let savedPort = "";
@@ -78,17 +80,23 @@ class ElectrumInput extends PureComponent {
 				</View>
 				<View style={styles.row}>
 					<Button
+						title="Clear"
+						onPress={this.clearPeer}
+						style={styles.leftButton}
+						titleStyle={{ fontSize: 14 }}
+					/>
+					<Button
 						loading={this.props.loading === this.props.coin}
-						title="Test Connection"
+						title="Test"
 						onPress={this.testConnection}
-						style={{ minWidth: "40%", paddingVertical: 8, marginRight: 2 }}
+						style={styles.leftButton}
 						titleStyle={{ fontSize: 14 }}
 					/>
 					<Button
 						loading={this.props.saving === this.props.coin}
 						title={this.props.port === savedPort && this.props.host === savedHost ? "Saved" : "Save"}
 						onPress={this.savePeer}
-						style={{ minWidth: "40%", paddingVertical: 8, marginLeft: 2 }}
+						style={styles.rightButton}
 						titleStyle={{ fontSize: 14 }}
 					/>
 				</View>
@@ -110,6 +118,23 @@ ElectrumInput.defaultProps = {
 	onChangeText: () => null,
 	testConnection: () => null,
 	savePeer: () => null
+};
+
+const validateInput = ({ host = "", port = "" } = {}) => {
+	try {
+		//Ensure the user passed in a host & port to test.
+		let data = "";
+		if (host === "" && port === "") {
+			data = "Please specify a host and port to connect to.";
+		} else if (host === "") {
+			data = "Please specify a host to connect to.";
+		} else if (port === "") {
+			data = "Please specify a port to connect to.";
+		} else if (isNaN(port)) {
+			data = "Invalid port.";
+		}
+		return ({ error: data !== "", data });
+	} catch (e) {console.log(e);}
 };
 
 class ElectrumOptions extends PureComponent {
@@ -143,22 +168,13 @@ class ElectrumOptions extends PureComponent {
 			const host = this.state[coin].host.trim();
 			const port = this.state[coin].port.trim();
 			
-			//Ensure the user passed in a host & port to test.
-			if (host === "" || port === "") {
-				if (host === "" && port === "") {
-					alert("Please specify a host and port to connect to.");
-				} else if (host === "") {
-					alert("Please specify a host to connect to.");
-				} else if (port === "") {
-					alert("Please specify a port to connect to.");
-				} else if (isNaN(port)) {
-					alert("Invalid port.");
-				}
-				await this.setState({ loading: "" });
+			const inputIsValid = await validateInput({ host, port });
+			if (inputIsValid.error) {
+				await this.setState({ loading: "", saving: "" });
+				alert(inputIsValid.data);
 				return;
 			}
 			
-			await electrum.stop({ coin });
 			const result = await electrum.start({ coin, customPeers: [{ host, port }]});
 			if (result.error === false) {
 				alert(`Success!!\nSuccessfully connect to:\n${host}:${port}`);
@@ -171,6 +187,14 @@ class ElectrumOptions extends PureComponent {
 		}
 	};
 	
+	clearPeer = async (coin) => {
+		try {
+			const currentPeers = this.props.settings.customPeers;
+			await this.props.updateSettings({ customPeers: {...currentPeers, [coin]: [] } });
+			await this.setState({ saving: "", loading: "", [coin]: { host: "", port: "" } });
+		} catch (e) {}
+	};
+	
 	savePeer = async (coin) => {
 		try {
 			try {
@@ -178,7 +202,7 @@ class ElectrumOptions extends PureComponent {
 				const host = this.state[coin].host.trim();
 				const port = this.state[coin].port.trim();
 				
-				//Remove any customPeer of host and port are blank.
+				//Remove any customPeer if host and port are blank.
 				if (host === "" && port === "") {
 					const currentPeers = this.props.settings.customPeers;
 					await this.props.updateSettings({ customPeers: {...currentPeers, [coin]: [] } });
@@ -186,14 +210,10 @@ class ElectrumOptions extends PureComponent {
 					return;
 				}
 				
-				//Ensure the user passed in a host & port to test.
-				if (host === "" || port === "") {
-					if (host === "") {
-						alert("Please specify a host to connect to.");
-					} else if (port === "") {
-						alert("Please specify a port to connect to.");
-					}
-					await this.setState({ saving: "", loading: "" });
+				const inputIsValid = await validateInput({ host, port });
+				if (inputIsValid.error) {
+					await this.setState({ loading: "", saving: "" });
+					alert(inputIsValid.data);
 					return;
 				}
 				
@@ -238,6 +258,7 @@ class ElectrumOptions extends PureComponent {
 										onChangeText={this.updateState}
 										testConnection={this.testConnection}
 										loading={this.state.loading}
+										clearPeer={this.clearPeer}
 										savePeer={this.savePeer}
 										saving={this.state.saving}
 										customPeers={this.props.settings.customPeers}
@@ -266,16 +287,18 @@ ElectrumOptions.defaultProps = {
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1
+		flex: 1,
+		backgroundColor: colors.white,
+		borderRadius: 20
 	},
 	title: {
-		...systemWeights.regular,
-		color: colors.white,
+		...systemWeights.semibold,
+		color: colors.purple,
 		fontSize: 20,
 		textAlign: "left"
 	},
 	textInputTitle: {
-		...systemWeights.regular,
+		...systemWeights.semibold,
 		color: colors.purple,
 		fontSize: 16,
 		textAlign: "left",
@@ -295,7 +318,10 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		color: colors.purple,
-		fontWeight: "bold"
+		fontWeight: "bold",
+		borderColor: colors.darkPurple,
+		borderWidth: 2,
+		paddingLeft: 12
 	},
 	row: {
 		flexDirection: "row",
@@ -315,6 +341,18 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		marginTop: 3
+	},
+	leftButton: {
+		minWidth: "20%",
+		paddingVertical: 8,
+		marginRight: 2,
+		backgroundColor: colors.purple
+	},
+	rightButton: {
+		minWidth: "26%",
+		paddingVertical: 8,
+		marginLeft: 2,
+		backgroundColor: colors.purple
 	},
 	xButton: {
 		position: "absolute",
