@@ -3,7 +3,7 @@
 # Moonshine
 Moonshine is available for testing on [iOS](https://testflight.apple.com/join/yTLqj9Xn) & [Android](https://play.google.com/store/apps/details?id=com.kisswallet)
 
-Website: [moonshinewallet.com](moonshinewallet.com)
+Website: [moonshinewallet.com](https://moonshinewallet.com)
 
 <p style="align-items: center">
   <img src="./src/assets/screenshots/send_transaction.png" width="33%" alt="Send Transaction" />
