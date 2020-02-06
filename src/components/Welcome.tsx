@@ -9,15 +9,10 @@ const {
 } = require("../../ProjectData.json");
 
 const updates = [
-	`Users can now broadcast raw transactions using the "Broadcast Transaction" feature in Settings.`,
-	"Testnet coins are now disabled by default for new installs. They can always be re-enabled via Settings.",
-	"Deep linking is now supported.",
-	"Signatures are now verifying as expected in both Bitcoin Core and Electrum",
-	"Fixed a fee bug that would set the fee to 0 sats in certain scenarios and prevent the user from sending a transaction.",
-	"Added proper haptic feedback to the pin pad.",
-	"Sweeping private keys now works as expected for legacy addresses.",
-	`Removed the "Key Derivation Path" option from Settings. If you need this back for any reason reach out to support@ferrymanfin.com.`,
-	"Users are now able to move in and out of the app while signing or verifying messages with authentication enabled."
+	`Users can now request a specific amount of BTC or Fiat from the "Receive Transaction" view by tapping the "Specify Amount" button.`,
+	`A bug was fixed in the "Electrum Options" setting that would occasionally cause the app to hang when attempting to connect to a server.`,
+	"Added a proper splash screen to prevent/reduce any flicker when launching the app.",
+	"Fixed a typo that would occur when sweeping private keys."
 ];
 
 const _Welcome = ({ children }) => {
