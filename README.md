@@ -1,7 +1,9 @@
 <img align="left" width="80" height="80" src="./src/assets/main_icon.png" alt="Moonshine Icon">
 
 # Moonshine
-Moonshine's alpha is available for testing on [iOS](https://testflight.apple.com/join/yTLqj9Xn) & [Android](https://play.google.com/store/apps/details?id=com.kisswallet)
+Moonshine is available for testing on [iOS](https://testflight.apple.com/join/yTLqj9Xn) & [Android](https://play.google.com/store/apps/details?id=com.kisswallet)
+
+Website: [moonshinewallet.com](moonshinewallet.com)
 
 <p style="align-items: center">
   <img src="./src/assets/screenshots/send_transaction.png" width="33%" alt="Send Transaction" />
@@ -10,9 +12,6 @@ Moonshine's alpha is available for testing on [iOS](https://testflight.apple.com
 </p>
 
 > Moonshine is a homebrewed, open-source, non-custodial, Bitcoin/Litecoin Electrum wallet for iOS & Android.
-
-CAUTION: **Caution:**
-This app is still heavily in development. Please use at your own risk.
 
 Built with React Native, Moonshine utilizes Electrum's JSON-RPC methods to interact with the Bitcoin/Litecoin network.
 
@@ -108,3 +107,4 @@ Distributed under the MIT license. See ``LICENSE`` for more information.
         * For providing the initial inspiration for the main UI of this app and for providing a wonderful guide/example of how to implement Lightning via Neutrino.
     * Testers!
         * Thank you for the encouragement, exceptional feedback and help troubleshooting throughout the development process. You are a large part of what makes this community great. Thank you!
+        * Special shoutout to the Groestlcoin team for their awesome help with QA and bug catching as they setup their own [fork.](https://github.com/Groestlcoin/moonshine/tree/grs)
