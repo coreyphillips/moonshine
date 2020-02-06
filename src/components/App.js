@@ -20,6 +20,7 @@ import {
 	Easing,
 	Linking
 } from "react-native";
+import SplashScreen from "react-native-splash-screen";
 import {systemWeights} from "react-native-typography";
 import EvilIcon from "react-native-vector-icons/EvilIcons";
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -953,7 +954,7 @@ export default class App extends Component {
 	
 	async componentDidMount() {
 		//This gets called after redux-persist rehydrates
-		
+		SplashScreen.hide();
 		await pauseExecution(100); //This helps to prevent a flicker on launch.
 		
 		//Spin up the nodejs thread

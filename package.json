@@ -54,6 +54,7 @@
     "react-native-qrcode-svg": "^6.0.1",
     "react-native-randombytes": "^3.5.3",
     "react-native-snap-carousel": "^3.8.4",
+    "react-native-splash-screen": "^3.2.0",
     "react-native-svg": "^11.0.1",
     "react-native-touch-id": "^4.4.1",
     "react-native-typography": "^1.4.1",
