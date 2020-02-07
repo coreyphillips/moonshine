@@ -18,7 +18,7 @@
     "start": "react-native start",
     "test": "jest",
     "lint": "eslint .",
-    "postinstall": "rn-nodeify --install buffer,stream,assert,events,crypto,vm,process --hack && cd nodejs-assets/nodejs-project && yarn install && cd ../../ios && pod install && cd ..",
+    "postinstall": "node postinstall.js",
     "bundle": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.jsbundle --assets-dest android/app/build/intermediates/res/merged/release/ && cd android && ./gradlew assembleRelease --no-daemon"
   },
   "dependencies": {
