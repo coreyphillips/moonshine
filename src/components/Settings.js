@@ -934,7 +934,7 @@ class Settings extends PureComponent {
 	
 	requestHelp = () => {
 		try {
-			Linking.openURL("mailto:support@ferrymanfin.com?subject=Requesting Some Help").catch((e) => console.log(e));
+			Linking.openURL("mailto:support@moonshinewallet.com?subject=Requesting Some Help").catch((e) => console.log(e));
 		} catch (e) {}
 	};
 	

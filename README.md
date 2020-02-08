@@ -56,7 +56,7 @@ If you are looking for secure cold storage solutions please consider purchasing 
     * Broadcast raw transactions
 
 For an up-to-date list of features that are in progress please refer to Moonshine's [issue page.](https://github.com/coreyphillips/moonshine/issues)
-If you do not see a feature that you want feel free to create a new issue requesting it or reach out at support@ferrymanfin.com and let me know.
+If you do not see a feature that you want feel free to create a new issue requesting it or reach out at support@moonshinewallet.com and let me know.
 
 ### Contributing
 
@@ -76,7 +76,7 @@ Please be aware and take note that my primary focus is on expanding the core fun
 
 Supported Derivation Paths: m/0' | 44' | 49' | 84' /0'/0'
 
-Again, if you have any questions, feature requests, etc., please feel free to create an issue on [Github](https://github.com/coreyphillips/moonshine/issues), reach out to me on [Twitter](https://twitter.com/coreylphillips) or send an email to corey@ferrymanfin.com.
+Again, if you have any questions, feature requests, etc., please feel free to create an issue on [Github](https://github.com/coreyphillips/moonshine/issues), reach out to me on [Twitter](https://twitter.com/coreylphillips) or send an email to support@moonshinewallet.com.
 
 ### Donate
 

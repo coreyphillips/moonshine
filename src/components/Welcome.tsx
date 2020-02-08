@@ -34,10 +34,10 @@ const _Welcome = ({ children }) => {
 				
 				<Text style={styles.text}>Never hesitate to reach out:</Text>
 				<Text
-					onPress={() => Linking.openURL("mailto:support@ferrymanfin.com?subject=Requesting Some Help").catch((e) => console.log(e))}
+					onPress={() => Linking.openURL("mailto:support@moonshinewallet.com?subject=Requesting Some Help").catch((e) => console.log(e))}
 					style={[styles.text, { marginTop: 5 }]}
 				>
-					<Text style={styles.semiBoldText}>Email: </Text>support@ferrymanfin.com
+					<Text style={styles.semiBoldText}>Email: </Text>support@moonshinewallet.com
 				</Text>
 				<Text
 					onPress={() => Linking.openURL("https://twitter.com/coreylphillips").catch((e) => console.log(e))}
