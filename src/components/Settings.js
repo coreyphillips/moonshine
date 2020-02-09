@@ -1176,7 +1176,7 @@ class Settings extends PureComponent {
 							</View>
 							
 							<SettingGeneral
-								value={`Need Some Help?\nsupport@ferrymanfin.com`}
+								value={`Need Some Help?\nsupport@moonshinewallet.com`}
 								col1Image={<FontAwesome name="support" size={50} color={colors.purple} />}
 								onPress={this.requestHelp}
 								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
