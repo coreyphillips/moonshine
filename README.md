@@ -43,9 +43,8 @@ If you are looking for secure cold storage solutions please consider purchasing 
     * Custom fee selection
     * Import mnemonic phrases via manual entry or scanning
     * RBF functionality
-    * Add BIP39 Passphrase functionality
-    * Add support for Segwit-compatible & legacy addresses in settings
-    * Allow users to select the key derivation path in settings
+    * BIP39 Passphrase functionality
+    * Support for Segwit-compatible & legacy addresses in settings
     * Support individual private key sweeping
     * UTXO blacklisting
         * Accessible via the Transaction Detail view, this allows users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo excludes it's amount from the wallet's total balance.
