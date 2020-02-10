@@ -31,28 +31,27 @@ If you are looking for secure cold storage solutions please consider purchasing 
 2. Start the project:
     - iOS: `react-native run-ios`
     - Android: `react-native run-android`
-### Feature Roadmap
-* Complete:
-    * Bitcoin/Litecoin Mainnet & Testnet supported
-    * Bech32 support
-    * Multiple wallet support
-    * Electrum
-        * Support for both random and custom peers
-    * Encrypted storage
-    * Biometric + Pin authentication
-    * Custom fee selection
-    * Import mnemonic phrases via manual entry or scanning
-    * RBF functionality
-    * BIP39 Passphrase functionality
-    * Support for Segwit-compatible & legacy addresses in settings
-    * Support individual private key sweeping
-    * UTXO blacklisting
-        * Accessible via the Transaction Detail view, this allows users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo excludes it's amount from the wallet's total balance.
-    * Ability to Sign & Verify Messages
-    * Support BitID for passwordless authentication
-    * Coin Control
-        * This can be accessed from the Send Transaction view and basically allows users to select from a list of available UTXO's to include in their transaction.
-    * Broadcast raw transactions
+### Features
+* Bitcoin/Litecoin Mainnet & Testnet supported
+* Bech32 support
+* Multiple wallet support
+* Electrum
+    * Support for both random and custom peers
+* Encrypted storage
+* Biometric + Pin authentication
+* Custom fee selection
+* Import mnemonic phrases via manual entry or scanning
+* RBF functionality
+* BIP39 Passphrase functionality
+* Support for Segwit-compatible & legacy addresses in settings
+* Support individual private key sweeping
+* UTXO blacklisting
+    * Accessible via the Transaction Detail view, this allows users to blacklist any utxo that they do not wish to include in their list of available utxo's when sending transactions. Blacklisting a utxo excludes it's amount from the wallet's total balance.
+* Ability to Sign & Verify Messages
+* Support BitID for passwordless authentication
+* Coin Control
+    * This can be accessed from the Send Transaction view and basically allows users to select from a list of available UTXO's to include in their transaction.
+* Broadcast raw transactions
 
 For an up-to-date list of features that are in progress please refer to Moonshine's [issue page.](https://github.com/coreyphillips/moonshine/issues)
 If you do not see a feature that you want feel free to create a new issue requesting it or reach out at support@moonshinewallet.com and let me know.
@@ -73,7 +72,7 @@ Please be aware and take note that my primary focus is on expanding the core fun
 
 ### Support
 
-Supported Derivation Paths: m/0' | 44' | 49' | 84' /0'/0'
+Supported Derivation Paths: m/44' | 49' | 84' /0'/0'
 
 Again, if you have any questions, feature requests, etc., please feel free to create an issue on [Github](https://github.com/coreyphillips/moonshine/issues), reach out to me on [Twitter](https://twitter.com/coreylphillips) or send an email to support@moonshinewallet.com.
 
