@@ -970,12 +970,9 @@ class Settings extends PureComponent {
 	
 	render() {
 		const { selectedWallet, selectedCrypto } = this.props.wallet;
-		/*
-		Previously Used For Key Derivation Path Setting.
 		const coinTypePath = defaultWalletShape.coinTypePath[selectedCrypto];
 		let keyDerivationPath = "84";
 		try {keyDerivationPath = this.props.wallet.wallets[selectedWallet].keyDerivationPath[selectedCrypto];} catch (e) {}
-		*/
 		let coinDataLabel = "?";
 		try {coinDataLabel = getCoinData({ selectedCrypto, cryptoUnit: "BTC" });} catch (e) {}
 		let addressType = "bech32";
@@ -1088,6 +1085,7 @@ class Settings extends PureComponent {
 							
 							{this.MultiOptionRow({
 								title: "Address Type",
+								subTitle: `Path: m/${keyDerivationPath}'/${coinTypePath}'/0'/0/0`,
 								currentValue: addressType,
 								options:[
 									{value: "Legacy", onPress: () => this.updateAddressType({ addressType: "legacy" }) },
