@@ -15,7 +15,8 @@ const {
 const {
 	getFiatBalance,
 	openTxId,
-	sortArrOfObjByKey
+	sortArrOfObjByKey,
+	satsToBtc
 } = require("../utils/helpers");
 const {
 	Constants: {
@@ -45,7 +46,8 @@ interface UtxoRowComponent {
 	onPress: ({tx_hash: string, value: number}) => null,
 	whiteListedUtxos: [string],
 	coinData: Object,
-	selectedCrypto: string
+	selectedCrypto: string,
+	cryptoUnit: string
 }
 
 const _UtxoRow = (
@@ -55,10 +57,14 @@ const _UtxoRow = (
 		onPress = () => null,
 		whiteListedUtxos = [""],
 		coinData = { crypto: "", acronym: "" },
-		selectedCrypto = "bitcoin"
+		selectedCrypto = "bitcoin",
+		cryptoUnit = "satoshi"
 	}: UtxoRowComponent) => {
 	try {
 		const { tx_hash, value, address, path, confirmations } = utxo;
+		let balance = 0;
+		try {balance = cryptoUnit === "satoshi" ? value : satsToBtc({ amount: value });} catch (e) {}
+		
 		return (
 			<TouchableOpacity
 				activeOpacity={1}
@@ -71,7 +77,7 @@ const _UtxoRow = (
 							<Text style={[styles.header, { fontSize: 20 }]}>
 								{`${coinData["crypto"]}: `}
 							</Text>
-							<Text style={[styles.text, { fontSize: 18 }]}>{value} {coinData["acronym"]}</Text>
+							<Text style={[styles.text, { fontSize: 18 }]}>{balance} {coinData["acronym"]}</Text>
 						</View>
 						
 						<View style={[styles.row, {  marginBottom: 5 }]}>
@@ -165,7 +171,11 @@ const _CoinControl = (
 	
 	const getAvailableToSpendText = () => {
 		try {
-			return `${coinData.crypto}: ${whiteListedUtxosBalance} ${coinData.acronym}`;
+			let balance = 0;
+			try {
+				balance = cryptoUnit === "satoshi" ? whiteListedUtxosBalance : satsToBtc({ amount: whiteListedUtxosBalance });
+			} catch (e) {}
+			return `${coinData.crypto}: ${balance} ${coinData.acronym}`;
 		} catch (e) {return "BTC: 0 sats";}
 	};
 	
@@ -204,6 +214,7 @@ const _CoinControl = (
 								onPress={onPress}
 								whiteListedUtxos={whiteListedUtxos}
 								selectedCrypto={selectedCrypto}
+								cryptoUnit={cryptoUnit}
 							/>
 						);
 					} catch (e) {}
