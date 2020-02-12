@@ -770,8 +770,8 @@ export default class App extends Component {
 		} catch (e) {console.log(e);}
 	};
 	
-	authenticateUserWithBiometrics = () => {
-		if (this.authenticating) return;
+	authenticateUserWithBiometrics = (forceRetry = false) => {
+		if (!forceRetry && this.authenticating) return;
 		this.authenticating = true;
 		const optionalConfigObject = {
 			unifiedErrors: false // use unified error messages (default false)

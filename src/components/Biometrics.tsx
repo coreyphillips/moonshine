@@ -18,7 +18,7 @@ const {
 
 interface General {
 	biometricTypeSupported: string, //FaceID or TouchID
-	retryAuthentication: Function
+	retryAuthentication: (boolean) => void
 }
 const GetIcon = ({ biometricTypeSupported = "", retryAuthentication = () => null }: General) => {
 	try {
@@ -71,7 +71,7 @@ interface BiometricsComponent extends General {
 const _Biometrics = ({ style = {}, biometricTypeSupported = "", retryAuthentication = () => null }: BiometricsComponent) => {
 	return (
 		<View style={[styles.container, { ...style }]}>
-			<GetIcon biometricTypeSupported={biometricTypeSupported} retryAuthentication={retryAuthentication} />
+			<GetIcon biometricTypeSupported={biometricTypeSupported} retryAuthentication={() => retryAuthentication(true)} />
 		</View>
 	);
 };
