@@ -320,18 +320,6 @@ class SendTransaction extends Component {
 					this.props.updateTransaction({ fee: parseInt(recommendedFee/2), amount: totalFee, fiatAmount, transactionSize });
 				}
 				if (this.state.cryptoUnitAmount !== cryptoUnitAmount) this.setState({ cryptoUnitAmount });
-			} else {
-				const amount = this.props.transaction.amount;
-				let totalFee = this.getTotalFee(this.props.transaction.fee, transactionSize);
-				if (walletBalance > totalFee+amount) {
-					this.props.updateTransaction({ transactionSize });
-				} else {
-					//Update the amount to account for the difference between the transaction cost & walletBalance and bring it in line with the walletBalance
-					const difference = Math.abs((totalFee+amount) - walletBalance);
-					let newAmount = 0;
-					if (difference < amount) newAmount = amount - difference;
-					this.props.updateTransaction({ transactionSize, amount: newAmount });
-				}
 			}
 			await this.setState({ spendMaxAmount: !this.state.spendMaxAmount });
 		} catch (e) {
