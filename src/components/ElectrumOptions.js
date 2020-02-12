@@ -39,6 +39,10 @@ class ElectrumInput extends PureComponent {
 	
 	clearPeer = () => {this.props.clearPeer(this.props.coin);};
 	
+	getDefaultPort = () => {
+		try {return this.props.coin.toLowerCase().includes("testnet") ? "51002" : "50002";} catch (e) {return "50002";}
+	};
+	
 	render() {
 		let savedHost = "";
 		let savedPort = "";
@@ -75,7 +79,7 @@ class ElectrumInput extends PureComponent {
 						onChangeText={(port) =>  {if (!isNaN(port) || port === "") this.props.onChangeText({coin: this.props.coin, value: { port, host: this.props.host } });}}
 						value={this.props.port}
 						multiline={false}
-						placeholder={this.props.portPlaceholder}
+						placeholder={this.getDefaultPort()}
 					/>
 				</View>
 				<View style={styles.row}>
