@@ -201,43 +201,40 @@ class ElectrumOptions extends PureComponent {
 	
 	savePeer = async (coin) => {
 		try {
-			try {
-				await this.setState({ saving: coin });
-				const host = this.state[coin].host.trim();
-				const port = this.state[coin].port.trim();
-				
-				//Remove any customPeer if host and port are blank.
-				if (host === "" && port === "") {
-					const currentPeers = this.props.settings.customPeers;
-					await this.props.updateSettings({ customPeers: {...currentPeers, [coin]: [] } });
-					await this.setState({ saving: "", loading: "" });
-					return;
-				}
-				
-				const inputIsValid = await validateInput({ host, port });
-				if (inputIsValid.error) {
-					await this.setState({ loading: "", saving: "" });
-					alert(inputIsValid.data);
-					return;
-				}
-				
-				//Attempt to connect to the customPeer before saving.
-				await electrum.stop({ coin });
-				const result = await electrum.start({ coin, customPeers: [{ host, port }]});
-				if (result.error === false) {
-					const currentPeers = this.props.settings.customPeers;
-					await this.props.updateSettings({ customPeers: {...currentPeers, [coin]: [{ host, port }] } });
-				} else {
-					alert(`Failure\nUnable to connect to:\n${host}:${port}`);
-				}
-				
-				this.setState({ saving: "" });
-			} catch (e) {
-				console.log(e);
-				this.setState({ saving: "" });
+			await this.setState({ saving: coin });
+			const host = this.state[coin].host.trim();
+			const port = this.state[coin].port.trim();
+			
+			//Remove any customPeer if host and port are blank.
+			if (host === "" && port === "") {
+				const currentPeers = this.props.settings.customPeers;
+				await this.props.updateSettings({ customPeers: {...currentPeers, [coin]: [] } });
+				await this.setState({ saving: "", loading: "" });
+				return;
 			}
+			
+			const inputIsValid = await validateInput({ host, port });
+			if (inputIsValid.error) {
+				await this.setState({ loading: "", saving: "" });
+				alert(inputIsValid.data);
+				return;
+			}
+			
+			//Attempt to connect to the customPeer before saving.
+			//try {electrum.stop({ coin });} catch (e) {}
+			const result = await electrum.start({ coin, customPeers: [{ host, port }]});
+			if (result.error === false) {
+				const currentPeers = this.props.settings.customPeers;
+				await this.props.updateSettings({ customPeers: {...currentPeers, [coin]: [{ host, port }] } });
+				alert(`Success!!\nSuccessfully connected to and saved:\n${host}:${port}`);
+			} else {
+				alert(`Failure\nUnable to connect to:\n${host}:${port}`);
+			}
+			
+			this.setState({ saving: "" });
 		} catch (e) {
 			console.log(e);
+			this.setState({ saving: "" });
 		}
 	};
 	
