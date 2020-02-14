@@ -8,7 +8,7 @@ import {
 	FlatList
 } from "react-native";
 import { systemWeights } from "react-native-typography";
-import Ionicons from "react-native-vector-icons/Ionicons";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 const {
 	getCoinData
 } = require("../utils/networks");
@@ -64,6 +64,8 @@ const _UtxoRow = (
 		const { tx_hash, value, address, path, confirmations } = utxo;
 		let balance = 0;
 		try {balance = cryptoUnit === "satoshi" ? value : satsToBtc({ amount: value });} catch (e) {}
+		let isWhiteListed = false;
+		try {isWhiteListed = whiteListedUtxos.includes(tx_hash);} catch (e) {}
 		
 		return (
 			<TouchableOpacity
@@ -119,8 +121,7 @@ const _UtxoRow = (
 					
 					</View>
 					<View style={{ flex: 0.2, justifyContent: "center", alignItems: "center" }}>
-						{whiteListedUtxos.includes(tx_hash) &&
-						<Ionicons name="ios-checkmark-circle-outline" size={40} color={colors.green} />}
+						<MaterialCommunityIcons name={isWhiteListed ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"} size={40} color={colors.darkPurple} />
 					</View>
 				</View>
 			</TouchableOpacity>
