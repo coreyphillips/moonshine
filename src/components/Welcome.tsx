@@ -1,6 +1,7 @@
 import React, {useEffect, memo} from "react";
 import {StyleSheet, View, LayoutAnimation, Platform, Text, Image, Linking} from "react-native";
 import {systemWeights} from "react-native-typography";
+import XButton from "./XButton";
 
 const {
 	Constants: {
@@ -15,7 +16,7 @@ const updates = [
 	"Fixed a typo that would occur when sweeping private keys."
 ];
 
-const _Welcome = ({ children }) => {
+const _Welcome = ({ onClose = () => null, children = <View /> } = {}) => {
 	
 	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
 	return (
@@ -40,12 +41,13 @@ const _Welcome = ({ children }) => {
 					<Text style={styles.semiBoldText}>Email: </Text>support@moonshinewallet.com
 				</Text>
 				<Text
-					onPress={() => Linking.openURL("https://twitter.com/coreylphillips").catch((e) => console.log(e))}
+					onPress={() => Linking.openURL("https://twitter.com/moonshinewallet").catch((e) => console.log(e))}
 					style={[styles.text, { marginTop: 5 }]}
 				>
-					<Text style={styles.semiBoldText}>Twitter: </Text>@coreylphillips
+					<Text style={styles.semiBoldText}>Twitter: </Text>@moonshinewallet
 				</Text>
 			</View>
+			<XButton style={{marginVertical: 30}} onPress={onClose} />
 		</View>
 	);
 };

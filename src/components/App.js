@@ -2082,7 +2082,7 @@ export default class App extends Component {
 					style={styles.modal}
 					contentStyle={styles.modalContent}
 				>
-					<Welcome />
+					<Welcome onClose={this._closeWelcomeModal} />
 				</DefaultModal>
 
 				<DefaultModal
