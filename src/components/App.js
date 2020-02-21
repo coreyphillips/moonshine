@@ -2087,14 +2087,16 @@ export default class App extends Component {
 
 				<DefaultModal
 					isVisible={this.state.displayBackupPhrase}
-					onClose={this.toggleBackupPhrase}
-					type="View"
+					type="ScrollView"
 					style={styles.modal}
 					contentStyle={styles.modalContent}
 				>
 					<View style={{ flex: 1, justifyContent: "center" }}>
 						<BackupPhrase
 							phrase={this.state.backupPhrase}
+						/>
+						<XButton
+							style={{ alignSelf: "center", marginVertical: 20 }}
 							onPress={this.toggleBackupPhrase}
 						/>
 					</View>
