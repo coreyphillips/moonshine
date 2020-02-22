@@ -12,7 +12,7 @@ export const updateSettings = (payload) => ({
 	payload
 });
 
-export const updatePeersList = ({ peerList = [], coin = "bitcoin"} = {}) => (dispatch) => {
+export const updatePeersList = ({ peerList = [], coin = "bitcoin", protocol = "ssl"} = {}) => (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (errorTitle = "", errorMsg = "") => {
 			resolve({ error: true, errorTitle, errorMsg });
@@ -23,9 +23,10 @@ export const updatePeersList = ({ peerList = [], coin = "bitcoin"} = {}) => (dis
 			await Promise.all(peerList.map((peer) => {
 				try {
 					const host = peer[1];
-					const port = Number(peer[2][1].replace(/\D/g,''));
-					const protocol = "ssl";
-					peers.push({ host, port, protocol });
+					const tcpPort = Number(peer[2][2].replace(/\D/g,''));
+					const sslPort = Number(peer[2][1].replace(/\D/g,''));
+					const port = Number(peer[2][protocol === "ssl" ? 1 : 2].replace(/\D/g,''));
+					peers.push({ host, port, protocol, tcpPort, sslPort });
 				} catch (e) {}
 			}));
 			dispatch({

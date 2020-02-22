@@ -14,6 +14,7 @@ import {systemWeights} from "react-native-typography/dist/index";
 import XButton from "./XButton";
 import Button from "./Button";
 import * as electrum from "../utils/electrum";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 
 const {
 	Constants: {
@@ -40,25 +41,68 @@ class ElectrumInput extends PureComponent {
 	clearPeer = () => {this.props.clearPeer(this.props.coin);};
 	
 	getDefaultPort = () => {
-		try {return this.props.coin.toLowerCase().includes("testnet") ? "51002" : "50002";} catch (e) {return "50002";}
+		try {
+			if (this.props.protocol === "ssl"){
+				try {return this.props.coin.toLowerCase().includes("testnet") ? "51002" : "50002";} catch (e) {return "50002";}
+			} else {
+				try {return this.props.coin.toLowerCase().includes("testnet") ? "51001" : "50001";} catch (e) {return "50001";}
+			}
+		} catch (e) {return "50002";}
+	};
+	
+	updateProtocol = (protocol = "ssl") => {
+		try {
+			const data = { host: this.props.host, port: this.props.port, protocol };
+			this.props.updateState({coin: this.props.coin, value: data });
+		} catch (e) {}
+	};
+	
+	getSavedProtocol = () => {
+		try {
+			const protocol = this.props.customPeers[this.props.coin][0].protocol;
+			if (protocol === "ssl" || protocol === "tcp") return protocol;
+			return "ssl";
+		} catch (e) {
+			return "ssl";
+		}
 	};
 	
 	render() {
 		let savedHost = "";
 		let savedPort = "";
-		try {
-			savedHost = this.props.customPeers[this.props.coin][0].host;
-			savedPort = this.props.customPeers[this.props.coin][0].port;
-		} catch (e) {}
+		let protocol = "ssl";
+		try {savedHost = this.props.customPeers[this.props.coin][0].host;} catch (e) {}
+		try {savedPort = this.props.customPeers[this.props.coin][0].port;} catch (e) {}
+		try {protocol = this.props.protocol;} catch (e) {}
 		return (
 			<View style={styles.textInputContainer}>
 				<Text style={styles.title}>{this.props.title}</Text>
+				
+				<View style={[styles.textInputRow, { width: "70%", justifyContent: "space-around" }]}>
+					<TouchableOpacity onPress={() => this.updateProtocol("tcp")} style={{ flexDirection: "row" }}>
+						<Text style={styles.textInputTitle}>TCP: </Text>
+						<MaterialCommunityIcons
+							name={protocol === "tcp" ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
+							size={20}
+							color={colors.darkPurple}
+						/>
+					</TouchableOpacity>
+					<TouchableOpacity onPress={() => this.updateProtocol("ssl")} style={{ flexDirection: "row" }}>
+						<Text style={styles.textInputTitle}>SSL: </Text>
+						<MaterialCommunityIcons
+							name={protocol === "ssl" ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
+							size={20}
+							color={colors.darkPurple}
+						/>
+					</TouchableOpacity>
+				</View>
+				
 				<View style={styles.textInputRow}>
 					<Text style={styles.textInputTitle}>Host: </Text>
 					<TextInput
 						style={styles.textInput}
 						selectionColor={colors.lightPurple}
-						onChangeText={(host) => this.props.onChangeText({coin: this.props.coin, value: { host, port: this.props.port } })}
+						onChangeText={(host) => this.props.onChangeText({coin: this.props.coin, value: { host, port: this.props.port, protocol } })}
 						value={this.props.host}
 						autoCapitalize="none"
 						autoCompleteType="off"
@@ -76,7 +120,7 @@ class ElectrumInput extends PureComponent {
 						autoCorrect={false}
 						selectionColor={colors.lightPurple}
 						keyboardType="decimal-pad"
-						onChangeText={(port) =>  {if (!isNaN(port) || port === "") this.props.onChangeText({coin: this.props.coin, value: { port, host: this.props.host } });}}
+						onChangeText={(port) =>  {if (!isNaN(port) || port === "") this.props.onChangeText({coin: this.props.coin, value: { port, host: this.props.host, protocol } });}}
 						value={this.props.port}
 						multiline={false}
 						placeholder={this.getDefaultPort()}
@@ -98,7 +142,7 @@ class ElectrumInput extends PureComponent {
 					/>
 					<Button
 						loading={this.props.saving === this.props.coin}
-						title={this.props.port === savedPort && this.props.host === savedHost ? "Saved" : "Save"}
+						title={this.props.port === savedPort && this.props.host === savedHost && this.props.protocol === this.getSavedProtocol() ? "Saved" : "Save"}
 						onPress={this.savePeer}
 						style={styles.rightButton}
 						titleStyle={{ fontSize: 14 }}
@@ -117,7 +161,6 @@ ElectrumInput.defaultProps = {
 	loading: "",
 	saving: "",
 	hostPlaceholder: "",
-	portPlaceholder: "",
 	customPeers: {},
 	onChangeText: () => null,
 	testConnection: () => null,
@@ -151,9 +194,11 @@ class ElectrumOptions extends PureComponent {
 			const coin = availableCoins[i];
 			let host = "";
 			let port = "";
+			let protocol = "ssl";
 			try { host = props.settings.customPeers[coin][0].host; } catch (e) {}
 			try { port = props.settings.customPeers[coin][0].port; } catch (e) {}
-			coins[coin] = { host, port };
+			try { protocol = props.settings.customPeers[coin][0].protocol; } catch (e) {}
+			coins[coin] = { host, port, protocol };
 		}
 		this.state = {
 			availableCoins,
@@ -171,6 +216,7 @@ class ElectrumOptions extends PureComponent {
 			await this.setState({ loading: coin });
 			const host = this.state[coin].host.trim();
 			const port = this.state[coin].port.trim();
+			const protocol = this.state[coin].protocol;
 			
 			const inputIsValid = await validateInput({ host, port });
 			if (inputIsValid.error) {
@@ -179,9 +225,15 @@ class ElectrumOptions extends PureComponent {
 				return;
 			}
 			
-			const result = await electrum.start({ coin, customPeers: [{ host, port }]});
+			const result = await electrum.start({ coin, customPeers: [{ host, port, protocol }]});
 			if (result.error === false) {
-				alert(`Success!!\nSuccessfully connect to:\n${host}:${port}`);
+				//Attempt to ping the server to ensure we are properly connected
+				const pingResponse = await electrum.pingServer();
+				if (pingResponse.error === false) {
+					alert(`Success!!\nSuccessfully connect to:\n${host}:${port}`);
+				} else {
+					alert(`Failure\nUnable to connect to:\n${host}:${port}`);
+				}
 			} else {
 				alert(`Failure\nUnable to connect to:\n${host}:${port}`);
 			}
@@ -195,7 +247,7 @@ class ElectrumOptions extends PureComponent {
 		try {
 			const currentPeers = this.props.settings.customPeers;
 			await this.props.updateSettings({ customPeers: {...currentPeers, [coin]: [] } });
-			await this.setState({ saving: "", loading: "", [coin]: { host: "", port: "" } });
+			await this.setState({ saving: "", loading: "", [coin]: { host: "", port: "", protocol: "ssl" } });
 		} catch (e) {}
 	};
 	
@@ -204,6 +256,7 @@ class ElectrumOptions extends PureComponent {
 			await this.setState({ saving: coin });
 			const host = this.state[coin].host.trim();
 			const port = this.state[coin].port.trim();
+			const protocol = this.state[coin].protocol;
 			
 			//Remove any customPeer if host and port are blank.
 			if (host === "" && port === "") {
@@ -220,13 +273,17 @@ class ElectrumOptions extends PureComponent {
 				return;
 			}
 			
-			//Attempt to connect to the customPeer before saving.
-			//try {electrum.stop({ coin });} catch (e) {}
-			const result = await electrum.start({ coin, customPeers: [{ host, port }]});
+			const result = await electrum.start({ coin, customPeers: [{ host, port, protocol }]});
 			if (result.error === false) {
-				const currentPeers = this.props.settings.customPeers;
-				await this.props.updateSettings({ customPeers: {...currentPeers, [coin]: [{ host, port }] } });
-				alert(`Success!!\nSuccessfully connected to and saved:\n${host}:${port}`);
+				//Attempt to ping the server to ensure we are properly connected
+				const pingResponse = await electrum.pingServer();
+				if (pingResponse.error === false) {
+					const currentPeers = this.props.settings.customPeers;
+					await this.props.updateSettings({ customPeers: {...currentPeers, [coin]: [{ host, port, protocol }] } });
+					alert(`Success!!\nSuccessfully connected to and saved:\n${host}:${port}`);
+				} else {
+					alert(`Failure\nUnable to connect to:\n${host}:${port}`);
+				}
 			} else {
 				alert(`Failure\nUnable to connect to:\n${host}:${port}`);
 			}
@@ -243,6 +300,7 @@ class ElectrumOptions extends PureComponent {
 			<View style={styles.container}>
 				<ScrollView style={styles.container} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
 					<TouchableOpacity activeOpacity={1} style={styles.container}>
+						<Text style={styles.header}>Custom Electrum Servers</Text>
 						<FlatList
 							contentContainerStyle={{ paddingBottom: height * 0.3 }}
 							data={this.state.availableCoins}
@@ -256,14 +314,15 @@ class ElectrumOptions extends PureComponent {
 										title={capitalize(item)}
 										host={this.state[item].host}
 										port={this.state[item].port}
+										protocol={this.state[item].protocol}
 										onChangeText={this.updateState}
+										updateState={this.updateState}
 										testConnection={this.testConnection}
 										loading={this.state.loading}
 										clearPeer={this.clearPeer}
 										savePeer={this.savePeer}
 										saving={this.state.saving}
 										customPeers={this.props.settings.customPeers}
-										portPlaceholder="50002"
 									/>
 								);
 							}}
@@ -289,6 +348,13 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: colors.white,
 		borderRadius: 20
+	},
+	header: {
+		...systemWeights.semibold,
+		color: colors.purple,
+		fontSize: 20,
+		textAlign: "center",
+		marginVertical: 20
 	},
 	title: {
 		...systemWeights.semibold,

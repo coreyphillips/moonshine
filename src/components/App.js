@@ -1500,12 +1500,6 @@ export default class App extends Component {
 				//This helps to prevent the app from disconnecting and stalling when attempting to connect to an electrum server after some time.
 				//await nodejs.start("main.js");
 				
-				//Disconnect from the currently connected Electrum server. Not entirely sure if this is necessary, but it seems to prevent the app from stalling in certain scenarios.
-				try {
-					//await electrum.stop({ coin });
-				} catch (e) {
-				}
-				
 				try {
 					let hasPeers = false;
 					let hasCustomPeers = false;
