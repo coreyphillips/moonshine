@@ -22,6 +22,7 @@ interface DisplayItemComponent {
 		item: Transaction
 	},
 	selectedCrypto: string,
+	fiatSymbol: string,
 	exchangeRate: number | string,
 	blockHeight: number,
 	onTransactionPress: Function,
@@ -34,6 +35,7 @@ const _DisplayItem = (
 			item: { hash: "", timestamp: 0, type: "", status: "sent", block: 0, messages: [], sentAmount: 0, amount: 0 }
 		},
 		selectedCrypto = "bitcoin",
+		fiatSymbol = "$",
 		exchangeRate = "0",
 		blockHeight = 0,
 		onTransactionPress = () => null,
@@ -61,6 +63,7 @@ const _DisplayItem = (
 					date={timestamp}
 					type={type}
 					cryptoUnit={cryptoUnit}
+					fiatSymbol={fiatSymbol}
 					exchangeRate={exchangeRate}
 					transactionBlockHeight={block}
 					currentBlockHeight={blockHeight}
@@ -107,6 +110,7 @@ interface TransactionListComponent {
 	transactions: [Transaction],
 	blacklistedUtxos: string[],
 	selectedCrypto: string,
+	fiatSymbol: string,
 	blockHeight: number,
 	exchangeRate: number | string,
 	cryptoUnit: string,
@@ -119,14 +123,13 @@ const _TransactionList = (
 		transactions = [{ hash: "", timestamp: 0, type: "", status: "sent", block: 0, messages: [], sentAmount: 0, amount: 0 }],
 		blacklistedUtxos = [],
 		selectedCrypto = "",
+		fiatSymbol = "$",
 		blockHeight = 0,
 		exchangeRate = 0,
 		cryptoUnit = "satoshi",
 		onRefresh,
 		onTransactionPress = () => null
 	}: TransactionListComponent) => {
-	
-	//if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
 	
 	const displayEmptyComponent = () => {
 		try {
@@ -188,6 +191,7 @@ const _TransactionList = (
 						<DisplayItem
 							transaction={transaction}
 							selectedCrypto={selectedCrypto}
+							fiatSymbol={fiatSymbol}
 							exchangeRate={exchangeRate}
 							blockHeight={blockHeight}
 							onTransactionPress={onTransactionPress}

@@ -17,7 +17,8 @@ import bitcoinUnits from "bitcoin-units";
 import NumPad from "./NumPad";
 const {
 	Constants: {
-		colors
+		colors,
+		currencies
 	}
 } = require("../../ProjectData.json");
 const {
@@ -54,15 +55,16 @@ const formatUri = ({ selectedCrypto, address, amount }: FormatUri = {
 
 interface ReceiveTransactionComponent extends Default, FormatUri {
 	cryptoUnit: string,
+	selectedCurrency: string,
 	exchangeRate: number,
 	size?: number, // Size of QRCode
 	disabled?: boolean // Disable the Copy/Share buttons
 }
-const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", address = "", amount = "", label = "", cryptoUnit = "satoshi", exchangeRate = 0, size = 200, disabled = false }: ReceiveTransactionComponent) => {
+const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", selectedCurrency = "usd", address = "", amount = "", label = "", cryptoUnit = "satoshi", exchangeRate = 0, size = 200, disabled = false }: ReceiveTransactionComponent) => {
 	
 	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
 	const [requestedAmount, setRequestedAmount] = useState(amount || "0"); //Represented as sats
-	const [fiatAmount, setFiatAmount] = useState(amount || "$0"); //Represented and formatted based on selectedFiat (USD)
+	const [fiatAmount, setFiatAmount] = useState(amount || `${currencies[selectedCurrency].symbol}0`); //Represented and formatted based on selectedFiat (USD)
 	const [cryptoAmount, setCryptoAmount] = useState(amount || "0"); //Represented and formatted based on cryptoUnit (sats/bitcoin)
 	
 	const [displaySpecifyAmount, setDisplaySpecifyAmount] = useState(false); //Determines whether the specifyAmount modal is displayed
@@ -96,9 +98,10 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", address = "", amount 
 	//Handles any change to requestedAmount from the request modal in order to parse and format the input accordingly.
 	const updateRequestedAmount = (amount = "") => {
 		try {
+			const fiatSymbol = currencies[selectedCurrency].symbol;
 			let _fiatAmount, _requestedAmount, _cryptoAmount = "";
 			amount = amount.toString().trim();
-			amount = amount.replace("$", "");
+			amount = amount.replace(`${fiatSymbol}`, "");
 			amount = amount.replace(" ", "");
 
 			//Remove all commas
@@ -124,7 +127,7 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", address = "", amount 
 			//Add commas to sats or lits
 			if (cryptoUnit === "satoshi" || cryptoUnit === "litoshi") _cryptoAmount = _cryptoAmount.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
 			if (requestedAmount !== _requestedAmount) setRequestedAmount(_requestedAmount);
-			if (fiatAmount !== _fiatAmount) setFiatAmount(`$${formatNumber(_fiatAmount)}`);
+			if (fiatAmount !== _fiatAmount) setFiatAmount(`${fiatSymbol}${formatNumber(_fiatAmount)}`);
 			if (cryptoAmount !== _cryptoAmount) setCryptoAmount(_cryptoAmount);
 		} catch (e) {console.log(e);}
 	};
@@ -188,7 +191,7 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", address = "", amount 
 							<View style={styles.swapIcon}>
 								<MaterialIcons name={"swap-calls"} size={25} color={colors.purple} />
 							</View>
-							<Text style={styles.amountText}>{displayInCrypto ? `${acronym}` : "USD"}</Text>
+							<Text style={styles.amountText}>{displayInCrypto ? `${acronym}` : currencies[selectedCurrency].unit}</Text>
 						</View>
 					</TouchableOpacity>
 					<NumPad style={{ marginTop: 20 }} onPress={updateRequestedAmount} value={getRequestedValue()} />
@@ -205,6 +208,7 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", address = "", amount 
 _ReceiveTransaction.propTypes = {
 	selectedCrypto: PropTypes.string.isRequired,
 	address: PropTypes.string.isRequired,
+	selectedCurrency: PropTypes.string.isRequired,
 	amount: PropTypes.number,
 	label: PropTypes.string,
 	size: PropTypes.number

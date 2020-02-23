@@ -958,7 +958,7 @@ class SendTransaction extends Component {
 							<Text style={styles.text}>Fee: {this.props.transaction.fee || this.props.transaction.recommendedFee}sat/B </Text>
 						</View>
 						<View style={{ flex: 1 }}>
-							<Text style={[styles.text, { textAlign: "center" }]}>${fiatFeeLabel}</Text>
+							<Text style={[styles.text, { textAlign: "center" }]}>{this.props.settings.fiatSymbol}{fiatFeeLabel}</Text>
 						</View>
 						<View style={{ flex: 1 }}>
 							<Text style={[styles.text, { textAlign: "center" }]}>{cryptoFeeLabel} sats</Text>
@@ -991,7 +991,7 @@ class SendTransaction extends Component {
 
 				<View style={{ flex: Platform.OS === "ios" ? 0.45 : 0.45, justifyContent: "flex-start" }}>
 					<View style={styles.buttonContainer}>
-						<Button title="Send" text={`~$${this.getSendButtonFiatLabel()}`} text2={this.getSendButtonCryptoLabel()} textStyle={{ paddingTop: 5, ...systemWeights.light, }} onPress={this.validateTransaction} />
+						<Button title="Send" text={`~${this.props.settings.fiatSymbol}${this.getSendButtonFiatLabel()}`} text2={this.getSendButtonCryptoLabel()} textStyle={{ paddingTop: 5, ...systemWeights.light, }} onPress={this.validateTransaction} />
 					</View>
 				</View>
 
@@ -1009,6 +1009,7 @@ class SendTransaction extends Component {
 						whiteListedUtxosBalance={this.state.whiteListedUtxosBalance}
 						exchangeRate={Number(this.props.wallet.exchangeRate[selectedCrypto])}
 						onPress={this.onUtxoPress}
+						fiatSymbol={this.props.settings.fiatSymbol}
 					/>
 				</DefaultModal>
 				
@@ -1032,17 +1033,17 @@ class SendTransaction extends Component {
 									<View style={{ marginVertical: 5 }} />
 									<Text style={styles.boldPurpleText}>Amount:</Text>
 									<Text style={styles.purpleText}>{this.satsToUnit(this.props.transaction.amount)} {getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit }).acronym}</Text>
-									<Text style={styles.purpleText}>${parseFloat(this.props.transaction.fiatAmount).toFixed(2)}</Text>
+									<Text style={styles.purpleText}>{this.props.settings.fiatSymbol}{parseFloat(this.props.transaction.fiatAmount).toFixed(2)}</Text>
 									<View style={{ marginVertical: 5 }} />
 									<Text style={styles.boldPurpleText}>Fee:</Text>
 									<Text style={styles.purpleText}>{this.satsToUnit(cryptoFeeLabel)} {getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit }).acronym}</Text>
-									<Text style={styles.purpleText}>${fiatFeeLabel}</Text>
+									<Text style={styles.purpleText}>{this.props.settings.fiatSymbol}{fiatFeeLabel}</Text>
 								</View>
 								<View style={{ flex: 0.4, alignItems: "center", justifyContent: "center", marginVertical: 10 }}>
 
 									<Text style={[styles.boldPurpleText, { fontSize: 24 }]}>Total:</Text>
 									<Text style={[styles.purpleText, { fontSize: 20 }]}>{this.satsToUnit(Number(this.props.transaction.amount) + Number(cryptoFeeLabel))} {getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit }).acronym}</Text>
-									<Text style={[styles.purpleText, { fontSize: 20 }]}>${(Number(this.props.transaction.fiatAmount) + Number(fiatFeeLabel)).toFixed(2)}</Text>
+									<Text style={[styles.purpleText, { fontSize: 20 }]}>{this.props.settings.fiatSymbol}{(Number(this.props.transaction.fiatAmount) + Number(fiatFeeLabel)).toFixed(2)}</Text>
 
 									<Animated.View style={[styles.copiedContainer, { opacity: this.state.rawTxCopiedOpacity }]}>
 										<View style={styles.copied}>

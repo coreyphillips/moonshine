@@ -165,10 +165,6 @@ export default class App extends Component {
 	};
 	
 	setExchangeRate = async ({selectedCrypto = "bitcoin", selectedCurrency = "usd", selectedService = "coingecko"} = {}) => {
-		//const start = this.props.transaction.feeTimestamp;
-		//const end = new Date();
-		//const difference = getDifferenceBetweenDates({ start, end });
-		//if (!this.props.transaction.feeTimestamp || difference > 10) {
 		const exchangeRate = await getExchangeRate({selectedCrypto, selectedCurrency, selectedService});
 		if (exchangeRate.error === false) {
 			this.props.updateWallet({
@@ -178,7 +174,7 @@ export default class App extends Component {
 				}
 			});
 		}
-		//}
+		return exchangeRate;
 	};
 	
 	onCoinPress = async ({coin = "bitcoin", walletId = "wallet0", initialLoadingMessage = ""} = {}) => {
@@ -1906,6 +1902,7 @@ export default class App extends Component {
 										onBack={this.resetView}
 										refreshWallet={this.refreshWallet}
 										onSendPress={this.onSendPress}
+										setExchangeRate={this.setExchangeRate}
 									/>
 								</Animated.View>}
 								
@@ -1946,6 +1943,7 @@ export default class App extends Component {
 										size={200}
 										exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]}
 										cryptoUnit={this.props.settings.cryptoUnit}
+										selectedCurrency={this.props.wallet.selectedCurrency}
 									/>
 								</Animated.View>}
 								
@@ -2039,6 +2037,7 @@ export default class App extends Component {
 									blockHeight={this.props.wallet.blockHeight[this.props.wallet.selectedCrypto]}
 									blacklistedUtxos={this.getBlacklistedUtxos()}
 									selectedCrypto={this.props.wallet.selectedCrypto}
+									fiatSymbol={this.props.settings.fiatSymbol}
 									transactions={this.getTransactions()}
 									cryptoUnit={this.props.settings.cryptoUnit}
 									onTransactionPress={this.onTransactionPress}

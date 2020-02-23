@@ -47,7 +47,8 @@ interface UtxoRowComponent {
 	whiteListedUtxos: [string],
 	coinData: Object,
 	selectedCrypto: string,
-	cryptoUnit: string
+	cryptoUnit: string,
+	fiatSymbol: string
 }
 
 const _UtxoRow = (
@@ -58,7 +59,8 @@ const _UtxoRow = (
 		whiteListedUtxos = [""],
 		coinData = { crypto: "", acronym: "" },
 		selectedCrypto = "bitcoin",
-		cryptoUnit = "satoshi"
+		cryptoUnit = "satoshi",
+		fiatSymbol = "$"
 	}: UtxoRowComponent) => {
 	try {
 		const { tx_hash, value, address, path, confirmations } = utxo;
@@ -86,7 +88,7 @@ const _UtxoRow = (
 							<Text style={[styles.header, { fontSize: 20 }]}>
 								{`Fiat: `}
 							</Text>
-							<Text style={[styles.text, { fontSize: 18 }]}>${fiatBalance}</Text>
+							<Text style={[styles.text, { fontSize: 18 }]}>{fiatSymbol}{fiatBalance}</Text>
 						</View>
 						
 						<View style={styles.row}>
@@ -149,6 +151,7 @@ interface CoinControlComponent {
 	selectedCrypto: string,
 	cryptoUnit: string,
 	exchangeRate: number,
+	fiatSymbol: string,
 	style?: object,
 }
 
@@ -165,7 +168,8 @@ const _CoinControl = (
 		selectedCrypto = "bitcoin",
 		cryptoUnit = "satoshi",
 		exchangeRate = 0,
-		style = {}
+		style = {},
+		fiatSymbol = "$"
 	}: CoinControlComponent) => {
 	
 	const coinData = getCoinData({selectedCrypto, cryptoUnit });
@@ -193,7 +197,7 @@ const _CoinControl = (
 				{getAvailableToSpendText()}
 			</Text>
 			<Text style={[styles.coinControlHeader, { marginBottom: 10 }]}>
-				{`Fiat: $${getFiatBalance({ balance: whiteListedUtxosBalance, exchangeRate })}`}
+				{`Fiat: ${fiatSymbol}${getFiatBalance({ balance: whiteListedUtxosBalance, exchangeRate })}`}
 			</Text>
 			<Text style={[styles.coinControlText, { fontSize: 20 }]}>What coins would you like to use in this transaction?</Text>
 			<View style={{ width: "100%", height: 1.5, backgroundColor: colors.darkPurple, marginVertical: 5 }} />
@@ -216,6 +220,7 @@ const _CoinControl = (
 								whiteListedUtxos={whiteListedUtxos}
 								selectedCrypto={selectedCrypto}
 								cryptoUnit={cryptoUnit}
+								fiatSymbol={fiatSymbol}
 							/>
 						);
 					} catch (e) {}

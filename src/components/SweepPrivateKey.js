@@ -913,7 +913,7 @@ class SendTransaction extends PureComponent {
 								<Text style={styles.text}>Fee: {this.state.fee || this.state.recommendedFee}sat/B </Text>
 							</View>
 							<View style={{ flex: 1 }}>
-								<Text style={[styles.text, { textAlign: "center" }]}>${this.state.totalFiatFee}</Text>
+								<Text style={[styles.text, { textAlign: "center" }]}>{this.props.settings.fiatSymbol}{this.state.totalFiatFee}</Text>
 							</View>
 							<View style={{ flex: 1 }}>
 								<Text style={[styles.text, { textAlign: "center" }]}>{this.state.totalFee} sats</Text>

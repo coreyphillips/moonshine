@@ -12,10 +12,12 @@ import {
 	TextInput,
 	Easing,
 	Linking,
+	FlatList
 } from 'react-native';
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import Fontisto from "react-native-vector-icons/Fontisto";
 import FontAwesome from "react-native-vector-icons/FontAwesome";
 import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import Foundation from "react-native-vector-icons/Foundation";
@@ -35,7 +37,8 @@ import BroadcastTransaction from "./BroadcastTransaction";
 const {
 	Constants: {
 		colors,
-		donationAddresses
+		donationAddresses,
+		currencies
 	}
 } = require("../../ProjectData.json");
 
@@ -165,6 +168,8 @@ class Settings extends PureComponent {
 			
 			displayGeneralHelp: false,
 			displayWalletHelp: false,
+			
+			displayFiatModal: false,
 			
 			bip39PassphraseIsSet: false,
 			bip39Passphrase: "",
@@ -594,6 +599,12 @@ class Settings extends PureComponent {
 		}
 	};
 	
+	toggleFiatModal = async () => {
+		try {
+			this.setState({ displayFiatModal: !this.state.displayFiatModal });
+		} catch (e) {}
+	};
+	
 	toggleBroadcastTransaction = async ({ display = false }) => {
 		try {
 			const items = [
@@ -932,6 +943,27 @@ class Settings extends PureComponent {
 		} catch (e) {return false;}
 	};
 	
+	updateFiatCurrency = async (currency = "usd") => {
+		try {
+			//In the event the service no longer offers this pair and we need to roll back
+			const previouslySelectedCurrency = this.props.wallet.selectedCurrency;
+			
+			const selectedCurrency = currency.toLowerCase();
+			const selectedCrypto = this.props.wallet.selectedCrypto;
+			const selectedService = this.props.settings.selectedService;
+			const fiatSymbol = currencies[selectedCurrency].symbol;
+			this.props.updateWallet({ selectedCurrency });
+			this.props.updateSettings({ fiatSymbol });
+			const result = await this.props.setExchangeRate({ selectedCrypto, selectedCurrency, selectedService });
+			if (result.error) {
+				//Roll back and notify user
+				this.updateFiatCurrency(previouslySelectedCurrency);
+				alert(`Unfortunately, it appears that ${fiatSymbol} is no longer supported by ${selectedService}. Please try switching to a new "Exchange Rate Source" and try again.`);
+			}
+			this.toggleFiatModal();
+		} catch (e) {console.log(e);}
+	};
+	
 	requestHelp = () => {
 		try {
 			Linking.openURL("mailto:support@moonshinewallet.com?subject=Requesting Some Help").catch((e) => console.log(e));
@@ -1005,6 +1037,14 @@ class Settings extends PureComponent {
 							<SettingSwitch setting="testnet" value={this.props.settings["testnet"]} title="Enable Testnet" onPress={this.toggleTestnet} />
 							<SettingSwitch setting="rbf" value={this.props.settings["rbf"]} title="Enable RBF" onPress={this.toggleRBF} />
 							<SettingSwitch setting="sendTransactionFallback" value={this.props.settings["sendTransactionFallback"]} title="Send Transaction Fallback" onPress={this.toggleSendTransactionFallback} />
+							
+							<SettingGeneral
+								value={`Selected Fiat Currency:\n${currencies[this.props.wallet.selectedCurrency].name}`}
+								col1Image={<Fontisto name="money-symbol" style={{ paddingVertical: 2 }} size={50} color={colors.purple} />}
+								onPress={this.toggleFiatModal}
+								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
+								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
+							/>
 							
 							{this.MultiOptionRow({
 								title: "Exchange Rate Source",
@@ -1177,7 +1217,7 @@ class Settings extends PureComponent {
 								value={`Need Some Help?\nsupport@moonshinewallet.com`}
 								col1Image={<FontAwesome name="support" size={50} color={colors.purple} />}
 								onPress={this.requestHelp}
-								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
+								valueStyle={{ color: colors.purple, fontSize: 14, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
 							
@@ -1298,6 +1338,42 @@ class Settings extends PureComponent {
 					))}
 					<View style={{ paddingVertical: "40%" }} />
 				</DefaultModal>
+				
+				<DefaultModal
+					isVisible={this.state.displayFiatModal}
+					onClose={this.toggleFiatModal}
+					contentStyle={styles.modalContent}
+				>
+					<FlatList
+						data={Object.keys(currencies)}
+						keyExtractor={(currency) => `${currencies[currency].name}`}
+						renderItem={({ item }) => {
+							try {
+								return (
+									<TouchableOpacity
+										onPress={() => this.updateFiatCurrency(currencies[item].unit.toLowerCase())}
+										style={{paddingVertical: 10, flexDirection: "row", width: "100%"}}
+									>
+										<View style={{flex: 2, alignItems: "flex-start", justifyContent: "center"}}>
+											<Text style={[styles.fiatText, {color: colors.purple}]}>
+												{currencies[item].name}
+											</Text>
+										</View>
+										<View style={{flex: 1, alignItems: "flex-end", justifyContent: "center", marginRight: 20}}>
+											<MaterialCommunityIcons
+												name={this.props.wallet.selectedCurrency === currencies[item].unit.toLowerCase() ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
+												size={30}
+												color={colors.darkPurple}
+											/>
+										</View>
+									</TouchableOpacity>
+								);
+							} catch (e) {}
+						}}
+						ItemSeparatorComponent={() => <View style={styles.separator} />}
+					/>
+					<View style={{ paddingVertical: "40%" }} />
+				</DefaultModal>
 			
 			</View>
 		);
@@ -1401,6 +1477,12 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 		textAlign: "left"
 	},
+	fiatText : {
+		...systemWeights.semibold,
+		color: colors.darkPurple,
+		fontSize: 18,
+		textAlign: "left"
+	},
 	header: {
 		flexDirection: "row",
 		alignItems: "center"
@@ -1434,6 +1516,12 @@ const styles = StyleSheet.create({
 		borderWidth: 1,
 		color: colors.purple,
 		fontWeight: "bold"
+	},
+	separator: {
+		width: "100%",
+		height: 2,
+		backgroundColor: colors.gray,
+		marginVertical: 10
 	},
 });
 

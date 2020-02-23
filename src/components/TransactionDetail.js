@@ -166,11 +166,12 @@ class TransactionDetail extends PureComponent {
 		const cryptoUnit = this.props.settings.cryptoUnit;
 		const selectedCrypto = this.props.wallet.selectedCrypto;
 		const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
+		const fiatSymbol = this.props.settings.fiatSymbol;
 		amount = Number(amount);
 		const crypto = cryptoUnit === "satoshi" ? amount : bitcoinUnits(amount, "satoshi").to(cryptoUnit).value();
 		bitcoinUnits.setFiat("usd", exchangeRate);
 		let fiat = bitcoinUnits(amount, "satoshi").to("usd").value().toFixed(2);
-		fiat = amount < 0 ? `-$${formatNumber(Math.abs(fiat).toFixed(2))}` : `$${formatNumber(fiat)}`;
+		fiat = amount < 0 ? `-${fiatSymbol}${formatNumber(Math.abs(fiat).toFixed(2))}` : `${fiatSymbol}${formatNumber(fiat)}`;
 		//If rbfIsSupported include the initialFee provided by the rbfData for the transaction
 		if (this.state.rbfIsSupported && displayFeePerByte) {
 			const initialFee = this.state.initialFee;
@@ -209,6 +210,7 @@ class TransactionDetail extends PureComponent {
 			const cryptoUnit = this.props.settings.cryptoUnit;
 			const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
 			const rbfData = this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto][hash];
+			const fiatSymbol = this.props.settings.fiatSymbol;
 			
 			const transactionSize = getTransactionSize(rbfData.utxos.length, !rbfData.changeAddress ? 1 : 2);
 			
@@ -225,7 +227,7 @@ class TransactionDetail extends PureComponent {
 			const crypto = cryptoUnit === "satoshi" ? totalFee : bitcoinUnits(totalFee, "satoshi").to(cryptoUnit).value();
 			bitcoinUnits.setFiat("usd", exchangeRate);
 			let fiat = bitcoinUnits(totalFee, "satoshi").to("usd").value().toFixed(2);
-			fiat = totalFee < 0 ? `-$${formatNumber(Math.abs(fiat).toFixed(2))}` : `$${formatNumber(fiat)}`;
+			fiat = totalFee < 0 ? `-${fiatSymbol}${formatNumber(Math.abs(fiat).toFixed(2))}` : `${fiatSymbol}${formatNumber(fiat)}`;
 			const { acronym, oshi } = getCoinData({selectedCrypto, cryptoUnit});
 			return `+${fiat}\n+${formatNumber(crypto)} ${acronym}\n+${rbfValue} ${oshi}/byte`;
 		} catch (e) {}

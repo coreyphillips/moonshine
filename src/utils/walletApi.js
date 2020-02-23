@@ -80,7 +80,7 @@ const coinGeckoExchangeRateHelper = async ({ selectedCrypto = "bitcoin", selecte
 		const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coin}&vs_currencies=${selectedCurrency}`);
 		const jsonResponse = await response.json();
 		exchangeRate = Number(jsonResponse[selectedCrypto][selectedCurrency]).toFixed(2);
-		if (exchangeRate === 0) return({ error: true, data: "Invalid Exchange Rate Data." });
+		if (exchangeRate === 0 || isNaN(exchangeRate)) return({ error: true, data: "Invalid Exchange Rate Data." });
 		return({ error: false, data: exchangeRate });
 	} catch (e) {
 		return({ error: true, data: "Invalid Exchange Rate Data." });

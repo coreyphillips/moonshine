@@ -33,13 +33,14 @@ interface TransactionRowComponent {
 	transactionBlockHeight: number,
 	exchangeRate: number | string,
 	currentBlockHeight: number,
+	fiatSymbol: string,
 	cryptoUnit: string,
 	type: string,
 	onTransactionPress: Function,
 	messages: [],
 	isBlacklisted: boolean
 }
-const _TransactionRow = ({ id = "", coin = "bitcoin", address = "", amount = 0, label = "", date = 0, transactionBlockHeight = 0, exchangeRate = "0", currentBlockHeight = 0, cryptoUnit = "satoshi", type = "received", onTransactionPress = () => null, messages = [], isBlacklisted = false}: TransactionRowComponent) => {
+const _TransactionRow = ({ id = "", coin = "bitcoin", address = "", amount = 0, label = "", date = 0, transactionBlockHeight = 0, exchangeRate = "0", currentBlockHeight = 0, fiatSymbol = "$", cryptoUnit = "satoshi", type = "received", onTransactionPress = () => null, messages = [], isBlacklisted = false}: TransactionRowComponent) => {
 	
 	const getCryptoAmountLabel = () => {
 		try {
@@ -59,7 +60,7 @@ const _TransactionRow = ({ id = "", coin = "bitcoin", address = "", amount = 0, 
 		try {
 			const cryptoRate = Number(exchangeRate) * 0.00000001;
 			let label = (Number(amount)*cryptoRate).toFixed(2);
-			label = type === "sent" ? `-$${formatNumber(Math.abs(Number(label)).toFixed(2))}` : `+$${formatNumber(label)}`;
+			label = type === "sent" ? `-${fiatSymbol}${formatNumber(Math.abs(Number(label)).toFixed(2))}` : `+${fiatSymbol}${formatNumber(label)}`;
 			return label;
 		} catch (e) {
 			console.log(e);
