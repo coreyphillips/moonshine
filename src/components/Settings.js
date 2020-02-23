@@ -74,6 +74,10 @@ const generalHelpItems = [
 		text: "If Electrum fails to broadcast a transaction for any reason this option, if enabled, will allow the app to use either Blockstream's api for Bitcoin or Chain.so's api for Litecoin to broadcast the transaction instead."
 	},
 	{
+		title: "Selected Fiat Currency:",
+		text: "This option allows you to select from a variety of fiat currencies. The app will use the selected fiat currency to determine and calculate the exchange rate displayed throughout the app."
+	},
+	{
 		title: "Exchange Rate Source:",
 		text: `This option allows you to select where the app sources its data to determine the fiat price of Bitcoin & Litecoin.`
 	},
