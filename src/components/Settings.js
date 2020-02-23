@@ -1084,7 +1084,7 @@ class Settings extends PureComponent {
 								title=""
 								value="Electrum Options"
 								onPress={() => this.toggleElectrumOptions({ display: true })}
-								col1Image={<MaterialCommunityIcons name="alpha-e-box" size={50} color={colors.purple} />}
+								col1Image={<Fontisto name="atom" size={45} style={{ paddingVertical: 2 }} color={colors.purple} />}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", paddingRight: 10 }}
 								titleStyle={{ color: colors.purple }}
 								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
