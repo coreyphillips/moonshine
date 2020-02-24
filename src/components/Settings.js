@@ -12,7 +12,8 @@ import {
 	TextInput,
 	Easing,
 	Linking,
-	FlatList
+	FlatList,
+	Keyboard
 } from 'react-native';
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
@@ -692,6 +693,7 @@ class Settings extends PureComponent {
 		try {
 			const walletName = this.state.walletName;
 			if (!walletName) return;
+			Keyboard.dismiss();
 			const wallet = this.props.wallet.selectedWallet;
 			this.props.updateWallet({
 				...this.props.wallet,
@@ -703,7 +705,7 @@ class Settings extends PureComponent {
 					}
 				}
 			});
-		} catch (e) {}
+		} catch (e) {Keyboard.dismiss();}
 	};
 	
 	addBip39Passphrase = async () => {
@@ -712,13 +714,12 @@ class Settings extends PureComponent {
 			if (!passphrase) return;
 			const wallet = this.props.wallet.selectedWallet;
 			const key = `${wallet}passphrase`;
+			Keyboard.dismiss();
 			await setKeychainValue({ key, value: passphrase });
 			this.setState({ bip39PassphraseIsSet: true });
 			await this._resetWalletForPassphrase();
 			this.rescanWallet();
-		} catch (e) {
-			console.log(e);
-		}
+		} catch (e) {Keyboard.dismiss();}
 	};
 	
 	removeBip39Passphrase = async () => {
@@ -1036,7 +1037,7 @@ class Settings extends PureComponent {
 			<View style={styles.container}>
 				
 				<Animated.View style={{ flex: 1, opacity: this.state.settingsOpacity }}>
-					<ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} contentContainerStyle={{flexGrow:1}} style={{ flex: 1, paddingTop: 20 }}>
+					<ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps={"handled"} contentContainerStyle={{flexGrow:1}} style={{ flex: 1, paddingTop: 20 }}>
 						<TouchableOpacity activeOpacity={1} style={styles.container}>
 							
 							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
