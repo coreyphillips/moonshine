@@ -10,10 +10,9 @@ const {
 } = require("../../ProjectData.json");
 
 const updates = [
-	`Users can now request a specific amount of BTC or Fiat from the "Receive Transaction" view by tapping the "Specify Amount" button.`,
-	`A bug was fixed in the "Electrum Options" setting that would occasionally cause the app to hang when attempting to connect to a server.`,
-	"Added a proper splash screen to prevent/reduce any flicker when launching the app.",
-	"Fixed a typo that would occur when sweeping private keys."
+	`Added support for additional fiat currencies in Settings. For now, this feature only works when "Coingecko" is selected as an exchange rate source.`,
+	`Added a TCP/SSL toggle option to the Electrum Options setting.`,
+	`Added an "X" button to the Welcome and Mnemonic Phrase views.`
 ];
 
 const _Welcome = ({ onClose = () => null, children = <View /> } = {}) => {
