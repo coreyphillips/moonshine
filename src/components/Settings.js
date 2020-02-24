@@ -947,7 +947,7 @@ class Settings extends PureComponent {
 		} catch (e) {return false;}
 	};
 	
-	updateFiatCurrency = async (currency = "usd") => {
+	updateFiatCurrency = async (currency = "usd", rollbackAttempt = false) => {
 		try {
 			//In the event the service no longer offers this pair and we need to roll back
 			const previouslySelectedCurrency = this.props.wallet.selectedCurrency;
@@ -959,11 +959,10 @@ class Settings extends PureComponent {
 			this.props.updateWallet({ selectedCurrency });
 			this.props.updateSettings({ fiatSymbol });
 			const result = await this.props.setExchangeRate({ selectedCrypto, selectedCurrency, selectedService });
-			if (result.error) {
+			if (result.error && rollbackAttempt === false) {
 				//Roll back and notify user
-				this.updateFiatCurrency(previouslySelectedCurrency);
-				alert(`Unfortunately, it appears that ${currency.toUpperCase()} is no longer supported by ${selectedService}. Please try switching to a new "Exchange Rate Source" and try again.`);
-			}
+				this.updateFiatCurrency(previouslySelectedCurrency, true);
+				setTimeout(() => {alert(`We're having some trouble getting the exchange rate for ${currency.toUpperCase()}. ${capitalize(selectedService)} is either having some technical difficulties or ${currency.toUpperCase()} is no longer supported. Otherwise, please check your connection and try again`);}, 500);}
 			this.toggleFiatModal({ display: false });
 		} catch (e) {console.log(e);}
 	};
