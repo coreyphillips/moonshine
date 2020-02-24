@@ -55,7 +55,7 @@ const decodeOpReturnMessage = (opReturn = "") => {
 	}
 };
 
-const coinCapExchangeRateHelper = async ({ selectedCrypto = "bitcoin" } = {}) => {
+const coinCapExchangeRateHelper = async ({ selectedCrypto = "bitcoin", selectedCurrency = "usd" } = {}) => {
 	let exchangeRate = 0;
 	try {
 		let coin = selectedCrypto.toLowerCase();
@@ -64,7 +64,7 @@ const coinCapExchangeRateHelper = async ({ selectedCrypto = "bitcoin" } = {}) =>
 		const response = await fetch(`https://api.coincap.io/v2/rates/${coin}`);
 		const jsonResponse = await response.json();
 		exchangeRate = Number(jsonResponse.data.rateUsd).toFixed(2);
-		if (exchangeRate === 0) return({ error: true, data: "Invalid Exchange Rate Data." });
+		if (exchangeRate === 0 || isNaN(exchangeRate)) return({ error: true, data: "Invalid Exchange Rate Data." });
 		return({ error: false, data: exchangeRate });
 	} catch (e) {
 		return({ error: true, data: "Invalid Exchange Rate Data." });

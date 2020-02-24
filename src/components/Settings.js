@@ -603,9 +603,9 @@ class Settings extends PureComponent {
 		}
 	};
 	
-	toggleFiatModal = async () => {
+	toggleFiatModal = async ({ display = undefined } = {}) => {
 		try {
-			this.setState({ displayFiatModal: !this.state.displayFiatModal });
+			this.setState({ displayFiatModal: display !== undefined ? display : !this.state.displayFiatModal });
 		} catch (e) {}
 	};
 	
@@ -962,9 +962,9 @@ class Settings extends PureComponent {
 			if (result.error) {
 				//Roll back and notify user
 				this.updateFiatCurrency(previouslySelectedCurrency);
-				alert(`Unfortunately, it appears that ${fiatSymbol} is no longer supported by ${selectedService}. Please try switching to a new "Exchange Rate Source" and try again.`);
+				alert(`Unfortunately, it appears that ${currency.toUpperCase()} is no longer supported by ${selectedService}. Please try switching to a new "Exchange Rate Source" and try again.`);
 			}
-			this.toggleFiatModal();
+			this.toggleFiatModal({ display: false });
 		} catch (e) {console.log(e);}
 	};
 	
@@ -1002,6 +1002,25 @@ class Settings extends PureComponent {
 			this.props.updateSettings({ verifyMessage });
 			return verifyMessage;
 		}
+	};
+	
+	/*
+	TODO: Figure out how to get other fiat exchange rates from CoinCap to prevent this condition.
+	*/
+	getExchangeRateOptions = () => {
+		let options = [{value: "Coingecko", onPress: () => this.updateExchangeRateService({ selectedService: "coingecko" }) }];
+		try {
+			if (this.props.wallet.selectedCurrency === "usd") {
+				options.push({
+					value: "CoinCap",
+					onPress: () => {
+						this.updateExchangeRateService({selectedService: "coincap"});
+						this.updateFiatCurrency("usd");
+					}
+				});
+			}
+			return options;
+		} catch (e) {return options;}
 	};
 	
 	render() {
@@ -1042,23 +1061,21 @@ class Settings extends PureComponent {
 							<SettingSwitch setting="rbf" value={this.props.settings["rbf"]} title="Enable RBF" onPress={this.toggleRBF} />
 							<SettingSwitch setting="sendTransactionFallback" value={this.props.settings["sendTransactionFallback"]} title="Send Transaction Fallback" onPress={this.toggleSendTransactionFallback} />
 							
+							{this.props.settings.selectedService === "coingecko" &&
 							<SettingGeneral
 								value={`Selected Fiat Currency:\n${currencies[this.props.wallet.selectedCurrency].name}`}
 								col1Image={<Fontisto name="money-symbol" style={{ paddingVertical: 2 }} size={50} color={colors.purple} />}
-								onPress={this.toggleFiatModal}
+								onPress={() => this.toggleFiatModal({ display: true })}
 								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
-							/>
+							/>}
 							
 							{this.MultiOptionRow({
 								title: "Exchange Rate Source",
 								subTitle: this.getExchangeRateSourceUrl({ selectedService: this.props.settings.selectedService}),
 								subTitleIsLink: true,
 								currentValue: this.props.settings.selectedService,
-								options:[
-									{value: "Coingecko", onPress: () => this.updateExchangeRateService({ selectedService: "coingecko" }) },
-									{value: "CoinCap", onPress: () => this.updateExchangeRateService({ selectedService: "coincap" }) }
-								]
+								options: this.getExchangeRateOptions()
 							})}
 							
 							{this.MultiOptionRow({
@@ -1345,7 +1362,7 @@ class Settings extends PureComponent {
 				
 				<DefaultModal
 					isVisible={this.state.displayFiatModal}
-					onClose={this.toggleFiatModal}
+					onClose={() => this.toggleFiatModal({ display: false })}
 					contentStyle={styles.modalContent}
 				>
 					<FlatList
