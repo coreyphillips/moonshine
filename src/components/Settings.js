@@ -1004,23 +1004,15 @@ class Settings extends PureComponent {
 		}
 	};
 	
-	/*
-	TODO: Figure out how to get other fiat exchange rates from CoinCap to prevent this condition.
-	*/
 	getExchangeRateOptions = () => {
-		let options = [{value: "Coingecko", onPress: () => this.updateExchangeRateService({ selectedService: "coingecko" }) }];
-		try {
-			if (this.props.wallet.selectedCurrency === "usd") {
-				options.push({
-					value: "CoinCap",
-					onPress: () => {
-						this.updateExchangeRateService({selectedService: "coincap"});
-						this.updateFiatCurrency("usd");
-					}
-				});
-			}
-			return options;
-		} catch (e) {return options;}
+		return [
+			{value: "Coingecko", onPress: () => this.updateExchangeRateService({ selectedService: "coingecko" })},
+			{value: "CoinCap", onPress: () => this.updateExchangeRateService({selectedService: "coincap"})}
+			];
+	};
+	
+	getSelectedCurrency = () => {
+		try {return currencies[this.props.wallet.selectedCurrency].name;} catch (e) {return "usd";}
 	};
 	
 	render() {
@@ -1061,14 +1053,13 @@ class Settings extends PureComponent {
 							<SettingSwitch setting="rbf" value={this.props.settings["rbf"]} title="Enable RBF" onPress={this.toggleRBF} />
 							<SettingSwitch setting="sendTransactionFallback" value={this.props.settings["sendTransactionFallback"]} title="Send Transaction Fallback" onPress={this.toggleSendTransactionFallback} />
 							
-							{this.props.settings.selectedService === "coingecko" &&
 							<SettingGeneral
-								value={`Selected Fiat Currency:\n${currencies[this.props.wallet.selectedCurrency].name}`}
+								value={`Selected Fiat Currency:\n${this.getSelectedCurrency()}`}
 								col1Image={<Fontisto name="money-symbol" style={{ paddingVertical: 2 }} size={50} color={colors.purple} />}
 								onPress={() => this.toggleFiatModal({ display: true })}
 								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
-							/>}
+							/>
 							
 							{this.MultiOptionRow({
 								title: "Exchange Rate Source",

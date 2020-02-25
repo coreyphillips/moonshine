@@ -6,6 +6,11 @@ const moment = require("moment");
 const {
 	networks
 } = require("./networks");
+const {
+	Constants: {
+		currencies
+	}
+} = require("../../ProjectData.json");
 
 //Get info from an address path ("m/49'/0'/0'/0/1")
 const getInfoFromAddressPath = async (path = "") => {
@@ -60,15 +65,21 @@ const coinCapExchangeRateHelper = async ({ selectedCrypto = "bitcoin", selectedC
 	try {
 		let coin = selectedCrypto.toLowerCase();
 		coin = coin.replace("testnet", "");
-
-		const response = await fetch(`https://api.coincap.io/v2/rates/${coin}`);
-		const jsonResponse = await response.json();
-		exchangeRate = Number(jsonResponse.data.rateUsd).toFixed(2);
+		//Get coin rate in usd.
+		const coinRateResponse = await fetch(`https://api.coincap.io/v2/rates/${coin}`);
+		const jsonCoinRateResponse = await coinRateResponse.json();
+		const coinRate = Number(jsonCoinRateResponse.data.rateUsd);
+		//Get selected fiat rate in usd.
+		const fiatId = currencies[selectedCurrency].id;
+		const fiatRateResponse = await fetch(`https://api.coincap.io/v2/rates/${fiatId}`);
+		const jsonFiatRateResponse = await fiatRateResponse.json();
+		const fiatRate = Number(jsonFiatRateResponse.data.rateUsd);
+		//Calculate Exchange Rate
+		exchangeRate = (coinRate * (1/fiatRate)).toFixed(2);
+		
 		if (exchangeRate === 0 || isNaN(exchangeRate)) return({ error: true, data: "Invalid Exchange Rate Data." });
 		return({ error: false, data: exchangeRate });
-	} catch (e) {
-		return({ error: true, data: "Invalid Exchange Rate Data." });
-	}
+	} catch (e) {return({ error: true, data: "Invalid Exchange Rate Data." });}
 };
 
 const coinGeckoExchangeRateHelper = async ({ selectedCrypto = "bitcoin", selectedCurrency = "usd" } = {}) => {
