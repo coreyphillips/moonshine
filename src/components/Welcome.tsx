@@ -10,7 +10,7 @@ const {
 } = require("../../ProjectData.json");
 
 const updates = [
-	`Added support for additional fiat currencies in Settings. For now, this feature only works when "Coingecko" is selected as the exchange rate source.`,
+	`Added support for additional fiat currencies in Settings. Coingecko & CoinCap are both supported as the exchange rate source.`,
 	`Added a TCP/SSL toggle option to the Electrum Options setting.`,
 	`Added an "X" button to the Welcome and Mnemonic Phrase views.`
 ];
