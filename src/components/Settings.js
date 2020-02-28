@@ -1358,6 +1358,7 @@ class Settings extends PureComponent {
 				>
 					<FlatList
 						data={Object.keys(currencies)}
+						extraData={currencies}
 						keyExtractor={(currency) => `${currencies[currency].name}`}
 						renderItem={({ item }) => {
 							try {

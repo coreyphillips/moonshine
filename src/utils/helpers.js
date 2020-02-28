@@ -179,10 +179,10 @@ const parsePaymentRequest = (data = "") => {
 						if (data.includes("//")) data = data.replace("//", "");
 						//bip21.decode will throw if anything other than "bitcoin" is passed to it.
 						//Replace any instance of "testnet" or "litecoin" with "bitcoin"
-						const coin = data.substr(0, data.indexOf(':'));
-						if (coin.toLowerCase().includes("testnet")) data = data.replace("testnet", "bitcoin");
-						if (coin.toLowerCase().includes("litecoin")) data = data.replace("litecoin", "bitcoin");
-						if (coin.toLowerCase().includes("moonshine")) data = data.replace("moonshine", "bitcoin");
+						if (data.includes(":")) {
+							data = data.substring(data.indexOf(":") + 1);
+							data = `bitcoin:${data}`;
+						}
 						const result = bip21.decode(data);
 						const address = result.address;
 						validateAddressResult = validateAddress(address);
