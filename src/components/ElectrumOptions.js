@@ -227,9 +227,13 @@ class ElectrumOptions extends PureComponent {
 			
 			const result = await electrum.start({ coin, customPeers: [{ host, port, protocol }]});
 			if (result.error === false) {
-				//Attempt to ping the server to ensure we are properly connected
-				const pingResponse = await electrum.pingServer();
-				if (pingResponse.error === false) {
+				/*
+				Attempt to ping the server to ensure we are properly connected.
+				A response from either getVersion or getFeeEstimate should do.
+				*/
+				//const versionResponse = await electrum.getVersion({ coin });
+				const feeEstimateResponse = await electrum.getFeeEstimate({ coin });
+				if (feeEstimateResponse.error === false) {
 					alert(`Success!!\nSuccessfully connect to:\n${host}:${port}`);
 				} else {
 					alert(`Failure\nUnable to connect to:\n${host}:${port}`);
@@ -275,9 +279,13 @@ class ElectrumOptions extends PureComponent {
 			
 			const result = await electrum.start({ coin, customPeers: [{ host, port, protocol }]});
 			if (result.error === false) {
-				//Attempt to ping the server to ensure we are properly connected
-				const pingResponse = await electrum.pingServer();
-				if (pingResponse.error === false) {
+				/*
+				Attempt to ping the server to ensure we are properly connected.
+				A response from either getVersion or getFeeEstimate should do.
+				*/
+				//const versionResponse = await electrum.getVersion({ coin });
+				const feeEstimateResponse = await electrum.getFeeEstimate({ coin });
+				if (feeEstimateResponse.error === false) {
 					const currentPeers = this.props.settings.customPeers;
 					await this.props.updateSettings({ customPeers: {...currentPeers, [coin]: [{ host, port, protocol }] } });
 					alert(`Success!!\nSuccessfully connected to and saved:\n${host}:${port}`);
