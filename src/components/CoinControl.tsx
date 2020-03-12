@@ -123,7 +123,7 @@ const _UtxoRow = (
 					
 					</View>
 					<View style={{ flex: 0.2, justifyContent: "center", alignItems: "center" }}>
-						<MaterialCommunityIcons name={isWhiteListed ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"} size={40} color={colors.darkPurple} />
+						<MaterialCommunityIcons name={isWhiteListed ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"} size={30} color={colors.darkPurple} />
 					</View>
 				</View>
 			</TouchableOpacity>
