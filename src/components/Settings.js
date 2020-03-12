@@ -803,7 +803,6 @@ class Settings extends PureComponent {
 		try {
 			const selectedCrypto = this.props.wallet.selectedCrypto;
 			await this.setState({ connectingToElectrum: true });
-			await electrum.stop({ coin: selectedCrypto });
 			const start = await electrum.start({
 				coin: selectedCrypto,
 				peers: this.props.settings.peers[selectedCrypto],
