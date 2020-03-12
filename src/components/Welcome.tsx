@@ -10,9 +10,9 @@ const {
 } = require("../../ProjectData.json");
 
 const updates = [
-	`Added support for additional fiat currencies in Settings. Coingecko & CoinCap are both supported as the exchange rate source.`,
-	`Added a TCP/SSL toggle option to the Electrum Options setting.`,
-	`Added an "X" button to the Welcome and Mnemonic Phrase views.`
+	`Added ability to toggle between multiple wordlists when importing mnemonic phrases.`,
+	`Fixed a connection bug when attempting to connect to custom electrum servers.`,
+	`To prevent misspellings and make the import process faster, suggested words now appear as the user types when importing mnemonic phrases.`
 ];
 
 const _Welcome = ({ onClose = () => null, children = <View /> } = {}) => {
