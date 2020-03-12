@@ -34,6 +34,7 @@ import VerifyMessage from "./VerifyMessage";
 import * as electrum from "../utils/electrum";
 import BackupPhrase from './BackupPhrase';
 import BroadcastTransaction from "./BroadcastTransaction";
+import ListItem from "./ListItem";
 
 const {
 	Constants: {
@@ -1363,23 +1364,12 @@ class Settings extends PureComponent {
 						renderItem={({ item }) => {
 							try {
 								return (
-									<TouchableOpacity
-										onPress={() => this.updateFiatCurrency(currencies[item].unit.toLowerCase())}
-										style={{paddingVertical: 10, flexDirection: "row", width: "100%"}}
-									>
-										<View style={{flex: 2, alignItems: "flex-start", justifyContent: "center"}}>
-											<Text style={[styles.fiatText, {color: colors.purple}]}>
-												{currencies[item].name}
-											</Text>
-										</View>
-										<View style={{flex: 1, alignItems: "flex-end", justifyContent: "center", marginRight: 20}}>
-											<MaterialCommunityIcons
-												name={this.props.wallet.selectedCurrency === currencies[item].unit.toLowerCase() ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
-												size={30}
-												color={colors.darkPurple}
-											/>
-										</View>
-									</TouchableOpacity>
+									<ListItem
+										item={currencies[item].unit.toLowerCase()}
+										onPress={this.updateFiatCurrency}
+										title={currencies[item].name}
+										isSelected={this.props.wallet.selectedCurrency === currencies[item].unit.toLowerCase()}
+									/>
 								);
 							} catch (e) {}
 						}}
