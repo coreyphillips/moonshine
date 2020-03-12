@@ -948,6 +948,14 @@ const fiatToCrypto = ({ amount = 0, exchangeRate = 0 } = {}) => {
 	}
 };
 
+const getLastWordInString = (phrase = "") => {
+	try {
+		//const n = phrase.trim().split(" ");
+		const n = phrase.split(" ");
+		return n[n.length - 1];
+	} catch (e) {return phrase;}
+};
+
 module.exports = {
 	getItem,
 	setItem,
@@ -994,5 +1002,6 @@ module.exports = {
 	sortArrOfObjByKey,
 	cryptoToFiat,
 	fiatToCrypto,
-	satsToBtc
+	satsToBtc,
+	getLastWordInString
 };

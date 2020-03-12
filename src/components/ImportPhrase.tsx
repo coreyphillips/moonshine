@@ -3,16 +3,20 @@ import {
 	StyleSheet,
 	View,
 	TextInput,
-	Dimensions,
 	Animated,
 	TouchableOpacity,
-	Easing
+	Easing,
+	Text,
+	FlatList
 } from 'react-native';
 import PropTypes from "prop-types";
 import Camera from "./Camera";
 import EvilIcon from "react-native-vector-icons/EvilIcons";
 import XButton from "./XButton";
 import Button from "./Button";
+import ListItem from "./ListItem";
+import DefaultModal from "./DefaultModal";
+import {systemWeights} from "react-native-typography";
 
 const {
 	Constants: {
@@ -20,7 +24,26 @@ const {
 	}
 } = require("../../ProjectData.json");
 const bip39 = require("bip39");
-const { height } = Dimensions.get("window");
+const {
+	getLastWordInString
+} = require("../utils/helpers");
+
+interface AvailableWordlists {
+	[name: string] : {
+		id: string,
+		title: string
+	}
+}
+const availableWordlists: AvailableWordlists = {
+	chinese_simplified: {id: "chinese_simplified", title: "Chinese Simplified"},
+	chinese_traditional: {id: "chinese_traditional", title: "Chinese Traditional"},
+	english: {id: "english", title: "English"},
+	french: {id: "french", title: "French"},
+	italian: {id: "italian", title: "Italian"},
+	japanese: {id: "japanese", title: "Japanese"},
+	korean: {id: "korean", title: "Korean"},
+	spanish: {id: "spanish", title: "Spanish"}
+};
 
 interface ImportPhraseComponent {
 	createNewWallet: Function,
@@ -30,6 +53,10 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 	const [mnemonic, setMnemonic] = useState("");
 	const [displayCamera, setDisplayCamera] = useState(false);
 	const [cameraOpacity] = useState(new Animated.Value(0));
+	const [suggestedWords, setSuggestedWords] = useState([]);
+	const [selectedWordlist, setSelectedWordlist] = useState("english");
+	const [displayAvailableWordlists, setDisplayAvailableWordlists] = useState(false);
+	const wordlist = bip39.wordlists[selectedWordlist];
 
 	const mnemonicIsValid = (mnemonic = ""): boolean => {
 		try {
@@ -47,7 +74,20 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 			mnemonic = mnemonic.replace(/\s\s+/g, " ");
 			if (mnemonicIsValid(mnemonic)) {
 				setMnemonic(mnemonic);
+				updateSuggestedWords(mnemonic);
 			}
+		} catch (e) {}
+	};
+	
+	const updateSuggestedWords = (mnemonic = ""): void => {
+		try {
+			const lastWord = getLastWordInString(mnemonic);
+			if (!lastWord) {
+				setSuggestedWords([]);
+				return;
+			}
+			const _suggestedWords = wordlist.filter(word => word.substr(0, lastWord.length).includes(lastWord.toLowerCase()));
+			setSuggestedWords(_suggestedWords);
 		} catch (e) {}
 	};
 
@@ -103,10 +143,50 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 		}
 	};
 	
+	const addWordToMnemonic = (word = ""): void => {
+		const lastIndex = mnemonic.lastIndexOf(" ");
+		let _mnemonic = mnemonic.substring(0, lastIndex);
+		_mnemonic = `${_mnemonic} ${word} `;
+		updateMnemonic(_mnemonic);
+	};
+	
+	const updateSelectedWordlist = (wordlist = "english"): void => {
+		updateMnemonic(""); //Clear text input of previous data.
+		setSelectedWordlist(wordlist);
+		setDisplayAvailableWordlists(false);
+	};
+	
 	return (
 		<View style={styles.container}>
-
-			<View style={styles.textInputContainer}>
+			<View style={{ flex: 0.25 }}>
+				<View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+					<TouchableOpacity onPress={() => setDisplayAvailableWordlists(true)}>
+						<Text style={[styles.title, { marginTop: 10 }]}>
+							Selected Wordlist: {availableWordlists[selectedWordlist].title}
+						</Text>
+					</TouchableOpacity>
+					<FlatList
+						showsHorizontalScrollIndicator={false}
+						keyboardShouldPersistTaps={"handled"}
+						horizontal={true}
+						data={suggestedWords}
+						extraData={suggestedWords}
+						keyExtractor={(word) => word}
+						renderItem={({ item: word }): any => {
+							try {
+								return (
+									<TouchableOpacity activeOpacity={0} style={styles.scrollView}>
+										<TouchableOpacity onPress={() => addWordToMnemonic(word)} style={styles.button}>
+											<Text key={word} style={{ color: colors.white, textAlign: "center" }}>{word}</Text>
+										</TouchableOpacity>
+									</TouchableOpacity>
+								);
+							} catch (e) {console.log(e);}
+						}}
+					/>
+				</View>
+			</View>
+			<View style={{ flex: 1, alignItems: "center" }}>
 				<TextInput
 					placeholder="Please enter your mnemonic phrase here with each word seperated by a space... Ex: (project globe magnet)"
 					style={styles.textInput}
@@ -140,6 +220,29 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 			<Animated.View style={styles.xButton}>
 				<XButton style={{ borderColor: "transparent" }} onPress={onBack} />
 			</Animated.View>}
+			
+			
+			<DefaultModal
+				isVisible={displayAvailableWordlists}
+				onClose={() => setDisplayAvailableWordlists(false)}
+				contentStyle={styles.modalContent}
+			>
+				<FlatList
+					data={Object.keys(availableWordlists)}
+					extraData={availableWordlists}
+					keyExtractor={(item) => availableWordlists[item].id}
+					renderItem={({ item }) => (
+						<ListItem
+							item={item}
+							onPress={() => updateSelectedWordlist(item)}
+							title={availableWordlists[item].title}
+							isSelected={selectedWordlist === availableWordlists[item].id}
+						/>
+					)}
+					ItemSeparatorComponent={() => <View style={styles.separator} />}
+				/>
+				<View style={{ paddingVertical: "40%" }} />
+			</DefaultModal>
 		</View>
 	);
 };
@@ -153,14 +256,11 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1
 	},
-	textInputContainer: {
-		position: "absolute",
-		alignItems: "center",
-		justifyContent: "center",
-		top: height*-0.2,
-		bottom: 0,
-		left: 0,
-		right: 0
+	title: {
+		...systemWeights.semibold,
+		color: colors.white,
+		fontSize: 16,
+		textAlign: "center"
 	},
 	textInput: {
 		width: "80%",
@@ -203,6 +303,32 @@ const styles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		bottom: 10
+	},
+	modalContent: {
+		borderWidth: 5,
+		borderRadius: 20,
+		borderColor: colors.lightGray
+	},
+	separator: {
+		width: "100%",
+		height: 2,
+		backgroundColor: colors.gray,
+		marginVertical: 10
+	},
+	button: {
+		borderWidth: 1,
+		borderRadius: 18,
+		borderColor: colors.white,
+		backgroundColor: "transparent",
+		paddingVertical: 10,
+		paddingHorizontal: 15,
+		marginHorizontal: 5
+	},
+	scrollView: {
+		alignSelf: "center",
+		alignItems: "center",
+		justifyContent: "center",
+		height: "100%"
 	}
 });
 
