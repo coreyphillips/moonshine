@@ -176,9 +176,9 @@ class ElectrumTesting extends PureComponent<Props> {
 			litecoinTestnet: ["tltc1qlffxly3zuc8prf8l4v54z8ddsequz77jgc97hk", "tltc1q6q3u7tureyx0c5m9y4exfqynl626sppu56u7w3"]
 		};
 		if (type === "array") {
-			return this.props.wallet[this.props.wallet.selectedWallet].addresses[this.state.selectedCrypto] || addresses[this.state.selectedCrypto];
+			return this.props.wallet.wallets[this.props.wallet.selectedWallet].addresses[this.state.selectedCrypto] || addresses[this.state.selectedCrypto];
 		} else if (type === "single") {
-			return this.props.wallet[this.props.wallet.selectedWallet].addresses[this.state.selectedCrypto][0].address || addresses[this.state.selectedCrypto][0];
+			return this.props.wallet.wallets[this.props.wallet.selectedWallet].addresses[this.state.selectedCrypto][0].address || addresses[this.state.selectedCrypto][0];
 		} else {
 			return addresses["bitcoin"];
 		}

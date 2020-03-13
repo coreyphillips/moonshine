@@ -35,8 +35,11 @@ this.getAddressProof = {};
 this.getVersion = {};
 this.getNewBlockHeadersSubscribe = {};
 this.connectToPeer = {};
-
-const bitcoin = require("rn-bitcoinjs-lib");
+this.subscribeHeader = {};
+this.subscribeAddress = {};
+this.subscribedAddresses = [];
+this.notifiedAddresses = [];
+const bitcoin = require("bitcoinjs-lib");
 const {
 	networks
 } = require("./networks");
@@ -135,6 +138,99 @@ const stop = async ({ coin = "" } = {}) => {
 	
 };
 
+const setupSubscribeHeader = async ({ id = "", method = "", onReceive = () => null } = {}) => {
+	try {
+		//Remove any previous listener
+		await nodejs.channel.removeListener("message", this[method][id]);
+		
+		this[method][id] = ((msg) => {
+			msg = JSON.parse(msg);
+			if (msg.method === method && msg.id === id && Array.isArray(msg.data)) {
+				onReceive(msg);
+			}
+		});
+		//Ensure the listener is setup and established.
+		await nodejs.channel.addListener(
+			"message",
+			this[method][id],
+			this
+		);
+	} catch (e) {console.log(e);}
+};
+
+const subscribeHeader = async ({ id = "subscribeHeader", coin = "", onReceive = () => null } = {}) => {
+	try {
+		await setupSubscribeHeader({id, method: "subscribeHeader", onReceive});
+		nodejs.channel.send(JSON.stringify({method: "subscribeHeader", coin, id}));
+		if (__DEV__) console.log("Subscribed to headers.");
+	} catch (e) {
+		console.log(e);
+	}
+};
+
+const setupSubscribeAddress = async ({ address = "", id = "", method = "", onReceive = () => null } = {}) => {
+	try {
+		//Remove any previous listener
+		//await nodejs.channel.removeListener("message", this[method][id]);
+		
+		this[method][id] = ((msg) => {
+			msg = JSON.parse(msg);
+			if (msg.method === method && msg.id === id && Array.isArray(msg.data) && this.notifiedAddresses.includes(address) === false) {
+				if (this.notifiedAddresses.includes(address)) return;
+				this.notifiedAddresses.push(address);
+				onReceive(msg);
+			}
+		});
+		//Ensure the listener is setup and established.
+		await nodejs.channel.addListener(
+			"message",
+			this[method][id],
+			this
+		);
+	} catch (e) {console.log(e);}
+};
+
+const subscribeAddress = async ({ id = "wallet0bitcoin", address = "", coin = "bitcoin", onReceive = (data) => console.log(data) } = {}) => {
+	try {
+		//Ensure this address is not already subscribed
+		if (this.subscribedAddresses.includes(address)) return;
+		this.subscribedAddresses.push(address);
+		await setupSubscribeAddress({ address, id, method: "subscribeAddress", onReceive });
+		nodejs.channel.send(JSON.stringify({id, address, coin, method: "subscribeAddress"}));
+		if (__DEV__) console.log(`Subscribed to scriptHash: ${address}`);
+	} catch (e) {
+		console.log(e);
+	}
+};
+
+const unSubscribeAddress = async (scriptHashes = []) => {
+	try {
+		/* TODO: Get blockchain.scripthash.unsubscribe working.
+		await setupSubscribe({ id, method: "unSubscribeAddress", onReceive });
+		nodejs.channel.send(JSON.stringify({id, scriptHashes, coin, method: "unSubscribeAddress"}));
+		*/
+		return new Promise(async (resolve) => {
+			try {
+				await Promise.all(
+					scriptHashes.map(async (scriptHash) => {
+						try {
+							//Remove any previous listener
+							nodejs.channel.removeListener("message", this["subscribeAddress"][scriptHash], this);
+						} catch (e) {console.log(e);}
+					})
+				);
+				if (__DEV__) console.log(`Unsubscribed.`);
+				resolve({ error: false, data: "Unsubscribed from address." });
+			} catch (e) {
+				console.log(e);
+				resolve({ error: true, data: e });
+			}
+		});
+	} catch (e) {
+		console.log(e);
+	}
+};
+
 const disconnectFromPeer = ({ id = Math.random(), coin = "" } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
@@ -198,17 +294,28 @@ const getAddressBalance = ({ address = "", id = Math.random(), coin = "" } = {})
 	});
 };
 
+const getAddressScriptHash = ({ address = "", coin = "" } = {}) => {
+	return new Promise(async (resolve) => {
+		try {
+			const script = bitcoin.address.toOutputScript(address, networks[coin]);
+			let hash = bitcoin.crypto.sha256(script);
+			const reversedHash = new Buffer(hash.reverse());
+			const scriptHash = reversedHash.toString("hex");
+			resolve({ error: false, data: scriptHash });
+		} catch (e) {
+			resolve({ error: true, data: e });
+		}
+	});
+};
+
 const getAddressScriptHashBalance = ({ address = "", id = Math.random(), coin = "" } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
-			const script = bitcoin.address.toOutputScript(address, networks[coin]);
-			let hash = bitcoin.crypto.sha256(script);
-			const reversedHash = new Buffer(hash.reverse());
-			const scriptHash = reversedHash.toString("hex");
-			
+			const result = await getAddressScriptHash({ address, coin });
+			if (result.error) return resolve({ error: true, method, data: result.data });
+			const scriptHash = result.data;
 			nodejs.channel.send(JSON.stringify({ method, scriptHash, coin, id }));
 		} catch (e) {
 			resolve({ error: true, method, data: e });
@@ -686,6 +793,7 @@ module.exports = {
 	getAddressBalance,
 	getAddressScriptHashHistory,
 	getAddressScriptHashesHistory,
+	getAddressScriptHash,
 	getAddressScriptHashBalance,
 	getAddressScriptHashesBalance,
 	getAddressScriptHashMempool,
@@ -716,5 +824,8 @@ module.exports = {
 	getAddressProof,
 	getVersion,
 	start,
-	stop
+	stop,
+	subscribeHeader,
+	subscribeAddress,
+	unSubscribeAddress
 };

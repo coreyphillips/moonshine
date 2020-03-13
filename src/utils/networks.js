@@ -57,6 +57,15 @@ const networks = {
 	},
 };
 
+//Max amount of BTC/LTC.
+const maxCoins = {
+	bitcoin: 2100000000000000,
+	bitcoinTestnet: 2100000000000000,
+	litecoin: 8400000000000000,
+	litecoinTestnet: 8400000000000000,
+	vertcoin: 8400000000000000,
+};
+
 //Returns an array of all available coins from the networks object.
 const availableCoins = Object.keys(networks).map(coin => coin);
 
@@ -96,6 +105,9 @@ const objectTypeItems = {
 };
 
 const defaultWalletShape = {
+	id: "",
+	name: "",
+	type: "default",
 	addresses: arrayTypeItems,
 	addressIndex: zeroValueItems,
 	changeAddresses: arrayTypeItems,
@@ -114,6 +126,13 @@ const defaultWalletShape = {
 		litecoin: "84",
 		litecoinTestnet: "84",
 		vertcoin: "84"
+	},
+	coinTypePath: {
+		bitcoin: "0",
+		bitcoinTestnet: "1",
+		litecoin: "2",
+		litecoinTestnet: "1",
+		vertcoin: "2"
 	},
 	addressType: { //Accepts bech32, segwit, legacy
 		bitcoin: "bech32",
@@ -149,27 +168,32 @@ const getCoinData = ({ selectedCrypto = "bitcoin", cryptoUnit = "satoshi" }) => 
 	try {
 		let acronym = "BTC";
 		let satoshi = "satoshi";
+		let oshi = "sats";
 		switch (selectedCrypto) {
 			case "bitcoin":
 				acronym = cryptoUnit === "satoshi" ? "sats" : "BTC";
-				return { acronym, label: "Bitcoin", crypto: "BTC", satoshi };
+				oshi = "sats";
+				return { acronym, label: "Bitcoin", crypto: "BTC", satoshi, oshi };
 			case "bitcoinTestnet":
 				acronym = cryptoUnit === "satoshi" ? "sats" : "BTC";
-				return { acronym, label: "Bitcoin Testnet", crypto: "BTC", satoshi };
+				oshi = "sats";
+				return { acronym, label: "Bitcoin Testnet", crypto: "BTC", satoshi, oshi };
 			case "litecoin":
 				satoshi = "litoshi";
+				oshi = "lits";
 				acronym = cryptoUnit === "satoshi" ? "lits" : "LTC";
-				return { acronym, label: "Litecoin", crypto: "LTC", satoshi };
+				return { acronym, label: "Litecoin", crypto: "LTC", satoshi, oshi };
 			case "litecoinTestnet":
 				satoshi = "litoshi";
+				oshi = "lits";
 				acronym = cryptoUnit === "satoshi" ? "lits" : "LTC";
 				return { acronym, label: "Litecoin Testnet", crypto: "LTC", satoshi };
 			case "vertcoin":
 				acronym = cryptoUnit === "satoshi" ? "sats" : "VTC";
-				return { acronym, label: "Vertcoin", crypto: "VTC", satoshi };
+				return { acronym, label: "Vertcoin", crypto: "VTC", satoshi, oshi };
 			default:
 				acronym = cryptoUnit === "satoshi" ? "sats" : "BTC";
-				return { acronym, label: "Bitcoin", crypto: "BTC" };
+				return { acronym, label: "Bitcoin", crypto: "BTC", satoshi, oshi };
 		}
 	} catch (e) {
 		console.log(e);
@@ -180,6 +204,7 @@ module.exports = {
 	networks,
 	availableCoins,
 	defaultWalletShape,
+	maxCoins,
 	supportsRbf,
 	zeroValueItems,
 	arrayTypeItems,

@@ -28,7 +28,7 @@ module.exports = (state = {
 	pin: false,
 	pinAttemptsRemaining: 5,
 	selectedService: "coingecko", //Exchange Rate Data Source (coincap, coingecko)
-	testnet: true,
+	testnet: false,
 	cryptoUnit: "satoshi", //BTC, mBTC, μBTC or satoshi
 	peers, //A list of peers acquired from default electrum servers using the getPeers method. Takes { host: "", port: "", protocol: "ssl" } Default ports for BTC are: "s": "50002" && "t": "50001"
 	customPeers, //A list of peers added by the user to connect to by default in lieu of the default peer list. Takes { host: "", port: "", protocol: "ssl" } Default ports for BTC are: "s": "50002" && "t": "50001"
@@ -37,7 +37,18 @@ module.exports = (state = {
 		port: "", //Default ports for BTC are: "s": "50002" && "t": "50001"
 	},
 	sendTransactionFallback: true, //If electrum fails to broadcast a transaction for any reason the app will attempt to use an api to broadcast instead. Can be toggled on & off in Settings
-	rbf: true
+	rbf: true,
+	signMessage: {
+		message: "",
+		signature: "",
+		selectedAddressIndex: 0
+	},
+	verifyMessage: {
+		address: "",
+		message: "",
+		signature: ""
+	},
+	version: ""
 }, action) => {
 	switch (action.type) {
 

@@ -24,6 +24,49 @@ const disconnectFromPeer = async ({ id, coin }) => {
 	}
 };
 
+const subscribeHeader = async ({ coin, id } = {}) => {
+	try {
+		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
+		api.mainClient[coin].subscribe.on('blockchain.headers.subscribe', (data) => {
+			rn_bridge.channel.send(JSON.stringify({id, error: false, method: "subscribeHeader", data, coin}));
+		});
+	} catch (e) {
+		rn_bridge.channel.send(JSON.stringify({id, error: true, method: "subscribeHeader", data: e, coin}));
+	}
+};
+
+const subscribeAddress = async ({ coin, id, address = "" } = {}) => {
+	try {
+		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
+		
+		await api.mainClient[coin].subscribe.on('blockchain.scripthash.subscribe', (data) => {
+			rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "subscribeAddress", data }));
+		});
+		
+		const response = await api.mainClient[coin].blockchainScripthash_subscribe(address);
+		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "subscribeAddress", data: response}));
+	} catch (e) {
+		rn_bridge.channel.send(JSON.stringify({ id, error: true, method: "subscribeAddress", data: e }));
+	}
+};
+
+const unSubscribeAddress = async ({ id, coin, scriptHashes = [] } = {}) => {
+	try {
+		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
+		let responses = [];
+		await Promise.all(
+			scriptHashes.map(async (scriptHash) => {
+				try {
+					const response = await api.mainClient[coin].blockchainScripthash_unsubscribe(scriptHash);
+					responses.push(response);
+				} catch (e) {}
+			})
+		);
+		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "unSubscribeAddress", data: responses}));
+	} catch (e) {
+		rn_bridge.channel.send(JSON.stringify({ id, error: true, method: "unSubscribeAddress", data: e, scriptHashes }));
+	}
+};
 
 const connectToPeer = async ({ id, peers = [], customPeers = [], coin = "bitcoin" } = {}) => {
 	try {
@@ -37,16 +80,9 @@ const connectToPeer = async ({ id, peers = [], customPeers = [], coin = "bitcoin
 			const {port = "", host = "", protocol = "ssl"} = customPeers[0];
 			api.mainClient[coin] = new ElectrumClient(port, host, protocol);
 			const connectionResponse = await api.mainClient[coin].connect();
-			if (!connectionResponse.error) api.peer[coin] = { port: connectionResponse.data.port, host: connectionResponse.data.host, protocol: "ssl" };
+			if (!connectionResponse.error) api.peer[coin] = { port: connectionResponse.data.port, host: connectionResponse.data.host, protocol };
 			rn_bridge.channel.send(JSON.stringify({ id, error: connectionResponse.error, method: "connectToPeer", data: connectionResponse.data, customPeers, coin }));
 		} else {
-			/*
-			//If previously connected to a peer, return the previous peer data.
-			if (api.mainClient[api.coin] !== false) {
-				rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "connectToPeer", data: api.peer[api.coin], customPeers, coin }));
-				return;
-			}
-			*/
 			//Attempt to connect to random peer if none specified
 			const connectionResponse = await connectToRandomPeer(coin, peers);
 			if (connectionResponse.coin !== api.coin) return;
@@ -57,7 +93,7 @@ const connectToPeer = async ({ id, peers = [], customPeers = [], coin = "bitcoin
 	}
 };
 
-const connectToRandomPeer = async (coin, peers = []) => {
+const connectToRandomPeer = async (coin, peers = [], protocol = "ssl") => {
 	//Peers can be found in /node_modules/electrum-host-parse/fixtures/peers.json.
 	//Additional Peers can be located here in servers.json & servers_testnet.json for reference: https://github.com/spesmilo/electrum/tree/master/electrum
 	
@@ -73,7 +109,9 @@ const connectToRandomPeer = async (coin, peers = []) => {
 		}
 	} else {
 		//Use the default peer list for a connection if no other peers were passed down and no saved peer list is present.
-		peers = require("electrum-host-parse").getDefaultPeers(coin).filter(v => v.ssl);
+		peers = require("electrum-host-parse").getDefaultPeers(coin).filter(v => {
+			try {return v[protocol];} catch (e) {}
+		});
 	}
 	const initialPeerLength = peers.length; //Acquire length of our default peers.
 	//Attempt to connect to a random default peer. Continue to iterate through default peers at random if unable to connect.
@@ -84,7 +122,7 @@ const connectToRandomPeer = async (coin, peers = []) => {
 			if (hasPeers) {
 				api.mainClient[coin] = new ElectrumClient(peer.port, peer.host, peer.protocol);
 			} else {
-				api.mainClient[coin] = new ElectrumClient(peer.ssl, peer.host, "ssl");
+				api.mainClient[coin] = new ElectrumClient(peer[protocol], peer.host, protocol);
 			}
 			const connectionResponse = await api.mainClient[coin].connect();
 			if (connectionResponse.error === false) {
@@ -99,7 +137,7 @@ const connectToRandomPeer = async (coin, peers = []) => {
 					api.peer[coin] = {
 						port: connectionResponse.data.port,
 						host: connectionResponse.data.host,
-						protocol: "ssl"
+						protocol
 					};
 					return {
 						error: connectionResponse.error,
@@ -206,14 +244,16 @@ const getPeers = async ({ id = "", method = "getPeers", coin = "" } = {}) => {
 	}
 };
 
-const getAvailablePeers = async ({ id = "", method = "getAvailablePeers", coin = "" } = {}) => {
+const getAvailablePeers = async ({ id = "", method = "getAvailablePeers", coin = "", protocol = "ssl" } = {}) => {
 	try {
 		if (coin != api.coin) return;
 		//Peers can be found in /node_modules/electrum-host-parse/fixtures/peers.json.
 		//Other useful peers: BitcoinSegwitTestnet, Litecoin, LitecoinTestnet
 		//Additional Peers can be located here for reference:
 		//(electrum/lib/network.py) https://github.com/spesmilo/electrum/blob/afa1a4d22a31d23d088c6670e1588eed32f7114d/lib/network.py#L57
-		const peers = require("electrum-host-parse").getDefaultPeers(api.coin).filter(v => v.ssl);
+		const peers = require("electrum-host-parse").getDefaultPeers(api.coin).filter(v => {
+			try { return v[protocol];} catch (e) {}
+		});
 		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: peers}));
 	} catch (e) {
 		console.log(e);
@@ -626,5 +666,8 @@ module.exports = {
 	getTransactionHex,
 	getTransaction,
 	getTransactions,
-	getFeeEstimate
+	getFeeEstimate,
+	subscribeHeader,
+	subscribeAddress,
+	unSubscribeAddress
 };

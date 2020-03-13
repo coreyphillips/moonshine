@@ -7,7 +7,8 @@ import {
 	LayoutAnimation,
 	Dimensions,
 	Platform,
-	InteractionManager
+	InteractionManager,
+	Easing
 } from "react-native";
 import PropTypes from "prop-types";
 import Slider from "@react-native-community/slider";
@@ -28,7 +29,7 @@ const {
 	getAddress,
 	validatePrivateKey
 } = require("../utils/helpers");
-const bitcoin = require("rn-bitcoinjs-lib");
+const bitcoin = require("bitcoinjs-lib");
 
 const {
 	createTransaction,
@@ -47,7 +48,7 @@ const {
 const moment = require("moment");
 const { width } = Dimensions.get("window");
 
-class SendTransaction extends PureComponent<Props> {
+class SendTransaction extends PureComponent {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -110,8 +111,8 @@ class SendTransaction extends PureComponent<Props> {
 				const cryptoLabel = this.getCryptoLabel();
 				const cryptoUnitLabel = getCoinData({selectedCrypto, cryptoUnit}).acronym;
 
-				const addressIndex = this.props.wallet[selectedWallet].addressIndex[selectedCrypto];
-				const address = this.props.wallet[selectedWallet].addresses[selectedCrypto][addressIndex].address;
+				const addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
+				const address = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto][addressIndex].address;
 				this.setState({
 					loadingProgress: 0.8,
 					privateKeyData: {
@@ -186,12 +187,12 @@ class SendTransaction extends PureComponent<Props> {
 		try {
 			const selectedCrypto = this.props.wallet.selectedCrypto;
 			const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
-			const result = await this.props.getRecommendedFee();
 			let utxos = [];
 			utxos = utxos.concat(this.state.privateKeyData.bech32Utxos);
 			utxos = utxos.concat(this.state.privateKeyData.p2shUtxos);
 			utxos = utxos.concat(this.state.privateKeyData.p2pkhUtxos);
 			const transactionSize = getTransactionSize(utxos.length, 1);
+			const result = await this.props.getRecommendedFee({ coin: selectedCrypto, transactionSize });
 
 			//Ensure we have a valid recommendedFee
 			if (result.data.recommendedFee && !isNaN(Number(result.data.recommendedFee))) {
@@ -343,26 +344,26 @@ class SendTransaction extends PureComponent<Props> {
 				//Get addresses from the private key
 				const keyPair = bitcoin.ECPair.fromWIF(privateKey, networks[network]);
 				const bech32Address = await getAddress(keyPair, networks[network], "bech32"); //Bech32
-				const p2shAddress = await getAddress(keyPair, networks[network], "p2sh"); //(3) Address
-				const p2pkhAddress = await getAddress(keyPair, networks[network], "p2pkh");//(1) Address
+				const p2shAddress = await getAddress(keyPair, networks[network], "segwit"); //(3) Address
+				const p2pkhAddress = await getAddress(keyPair, networks[network], "legacy");//(1) Address
 
 				//Get the balance for each address.
 				this.setState({ loadingMessage: `Private Key Detected.\nFetching Bech32 address balance...`, loadingProgress: 0.3 });
 				const bech32BalanceResult = await Promise.all([
-					electrum.getAddressScriptHashBalance({address: bech32Address, id: 6, network: networks[network], coin: network}), //Bech32 format demands we use the scriptHash variant of the getAddressBalance function
-					electrum.getAddressScriptHashMempool({address: bech32Address, id: 5, network: networks[network], coin: network})
+					electrum.getAddressScriptHashBalance({address: bech32Address, id: 6, coin: network}),
+					electrum.getAddressScriptHashMempool({address: bech32Address, id: 5, coin: network})
 				]);
 
-				this.setState({ loadingMessage: `Private Key Detected.\nFetching P2SH address balance...`, loadingProgress: 0.4 });
+				this.setState({ loadingMessage: `Private Key Detected.\nFetching Segwit address balance...`, loadingProgress: 0.4 });
 				const p2shBalanceResult = await Promise.all([
-					electrum.getAddressBalance({address: p2shAddress, id: 1, coin: network}),
-					electrum.getMempool({address: p2shAddress, id: 3, coin: network}),
+					electrum.getAddressScriptHashBalance({address: p2shAddress, id: 1, coin: network}),
+					electrum.getAddressScriptHashMempool({address: p2shAddress, id: 3, coin: network}),
 				]);
 
-				this.setState({ loadingMessage: `Private Key Detected.\nFetching P2PKH address balance...`, loadingProgress: 0.5 });
+				this.setState({ loadingMessage: `Private Key Detected.\nFetching Legacy address balance...`, loadingProgress: 0.5 });
 				const p2pkhBalanceResult = await Promise.all([
-					electrum.getAddressBalance({address: p2pkhAddress, id: 2, coin: network}),
-					electrum.getMempool({address: p2pkhAddress, id: 4, coin: network})
+					electrum.getAddressScriptHashBalance({address: p2pkhAddress, id: 2, coin: network}),
+					electrum.getAddressScriptHashMempool({address: p2pkhAddress, id: 4, coin: network})
 				]);
 
 				let balance = 0;
@@ -429,7 +430,7 @@ class SendTransaction extends PureComponent<Props> {
 				console.log(`${p2pkhAddress}: ${p2pkhBalance}`);
 				console.log(`Total Balance: ${balance}`);
 				*/
-				this.setState({ loadingMessage: `Balance Summary:\n\nBech32 Balance: ${bech32Balance}\nP2SH Balance: ${p2shBalance}\nP2PKH Balance: ${p2pkhBalance}`, loadingProgress: 0.7 });
+				this.setState({ loadingMessage: `Balance Summary:\n\nBech32 Balance: ${bech32Balance}\nSegwit Balance: ${p2shBalance}\nLegacy Balance: ${p2pkhBalance}`, loadingProgress: 0.7 });
 
 				//Fetch the utxos for each address
 				let bech32Utxos = [], p2shUtxos = [], p2pkhUtxos = [];
@@ -488,7 +489,7 @@ class SendTransaction extends PureComponent<Props> {
 
 				this.getFiatBalance();
 
-				this.setState({ loadingMessage: `Balance Summary:\n\nBech32 Balance: ${bech32Balance}\nP2SH Balance: ${p2shBalance}\nP2PKH Balance: ${p2pkhBalance}`, loadingProgress: 0.85 });
+				this.setState({ loadingMessage: `Balance Summary:\n\nBech32 Balance: ${bech32Balance}\nSegwit Balance: ${p2shBalance}\nLegacy Balance: ${p2pkhBalance}`, loadingProgress: 0.85 });
 
 				resolve({ error: false, data });
 			} catch (e) {
@@ -669,13 +670,16 @@ class SendTransaction extends PureComponent<Props> {
 
 						//Temporarily update the balance for the user to prevent a delay while electrum syncs the balance from the new transaction
 						try {
-							const newBalance = Number(this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto]) + amount;
+							const newBalance = Number(this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto]) + amount;
 							await this.props.updateWallet({
-								[selectedWallet]: {
-									...this.props.wallet[selectedWallet],
-									confirmedBalance: {
-										...this.props.wallet[selectedWallet].confirmedBalance,
-										[selectedCrypto]: newBalance
+								wallets: {
+									...this.props.wallet.wallets,
+									[selectedWallet]: {
+										...this.props.wallet.wallets[selectedWallet],
+										confirmedBalance: {
+											...this.props.wallet.wallets[selectedWallet].confirmedBalance,
+											[selectedCrypto]: newBalance
+										}
 									}
 								}
 							});
@@ -694,11 +698,11 @@ class SendTransaction extends PureComponent<Props> {
 					const currentBlockHeight = this.props.wallet.blockHeight[selectedCrypto];
 					let currentUtxos = [];
 					try {
-						currentUtxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
+						currentUtxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto] || [];
 					} catch (e) {
 					}
-					const addresses = this.props.wallet[selectedWallet].addresses[selectedCrypto];
-					const changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto];
+					const addresses = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto];
+					const changeAddresses = this.props.wallet.wallets[selectedWallet].changeAddresses[selectedCrypto];
 					this.props.resetUtxos({ addresses, changeAddresses, currentBlockHeight, selectedCrypto, selectedWallet, currentUtxos });
 					await pauseExecution(1500);
 					//Fade out the loading view
@@ -707,6 +711,7 @@ class SendTransaction extends PureComponent<Props> {
 						{
 							toValue: 0,
 							duration: 400,
+							easing: Easing.inOut(Easing.ease),
 							useNativeDriver: true
 						}
 					).start(async () => {
@@ -737,6 +742,7 @@ class SendTransaction extends PureComponent<Props> {
 					{
 						toValue: display ? 1 : 0,
 						duration,
+						easing: Easing.inOut(Easing.ease),
 						useNativeDriver: true
 					}
 				).start(async () => {
@@ -826,18 +832,19 @@ class SendTransaction extends PureComponent<Props> {
 				alert(`It appears that \n "${address}" \n is not a valid ${capitalize(selectedCrypto)} address. Please attempt to re-enter the address.`);
 				return;
 			}
-			const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto] || [];
-			const confirmedBalance = this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto];
-			const changeAddressIndex = this.props.wallet[selectedWallet].changeAddressIndex[selectedCrypto];
+			const wallet = this.props.wallet.wallets[selectedWallet];
+			const utxos = wallet.utxos[selectedCrypto] || [];
+			const confirmedBalance = wallet.confirmedBalance[selectedCrypto];
+			const changeAddressIndex = wallet.changeAddressIndex[selectedCrypto];
 			const transactionFee = Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee);
 			const amount = Number(this.props.transaction.amount);
 			const message = this.props.transaction.message;
-			const addressType = this.props.wallet[selectedWallet].addressType[selectedCrypto];
+			const addressType = wallet.addressType[selectedCrypto];
 			let changeAddress = "";
 			//Create More Change Addresses as needed
 			//Only add a changeAddress if the user is not spending the max amount.
 			if (!this.state.spendMaxAmount) {
-				const changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto];
+				const changeAddresses = wallet.changeAddresses[selectedCrypto];
 				if (changeAddresses.length-1 < changeAddressIndex) {
 					//Generate receiving and change addresses.
 					const newChangeAddress = await generateAddresses({
@@ -849,12 +856,11 @@ class SendTransaction extends PureComponent<Props> {
 					});
 					changeAddress = newChangeAddress.data.changeAddresses[0].address;
 				} else {
-					changeAddress = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto][changeAddressIndex].address;
+					changeAddress = wallet.changeAddresses[selectedCrypto][changeAddressIndex].address;
 				}
 			}
 
-			const result = await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, changeAddress, wallet: selectedWallet, selectedCrypto, message, addressType });
-			return result;
+			return await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, changeAddress, wallet: selectedWallet, selectedCrypto, message, addressType });
 		} catch (e) {
 			console.log(e);
 		}
@@ -892,7 +898,7 @@ class SendTransaction extends PureComponent<Props> {
 
 						<View style={styles.row}>
 							<View style={{ flex: 1, justifyContent: "flex-end", alignItems: "flex-start" }}>
-								<Text style={[styles.largeText, { fontWeight: "bold" }]}>Sending To: <Text style={styles.largeText}>{this.props.wallet.selectedWallet.split('wallet').join('Wallet ')}</Text></Text>
+								<Text style={[styles.largeText, { fontWeight: "bold" }]}>Sending To: <Text style={styles.largeText}>{`Wallet ${this.props.wallet.walletOrder.indexOf(this.props.wallet.selectedWallet)}`}</Text></Text>
 							</View>
 						</View>
 
@@ -907,7 +913,7 @@ class SendTransaction extends PureComponent<Props> {
 								<Text style={styles.text}>Fee: {this.state.fee || this.state.recommendedFee}sat/B </Text>
 							</View>
 							<View style={{ flex: 1 }}>
-								<Text style={[styles.text, { textAlign: "center" }]}>${this.state.totalFiatFee}</Text>
+								<Text style={[styles.text, { textAlign: "center" }]}>{this.props.settings.fiatSymbol}{this.state.totalFiatFee}</Text>
 							</View>
 							<View style={{ flex: 1 }}>
 								<Text style={[styles.text, { textAlign: "center" }]}>{this.state.totalFee} sats</Text>
@@ -930,7 +936,7 @@ class SendTransaction extends PureComponent<Props> {
 
 				<View style={{ flex: Platform.OS === "ios" ? 0.45 : 0.45, justifyContent: "flex-start" }}>
 					<View style={styles.buttonContainer}>
-						<Button title="Sweep" text={`~$${this.state.fiatBalance.balanceMinusFees}`} text2={`${this.state.cryptoBalance.balanceMinusFees || 0} ${this.props.settings.cryptoUnit}`} textStyle={{ paddingTop: 5, ...systemWeights.light, }} onPress={() =>this.sweepPrivateKey(this.state.privateKeyData)} />
+						<Button title="Sweep" text={`~$${this.state.fiatBalance.balanceMinusFees}`} text2={`${this.state.cryptoBalance.balanceMinusFees || 0} ${this.state.cryptoUnitLabel}`} textStyle={{ paddingTop: 5, ...systemWeights.light, }} onPress={() =>this.sweepPrivateKey(this.state.privateKeyData)} />
 					</View>
 				</View>
 
@@ -945,7 +951,7 @@ SendTransaction.defaultProps = {
 };
 
 SendTransaction.propTypes = {
-	refreshWallet: PropTypes.func.isRequired, // ({ ignoreLoading: bool })
+	refreshWallet: PropTypes.func.isRequired,
 	onClose: PropTypes.func.isRequired
 };
 
@@ -953,34 +959,6 @@ SendTransaction.propTypes = {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1
-	},
-	xButton: {
-		position: "absolute",
-		alignItems: "center",
-		left: 0,
-		right: 0,
-		bottom: Platform.OS === "ios" ? 60 : 30,
-		zIndex: 200
-	},
-	copiedContainer: {
-		flex: 1,
-		backgroundColor: colors.white,
-		position: "absolute",
-		left: 0,
-		top: 0,
-		bottom: 0,
-		right: 0
-	},
-	copied: {
-		flex: 1,
-		alignItems: "center",
-		justifyContent: "center"
-	},
-	copiedText: {
-		...systemWeights.bold,
-		color: colors.purple,
-		fontSize: 16,
-		textAlign: "center"
 	},
 	text: {
 		...systemWeights.regular,
@@ -1001,67 +979,6 @@ const styles = StyleSheet.create({
 		fontSize: 26,
 		textAlign: "center"
 	},
-	textInputRow: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center"
-	},
-	textInput: {
-		flex: 1,
-		height: 30,
-		borderTopLeftRadius: 5,
-		borderBottomLeftRadius: 5,
-		paddingLeft: 5,
-		backgroundColor: colors.white,
-		paddingTop: 0,
-		paddingBottom: 0,
-		color: colors.purple,
-		fontWeight: "bold"
-	},
-	cameraIcon: {
-		alignItems: "flex-end"
-	},
-	rotatedIcon: {
-		transform: [{ rotate: "90deg"}],
-		marginRight: 3
-	},
-	boldPurpleText: {
-		...systemWeights.bold,
-		color: colors.purple,
-		fontSize: 16
-	},
-	purpleText: {
-		...systemWeights.light,
-		color: colors.purple,
-		fontSize: 16
-	},
-	amountText: {
-		textAlign: "right",
-		...systemWeights.regular,
-		color: colors.purple,
-		fontSize: 16
-	},
-	leftIconContainer: {
-		height: 30,
-		alignItems: "center",
-		justifyContent: "center",
-		paddingHorizontal: 5,
-		borderWidth: 1,
-		borderColor: colors.white,
-		backgroundColor: colors.white
-	},
-	rightIconContainer: {
-		backgroundColor: "transparent",
-		alignItems: "center",
-		justifyContent: "center",
-		borderWidth: 1,
-		borderColor: colors.white,
-		paddingHorizontal: 5,
-		borderTopRightRadius: 5,
-		borderBottomRightRadius: 5,
-		borderLeftColor: colors.purple,
-		height: 30
-	},
 	sliderRow: {
 		flexDirection: "row",
 		alignItems: "center",
@@ -1070,9 +987,6 @@ const styles = StyleSheet.create({
 	slider: {
 		flex: 1,
 		height: 30
-	},
-	featherIcon: {
-		alignItems: "flex-end"
 	},
 	row: {
 		flexDirection: "row",

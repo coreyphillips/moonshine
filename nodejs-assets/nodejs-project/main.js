@@ -34,7 +34,10 @@ const {
 	getFeeEstimate,
 	listUnspentAddressScriptHash,
 	listUnspentAddressScriptHashes,
-	connectToPeer
+	connectToPeer,
+	subscribeHeader,
+	subscribeAddress,
+	unSubscribeAddress
 } = require("./electrumUtils");
 
 rn_bridge.channel.on("message", (msg) => {
@@ -215,6 +218,20 @@ rn_bridge.channel.on("message", (msg) => {
 		case "getVersion":
 			try { coin = msg.coin; } catch (e) {}
 			getVersion({ id, coin });
+			break;
+		case "subscribeHeader":
+			try { coin = msg.coin; } catch (e) {}
+			subscribeHeader({ id, coin });
+			break;
+		case "subscribeAddress":
+			try { coin = msg.coin; } catch (e) {}
+			try { address = msg.address; } catch (e) {}
+			subscribeAddress({ id, coin, address });
+			break;
+		case "unSubscribeAddress":
+			try { coin = msg.coin; } catch (e) {}
+			try { scriptHashes = msg.scriptHashes; } catch (e) {}
+			unSubscribeAddress({ id, coin, scriptHashes });
 			break;
 		default:
 			break;

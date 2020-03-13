@@ -9,7 +9,6 @@ const {
 } = require("../utils/helpers");
 
 const {
-	defaultWalletShape,
 	availableCoins,
 	zeroValueItems
 } = require("../utils/networks");
@@ -25,12 +24,12 @@ module.exports = (state = {
 	selectedCrypto: "bitcoin",
 	selectedCurrency: "usd",
 	selectedWallet: "wallet0",
-	wallets: [],
+	walletOrder: [],
+	wallets: {},
 	selectedTransaction: "",
 	availableCoins,
 	exchangeRate: zeroValueItems,
-	blockHeight: { ...zeroValueItems, timestamp: null },
-	wallet0: defaultWalletShape
+	blockHeight: { ...zeroValueItems, timestamp: null }
 }, action) => {
 	switch (action.type) {
 
@@ -39,32 +38,44 @@ module.exports = (state = {
 				...state,
 				...action.payload
 			};
+		
+		case actions.CREATE_WALLET:
+			return {
+				...state,
+				wallets: {
+					...state.wallets,
+					...action.payload
+				}
+			};
 
 		case actions.ADD_ADDRESSES:
 
 			//Remove Duplicates From Addresses
-			try { currentAddresses = state[action.payload.wallet].addresses[action.payload.selectedCrypto]; } catch (e) {}
+			try { currentAddresses = state.wallets[action.payload.wallet].addresses[action.payload.selectedCrypto]; } catch (e) {}
 			let newAddresses = action.payload.addresses;
 			let addresses = currentAddresses.concat(newAddresses);
 			addresses = removeDupsFromArrOfObj(addresses, "address");
 
 			//Remove Duplicated From ChangeAddresses
-			try { currentChangeAddresses = state[action.payload.wallet].changeAddresses[action.payload.selectedCrypto]; } catch (e) {}
+			try { currentChangeAddresses = state.wallets[action.payload.wallet].changeAddresses[action.payload.selectedCrypto]; } catch (e) {}
 			let newChangeAddresses = action.payload.changeAddresses;
 			let changeAddresses = currentChangeAddresses.concat(newChangeAddresses);
 			changeAddresses = removeDupsFromArrOfObj(changeAddresses, "address");
 
 			return {
 				...state,
-				[action.payload.wallet]: {
-					...state[action.payload.wallet],
-					addresses: {
-						...state[action.payload.wallet].addresses,
-						[action.payload.selectedCrypto]: addresses
-					},
-					changeAddresses: {
-						...state[action.payload.wallet].changeAddresses,
-						[action.payload.selectedCrypto]: changeAddresses
+				wallets: {
+					...state.wallets,
+					[action.payload.wallet]: {
+						...state.wallets[action.payload.wallet],
+						addresses: {
+							...state[action.payload.wallet].addresses,
+							[action.payload.selectedCrypto]: addresses
+						},
+						changeAddresses: {
+							...state.wallets[action.payload.wallet].changeAddresses,
+							[action.payload.selectedCrypto]: changeAddresses
+						}
 					}
 				}
 			};
@@ -76,16 +87,19 @@ module.exports = (state = {
 				newUtxos = action.payload.utxos;
 			} catch (e) {}
 			try {
-				oldUtxos = state[action.payload.wallet].utxos;
+				oldUtxos = state.wallets[action.payload.wallet].utxos;
 			} catch (e) {}
 			return {
 				...state,
-				[action.payload.wallet]: {
-					...state[action.payload.wallet],
-					utxos: {
-						...oldUtxos,
-						[action.payload.selectedCrypto]: newUtxos,
-						timestamp: action.payload.timestamp
+				wallets: {
+					...state.wallets,
+					[action.payload.wallet]: {
+						...state.wallets[action.payload.wallet],
+						utxos: {
+							...oldUtxos,
+							[action.payload.selectedCrypto]: newUtxos,
+							timestamp: action.payload.timestamp
+						}
 					}
 				}
 			};
@@ -94,7 +108,7 @@ module.exports = (state = {
 
 			let previousUtxos = [];
 			try {
-				previousUtxos = state[action.payload.wallet].utxos;
+				previousUtxos = state.wallets[action.payload.wallet].utxos;
 				previousUtxos = previousUtxos[action.payload.selectedCrypto];
 			} catch (e) {}
 			let utxos = action.payload.utxos.concat(previousUtxos);
@@ -103,12 +117,15 @@ module.exports = (state = {
 
 			return {
 				...state,
-				[action.payload.wallet]: {
-					...state[action.payload.wallet],
-					utxos: {
-						...state[action.payload.wallet].utxos,
-						[action.payload.selectedCrypto]: utxos,
-						timestamp: action.payload.timestamp
+				wallets: {
+					...state.wallets,
+					[action.payload.wallet]: {
+						...state.wallets[action.payload.wallet],
+						utxos: {
+							...state.wallets[action.payload.wallet].utxos,
+							[action.payload.selectedCrypto]: utxos,
+							timestamp: action.payload.timestamp
+						}
 					}
 				}
 			};
@@ -116,23 +133,26 @@ module.exports = (state = {
 		case actions.UPDATE_CONFIRMED_BALANCE:
 			return {
 				...state,
-				[action.payload.wallet]: {
-					...state[action.payload.wallet],
-					confirmedBalance: {
-						...state[action.payload.wallet].confirmedBalance,
-						[action.payload.selectedCrypto]: action.payload.confirmedBalance,
-						timestamp: action.payload.timestamp
-					},
-					unconfirmedBalance: {
-						...state[action.payload.wallet].unconfirmedBalance,
-						[action.payload.selectedCrypto]: action.payload.unconfirmedBalance,
-						timestamp: action.payload.timestamp
+				wallets: {
+					...state.wallets,
+					[action.payload.wallet]: {
+						...state.wallets[action.payload.wallet],
+						confirmedBalance: {
+							...state.wallets[action.payload.wallet].confirmedBalance,
+							[action.payload.selectedCrypto]: action.payload.confirmedBalance,
+							timestamp: action.payload.timestamp
+						},
+						unconfirmedBalance: {
+							...state.wallets[action.payload.wallet].unconfirmedBalance,
+							[action.payload.selectedCrypto]: action.payload.unconfirmedBalance,
+							timestamp: action.payload.timestamp
+						}
 					}
 				}
 			};
 
 		case actions.ADD_TRANSACTION:
-			let currentTransactions = state[action.payload.wallet].transactions[action.payload.selectedCrypto];
+			let currentTransactions = state.wallets[action.payload.wallet].transactions[action.payload.selectedCrypto];
 			let newTransactions = action.payload.transaction.concat(currentTransactions);
 
 			newTransactions = removeDupsFromArrOfObj(newTransactions, "hash");
@@ -147,11 +167,14 @@ module.exports = (state = {
 			
 			const transactionData = {
 				...state,
-				[action.payload.wallet]: {
-					...state[action.payload.wallet],
-					transactions: {
-						...state[action.payload.wallet].transactions,
-						[action.payload.selectedCrypto]: newTransactions
+				wallets: {
+					...state.wallets,
+					[action.payload.wallet]: {
+						...state.wallets[action.payload.wallet],
+						transactions: {
+							...state.wallets[action.payload.wallet].transactions,
+							[action.payload.selectedCrypto]: newTransactions
+						}
 					}
 				}
 			};
@@ -161,8 +184,8 @@ module.exports = (state = {
 			try {
 				if (Object.entries(action.payload.rbfData).length !== 0 && action.payload.rbfData.constructor === Object) {
 					rbfData[action.payload.rbfData.hash] = action.payload.rbfData || {};
-					transactionData[action.payload.wallet]["rbfData"] = {
-						...state[action.payload.wallet].rbfData,
+					transactionData.wallets[action.payload.wallet]["rbfData"] = {
+						...state.wallets[action.payload.wallet].rbfData,
 						[action.payload.selectedCrypto]: rbfData
 					};
 				}
@@ -173,11 +196,14 @@ module.exports = (state = {
 		case actions.UPDATE_RBF_DATA:
 			return {
 				...state,
-				[action.payload.wallet]: {
-					...state[action.payload.wallet],
-					rbfData: {
-						...state[action.payload.wallet].rbfData,
-						[action.payload.selectedCrypto]: action.payload.rbfData
+				wallets: {
+					...state.wallets,
+					[action.payload.wallet]: {
+						...state.wallets[action.payload.wallet],
+						rbfData: {
+							...state.wallets[action.payload.wallet].rbfData,
+							[action.payload.selectedCrypto]: action.payload.rbfData
+						}
 					}
 				}
 			};
@@ -186,7 +212,7 @@ module.exports = (state = {
 
 			let blacklistedUtxos = [];
 			try {
-				blacklistedUtxos = state[action.payload.wallet].blacklistedUtxos[action.payload.selectedCrypto];
+				blacklistedUtxos = state.wallets[action.payload.wallet].blacklistedUtxos[action.payload.selectedCrypto];
 			} catch (e) {}
 
 			let transactionToBlacklist = action.payload.transaction;
@@ -202,16 +228,19 @@ module.exports = (state = {
 
 			let oldBlacklistedTransactions = {};
 			try {
-				oldBlacklistedTransactions = state[action.payload.wallet].blacklistedUtxos;
+				oldBlacklistedTransactions = state.wallets[action.payload.wallet].blacklistedUtxos;
 			} catch (e) {}
 
 			return {
 				...state,
-				[action.payload.wallet]: {
-					...state[action.payload.wallet],
-					blacklistedUtxos: {
-						...oldBlacklistedTransactions,
-						[action.payload.selectedCrypto]: blacklistedUtxos
+				wallets: {
+					...state.wallets,
+					[action.payload.wallet]: {
+						...state.wallets[action.payload.wallet],
+						blacklistedUtxos: {
+							...oldBlacklistedTransactions,
+							[action.payload.selectedCrypto]: blacklistedUtxos
+						}
 					}
 				}
 			};
@@ -228,7 +257,7 @@ module.exports = (state = {
 
 		case actions.UPDATE_NEXT_AVAILABLE_ADDRESS:
 
-			let previousTransactions = state[action.payload.wallet].transactions;
+			let previousTransactions = state.wallets[action.payload.wallet].transactions;
 			previousTransactions = previousTransactions[action.payload.selectedCrypto];
 			let transactions = action.payload.transactions.concat(previousTransactions);
 
@@ -248,13 +277,13 @@ module.exports = (state = {
 			} catch (e) {}
 
 			//Remove Duplicates From Addresses
-			try { currentAddresses = state[action.payload.wallet].addresses[action.payload.selectedCrypto]; } catch (e) {}
+			try { currentAddresses = state.wallets[action.payload.wallet].addresses[action.payload.selectedCrypto]; } catch (e) {}
 			newAddresses = action.payload.addresses;
 			addresses = currentAddresses.concat(newAddresses);
 			addresses = removeDupsFromArrOfObj(addresses, "address");
 
 			//Remove Duplicated From ChangeAddresses
-			currentChangeAddresses = state[action.payload.wallet].changeAddresses[action.payload.selectedCrypto];
+			currentChangeAddresses = state.wallets[action.payload.wallet].changeAddresses[action.payload.selectedCrypto];
 			newChangeAddresses = action.payload.changeAddresses;
 			changeAddresses = currentChangeAddresses.concat(newChangeAddresses);
 			changeAddresses = removeDupsFromArrOfObj(changeAddresses, "address");
@@ -263,31 +292,34 @@ module.exports = (state = {
 			//transactions = transactions.reduce((x, y) => x.findIndex(e=>e.hash===y.hash)<0 ? [...x, y]: x, []);
 			return {
 				...state,
-				[action.payload.wallet]: {
-					...state[action.payload.wallet],
-					transactions: {
-						...state[action.payload.wallet].transactions,
-						[action.payload.selectedCrypto]: transactions
-					},
-					addressIndex: {
-						...state[action.payload.wallet].addressIndex,
-						[action.payload.selectedCrypto]: action.payload.addressIndex,
-					},
-					changeAddressIndex: {
-						...state[action.payload.wallet].changeAddressIndex,
-						[action.payload.selectedCrypto]: action.payload.changeAddressIndex
-					},
-					addresses: {
-						...state[action.payload.wallet].addresses,
-						[action.payload.selectedCrypto]: addresses
-					},
-					changeAddresses: {
-						...state[action.payload.wallet].changeAddresses,
-						[action.payload.selectedCrypto]: changeAddresses
-					},
-					lastUpdated: {
-						...state[action.payload.wallet].lastUpdated,
-						[action.payload.selectedCrypto]: timestamp
+				wallets: {
+					...state.wallets,
+					[action.payload.wallet]: {
+						...state.wallets[action.payload.wallet],
+						transactions: {
+							...state.wallets[action.payload.wallet].transactions,
+							[action.payload.selectedCrypto]: transactions
+						},
+						addressIndex: {
+							...state.wallets[action.payload.wallet].addressIndex,
+							[action.payload.selectedCrypto]: action.payload.addressIndex,
+						},
+						changeAddressIndex: {
+							...state.wallets[action.payload.wallet].changeAddressIndex,
+							[action.payload.selectedCrypto]: action.payload.changeAddressIndex
+						},
+						addresses: {
+							...state.wallets[action.payload.wallet].addresses,
+							[action.payload.selectedCrypto]: addresses
+						},
+						changeAddresses: {
+							...state.wallets[action.payload.wallet].changeAddresses,
+							[action.payload.selectedCrypto]: changeAddresses
+						},
+						lastUpdated: {
+							...state.wallets[action.payload.wallet].lastUpdated,
+							[action.payload.selectedCrypto]: timestamp
+						}
 					}
 				}
 			};
@@ -311,15 +343,16 @@ module.exports = (state = {
 			};
 
 		case actions.DELETE_WALLET:
-			let wallets = state.wallets;
-			const index = wallets.indexOf(action.payload.wallet);
-			if (index > -1) {
-				wallets.splice(index, 1);
-			}
-			delete state[action.payload.wallet];
-			//Iterate over existing wallets. Only put in wallets that do not match the wallet to be removed
+			const wallets = state.wallets;
+			const walletOrder = state.walletOrder;
+			//Remove wallet id from walletOrder
+			const index = walletOrder.indexOf(action.payload.wallet);
+			if (index > -1) walletOrder.splice(index, 1);
+			//Delete wallet from wallets object
+			delete wallets[action.payload.wallet];
 			return {
 				...state,
+				walletOrder,
 				wallets
 			};
 
@@ -331,14 +364,14 @@ module.exports = (state = {
 				errorMsg: "",
 				network: "mainnet",
 				selectedCrypto: "bitcoin",
-				selectedWallet: "wallet0",
 				selectedCurrency: "usd",
-				wallets: [],
+				selectedWallet: "wallet0",
+				walletOrder: [],
+				wallets: {},
 				selectedTransaction: "",
 				availableCoins,
 				exchangeRate: zeroValueItems,
-				blockHeight: { ...zeroValueItems, timestamp: null },
-				wallet0: defaultWalletShape
+				blockHeight: { ...zeroValueItems, timestamp: null }
 			};
 
 		default:

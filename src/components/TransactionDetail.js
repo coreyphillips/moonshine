@@ -24,6 +24,7 @@ const {
 const {
 	capitalize,
 	openUrl,
+	openTxId,
 	formatNumber,
 	createTransaction,
 	getTransactionSize
@@ -36,7 +37,7 @@ const {
 
 const moment = require("moment");
 
-class TransactionDetail extends PureComponent <Props> {
+class TransactionDetail extends PureComponent {
 	
 	constructor(props){
 		super(props);
@@ -60,10 +61,11 @@ class TransactionDetail extends PureComponent <Props> {
 		InteractionManager.runAfterInteractions(() => {
 			try {
 				const {selectedWallet, selectedCrypto} = this.props.wallet;
-				const rbfIsSupported = this.canRbf({rbfData: this.props.wallet[selectedWallet].rbfData[selectedCrypto]});
+				const wallet = this.props.wallet.wallets[selectedWallet];
+				const rbfIsSupported = this.canRbf({rbfData: wallet.rbfData[selectedCrypto]});
 				if (!rbfIsSupported) return;
 				const {hash} = this.props.wallet.selectedTransaction;
-				const {transactionFee} = this.props.wallet[selectedWallet].rbfData[selectedCrypto][hash];
+				const {transactionFee} = wallet.rbfData[selectedCrypto][hash];
 				this.setState({initialFee: transactionFee, rbfValue: transactionFee + 1, rbfIsSupported});
 			} catch (e) {}
 		});
@@ -89,7 +91,8 @@ class TransactionDetail extends PureComponent <Props> {
 	RbfRow = () => {
 		try {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			const nextAvailableAddress = this.props.wallet[selectedWallet].addresses[selectedCrypto][this.props.wallet[selectedWallet].addressIndex[selectedCrypto]].address;
+			const addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
+			const nextAvailableAddress = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto][addressIndex].address;
 			return (
 				<View style={{ marginTop: 20, alignItems: "center", justifyContent: "center" }}>
 					<Text style={[styles.text, { textAlign: "center" }]}>Transaction taking too long?</Text>
@@ -115,17 +118,6 @@ class TransactionDetail extends PureComponent <Props> {
 				</View>
 			);
 		} catch (e) {}
-	};
-	
-	openTxId = (txid): void => {
-		let url = "";
-		const selectedCrypto = this.props.wallet.selectedCrypto;
-		if (selectedCrypto === "bitcoin") url = `https://blockstream.info/tx/${txid}`;
-		if (selectedCrypto === "bitcoinTestnet") url = `https://blockstream.info/testnet/tx/${txid}`;
-		if (selectedCrypto === "litecoin") url = `https://chain.so/tx/LTC/${txid}`;
-		if (selectedCrypto === "litecoinTestnet") url = `https://chain.so/tx/LTCTEST/${txid}`;
-		if (selectedCrypto === "vertcoin") url = `https://insight.vertcoin.org/tx/${txid}`;
-		openUrl(url);
 	};
 	
 	openBlock = (block): void => {
@@ -179,16 +171,17 @@ class TransactionDetail extends PureComponent <Props> {
 		const cryptoUnit = this.props.settings.cryptoUnit;
 		const selectedCrypto = this.props.wallet.selectedCrypto;
 		const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
+		const fiatSymbol = this.props.settings.fiatSymbol;
 		amount = Number(amount);
 		const crypto = cryptoUnit === "satoshi" ? amount : bitcoinUnits(amount, "satoshi").to(cryptoUnit).value();
 		bitcoinUnits.setFiat("usd", exchangeRate);
 		let fiat = bitcoinUnits(amount, "satoshi").to("usd").value().toFixed(2);
-		fiat = amount < 0 ? `-$${formatNumber(Math.abs(fiat).toFixed(2))}` : `$${formatNumber(fiat)}`;
+		fiat = amount < 0 ? `-${fiatSymbol}${formatNumber(Math.abs(fiat).toFixed(2))}` : `${fiatSymbol}${formatNumber(fiat)}`;
 		//If rbfIsSupported include the initialFee provided by the rbfData for the transaction
 		if (this.state.rbfIsSupported && displayFeePerByte) {
 			const initialFee = this.state.initialFee;
-			const cryptoAcronym = getCoinData({selectedCrypto, cryptoUnit}).acronym;
-			return `${fiat}\n${formatNumber(crypto)} ${getCoinData({ selectedCrypto, cryptoUnit }).acronym}\n${initialFee} ${cryptoAcronym}/byte`;
+			const { acronym, oshi } = getCoinData({selectedCrypto, cryptoUnit});
+			return `${fiat}\n${formatNumber(crypto)} ${acronym}\n${initialFee} ${oshi}/byte`;
 		}
 		return `${fiat}\n${formatNumber(crypto)} ${getCoinData({ selectedCrypto, cryptoUnit }).acronym}`;
 	};
@@ -198,9 +191,9 @@ class TransactionDetail extends PureComponent <Props> {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
 			rbfValue = rbfValue ? rbfValue : this.state.rbfValue;
 			const hash = this.props.wallet.selectedTransaction.hash;
-			const rbfData = this.props.wallet[selectedWallet].rbfData[selectedCrypto][hash];
+			const rbfData = this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto][hash];
 			const transactionSize = getTransactionSize(rbfData.utxos.length, !rbfData.changeAddress ? 1 : 2);
-			const currentBalance = Number(this.props.wallet[selectedWallet].confirmedBalance[selectedCrypto]);
+			const currentBalance = Number(this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto]);
 			
 			//Get original fee total
 			const initialFeePerByte = rbfData.transactionFee;
@@ -221,8 +214,8 @@ class TransactionDetail extends PureComponent <Props> {
 			const { hash } = this.props.wallet.selectedTransaction;
 			const cryptoUnit = this.props.settings.cryptoUnit;
 			const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
-			const cryptoAcronym = getCoinData({selectedCrypto, cryptoUnit}).acronym;
-			const rbfData = this.props.wallet[selectedWallet].rbfData[selectedCrypto][hash];
+			const rbfData = this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto][hash];
+			const fiatSymbol = this.props.settings.fiatSymbol;
 			
 			const transactionSize = getTransactionSize(rbfData.utxos.length, !rbfData.changeAddress ? 1 : 2);
 			
@@ -239,9 +232,9 @@ class TransactionDetail extends PureComponent <Props> {
 			const crypto = cryptoUnit === "satoshi" ? totalFee : bitcoinUnits(totalFee, "satoshi").to(cryptoUnit).value();
 			bitcoinUnits.setFiat("usd", exchangeRate);
 			let fiat = bitcoinUnits(totalFee, "satoshi").to("usd").value().toFixed(2);
-			fiat = totalFee < 0 ? `-$${formatNumber(Math.abs(fiat).toFixed(2))}` : `$${formatNumber(fiat)}`;
-			
-			return `+${fiat}\n+${formatNumber(crypto)} ${getCoinData({ selectedCrypto, cryptoUnit }).acronym}\n+${rbfValue} ${cryptoAcronym}/byte`;
+			fiat = totalFee < 0 ? `-${fiatSymbol}${formatNumber(Math.abs(fiat).toFixed(2))}` : `${fiatSymbol}${formatNumber(fiat)}`;
+			const { acronym, oshi } = getCoinData({selectedCrypto, cryptoUnit});
+			return `+${fiat}\n+${formatNumber(crypto)} ${acronym}\n+${rbfValue} ${oshi}/byte`;
 		} catch (e) {}
 	};
 	
@@ -284,33 +277,17 @@ class TransactionDetail extends PureComponent <Props> {
 		try {
 			const transaction = this.props.wallet.selectedTransaction.hash;
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto];
-			const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
+			const utxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto];
+			const blacklistedUtxos = this.props.wallet.wallets[selectedWallet].blacklistedUtxos[selectedCrypto];
 			await this.props.toggleUtxoBlacklist({ transaction, selectedWallet, selectedCrypto });
 			await this.props.updateBalance({ utxos, blacklistedUtxos, selectedCrypto, wallet: selectedWallet });
 		} catch (e) {}
 	};
 	
-	/*
-	getBlacklistValue = () => {
-		try {
-			const { selectedCrypto, selectedWallet } = this.props.wallet;
-			const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
-			let transacationHash = "";
-			try { transacationHash = this.props.wallet.selectedTransaction.hash; } catch (e) {}
-			const result = blacklistedUtxos.includes(transacationHash);
-			return result ? "Whitelist UTXO" : "Blacklist UTXO";
-		} catch (e) {
-			console.log(e);
-			return "Blacklist UTXO";
-		}
-	};
-	 */
-	
 	isBlacklisted = (): boolean => {
 		try {
 			const { selectedCrypto, selectedWallet } = this.props.wallet;
-			const blacklistedUtxos = this.props.wallet[selectedWallet].blacklistedUtxos[selectedCrypto];
+			const blacklistedUtxos = this.props.wallet.wallets[selectedWallet].blacklistedUtxos[selectedCrypto];
 			let transacationHash = "";
 			try { transacationHash = this.props.wallet.selectedTransaction.hash; } catch (e) {}
 			return blacklistedUtxos.includes(transacationHash);
@@ -323,7 +300,7 @@ class TransactionDetail extends PureComponent <Props> {
 	isActiveUtxo = (): boolean => {
 		try {
 			const { selectedCrypto, selectedWallet } = this.props.wallet;
-			const utxos = this.props.wallet[selectedWallet].utxos[selectedCrypto];
+			const utxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto];
 			let transactionHash = "";
 			try { transactionHash = this.props.wallet.selectedTransaction.hash; } catch (e) {}
 			let txHashes = utxos.map((utxo) => utxo.tx_hash);
@@ -351,7 +328,7 @@ class TransactionDetail extends PureComponent <Props> {
 			if (!this.canAffordRbf()) return false;
 			
 			//Ensure the app has stored the necessary data to perform the RBF.
-			let rbfData = this.props.wallet[selectedWallet].rbfData[selectedCrypto];
+			let rbfData = this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto];
 			const hash = this.props.wallet.selectedTransaction.hash;
 			return !!rbfData[hash];
 		} catch (e) {
@@ -417,7 +394,7 @@ class TransactionDetail extends PureComponent <Props> {
 				const {selectedWallet, selectedCrypto} = this.props.wallet;
 				const transactionFee = this.state.rbfValue;
 				const hash = this.props.wallet.selectedTransaction.hash;
-				let rbfData = this.props.wallet[selectedWallet].rbfData[selectedCrypto];
+				let rbfData = this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto];
 				
 				//User appears to be cancelling/re-routing the transaction so add the new "send to" address.
 				if (address) rbfData[hash]["address"] = address;
@@ -446,12 +423,14 @@ class TransactionDetail extends PureComponent <Props> {
 					if (address) try {if (rbfData[newRbfData.hash]) delete rbfData[newRbfData.hash];} catch (e) {}
 					
 					await this.props.updateWallet({
-						...this.props.wallet,
-						[selectedWallet]: {
-							...this.props.wallet[selectedWallet],
-							rbfData: {
-								...this.props.wallet[selectedWallet].rbfData,
-								[selectedCrypto]: rbfData
+						wallets: {
+							...this.props.wallet.wallets,
+							[selectedWallet]: {
+								...this.props.wallet.wallets[selectedWallet],
+								rbfData: {
+									...this.props.wallet.wallets[selectedWallet].rbfData,
+									[selectedCrypto]: rbfData
+								}
 							}
 						}
 					});
@@ -543,7 +522,7 @@ class TransactionDetail extends PureComponent <Props> {
 						{type === "received" && this.Row({ title: "Received By\nAddress:", onPress: () => this.openAddress(address), value: address, valueStyle: { textDecorationLine: "underline" } })}
 						{type === "received" && <View style={styles.separator} />}
 						
-						{this.Row({ title: "TxId:", value: hash, onPress: () => this.openTxId(hash), valueStyle: { textDecorationLine: "underline" } })}
+						{this.Row({ title: "TxId:", value: hash, onPress: () => openTxId(hash, selectedCrypto), valueStyle: { textDecorationLine: "underline" } })}
 						<View style={styles.separator} />
 						
 						{this.isActiveUtxo() &&

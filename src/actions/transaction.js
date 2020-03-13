@@ -9,8 +9,6 @@ const {
 	walletHelpers
 } = require("../utils/walletApi");
 const moment = require("moment");
-//const coinSelect = require("coinselect");
-//import * as electrum from "../utils/electrum";
 
 export const updateTransaction = (payload) => ({
 	type: actions.UPDATE_TRANSACTION,
@@ -27,7 +25,7 @@ TODO:
 Recommended fees are always grossly overestimated.
 Until this is resolved, getRecommendedFee divides that estimation by 4.
  */
-export const getRecommendedFee = ({ coin = "bitcoin", transactionSize = 256 } = {}) => (dispatch: any) => {
+export const getRecommendedFee = ({ coin = "bitcoin", transactionSize = 256 } = {}) => (dispatch) => {
 	const DIVIDE_RECOMMENDED_FEE_BY = 4;
 	const MAX_FEE_MULTIPLIER = 4;
 	return new Promise(async (resolve) => {
@@ -60,6 +58,7 @@ export const getRecommendedFee = ({ coin = "bitcoin", transactionSize = 256 } = 
 			console.log(e);
 			failure();
 		}
+		if (recommendedFee < 1) recommendedFee = 1;
 		const feeTimestamp = moment().format();
 		const data = {
 			recommendedFee,
@@ -137,7 +136,7 @@ export const sendTransactions = ({ transaction = {}, selectedCrypto = "", select
 };
 */
 
-export const sendTransaction = ({ txHex = "", selectedCrypto = "bitcoin", sendTransactionFallback = true } = {}) => (dispatch: any) => {
+export const sendTransaction = ({ txHex = "", selectedCrypto = "bitcoin", sendTransactionFallback = true } = {}) => (dispatch) => {
 	return new Promise(async (resolve) => {
 		const failure = (data = "") => {
 			resolve({ error: true, data });

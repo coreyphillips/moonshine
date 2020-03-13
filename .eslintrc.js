@@ -10,7 +10,8 @@ module.exports = {
 	"plugins": [
 		"react",
 		"react-native",
-		"jsx-a11y"
+		"jsx-a11y",
+		"react-hooks"
 	],
 	"parserOptions": {
 		"ecmaFeatures": {
@@ -23,20 +24,22 @@ module.exports = {
 		"plugin:react/recommended"
 	],
 	"rules": {
+		"react-hooks/rules-of-hooks": "error",
+		"react-hooks/exhaustive-deps": "warn",
 		"no-console": 0,
-		"no-empty": ["error", { "allowEmptyCatch": true }],
+		"no-empty": ["error", {"allowEmptyCatch": true}],
 		"no-buffer-constructor": 0,
 		"no-case-declarations": 0,
 		"no-useless-escape": 0,
 		"semi": 2,
-		"react/jsx-no-duplicate-props": [2, { "ignoreCase": true }],
+		"react/jsx-no-duplicate-props": [2, {"ignoreCase": true}],
 		"react-native/no-unused-styles": 1,
 		"react-native/no-raw-text": 2,
 		"react/jsx-equals-spacing": [2, "never"],
-		"react/no-unsafe": [2, { "checkAliases": true }],
+		"react/no-unsafe": [2, {"checkAliases": true}],
 		"react/jsx-curly-spacing": [2, {
 			"when": "never",
-			"attributes": { "allowMultiline": true },
+			"attributes": {"allowMultiline": true},
 			"children": true,
 			"spacing": {
 				"objectLiterals": "never",
@@ -58,7 +61,9 @@ module.exports = {
 		"react/no-unused-prop-types": 2,
 		"react/prop-types": 0,
 		"no-undef": 0,
-		"react/display-name": 0
+		"react/display-name": 0,
+		"require-atomic-updates": 0,
+		"no-async-promise-executor": 0
 	},
 	"globals": {
 		"fetch": false
