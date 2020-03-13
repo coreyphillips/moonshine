@@ -67,6 +67,7 @@
     "redux-persist": "^6.0.0",
     "redux-thunk": "^2.3.0",
     "stream-browserify": "^1.0.0",
+    "styled-components": "^5.0.1",
     "url-parse": "^1.4.7",
     "uuid": "^3.3.3",
     "vm-browserify": "0.0.4"
