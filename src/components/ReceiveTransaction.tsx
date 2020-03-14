@@ -81,9 +81,9 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", selectedCurrency = "u
 	
 	let shareTitle = "My Address.";
 	if (hasRequestedAmount()){
-		try {shareTitle = `My ${capitalize(selectedCrypto)} Address.`;} catch(e) {}
-	} else {
 		try {shareTitle = `Please send ${requestedAmount} ${acronym} to my ${capitalize(selectedCrypto)} address.`;} catch(e) {}
+	} else {
+		try {shareTitle = `My ${capitalize(selectedCrypto)} Address.`;} catch(e) {}
 	}
 	
 	//Toggle the request modal
