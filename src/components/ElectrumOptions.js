@@ -88,7 +88,7 @@ class ElectrumInput extends PureComponent {
 						/>
 					</TouchableOpacity>
 					<TouchableOpacity onPress={() => this.updateProtocol("ssl")} style={{ flexDirection: "row" }}>
-						<Text style={styles.textInputTitle}>SSL: </Text>
+						<Text style={styles.textInputTitle}>TLS: </Text>
 						<MaterialCommunityIcons
 							name={protocol === "ssl" ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
 							size={20}
