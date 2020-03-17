@@ -6,7 +6,8 @@ export const themes = {
 		background: "#FFF",
 		card: "#FFF",
 		text: "#631e9a", //colors.purple
-		PRIMARY_DARK: "#57158f" //colors.darkPurple
+		PRIMARY_DARK: "#57158f", //colors.darkPurple
+		white: "#FFF"
 	},
 	dark: {
 		mode: "dark",
@@ -16,5 +17,6 @@ export const themes = {
 		card: "#585664",
 		text: "#f5f5f5",
 		PRIMARY_DARK: "#2f2d3a",
+		white: "#f5f5f5"
 	},
 };

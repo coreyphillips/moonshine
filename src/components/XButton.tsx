@@ -1,18 +1,11 @@
 import React, { memo } from "react";
 import {
 	StyleSheet,
-	Text,
-	TouchableOpacity,
-	View
+	TouchableOpacity
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
-
-const {
-	Constants: {
-		colors
-	}
-} = require("../../ProjectData.json");
+import {Text, XButton as View} from "../styles/components";
 
 interface XButtonComponent {
 	onPress: Function,
@@ -24,7 +17,7 @@ const _XButton = ({ onPress = () => null, size = 42, style = {} }: XButtonCompon
 	return (
 		<TouchableOpacity onPress={_onPress} style={[styles.container, { height: size, width: size, ...style }]}>
 			<View style={[styles.circle, { height: size, width: size }]}>
-				<Text style={styles.text}>X</Text>
+				<Text type="text" style={styles.text}>X</Text>
 			</View>
 		</TouchableOpacity>
 	);
@@ -44,16 +37,12 @@ const styles = StyleSheet.create({
 		borderRadius: 100
 	},
 	circle: {
-		backgroundColor: colors.white,
 		alignItems: "center",
 		justifyContent: "center",
-		borderRadius: 100,
-		borderWidth: 3,
-		borderColor: colors.purple
+		borderRadius: 100
 	},
 	text: {
 		...systemWeights.regular,
-		color: colors.purple,
 		fontSize: 18,
 		textAlign: "center"
 	}
