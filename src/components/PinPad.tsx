@@ -1,5 +1,4 @@
 import React, { useState, useEffect, memo } from "react";
-import EvilIcons from "react-native-vector-icons/EvilIcons";
 import PropTypes from "prop-types";
 import {
 	StyleSheet,
@@ -8,13 +7,8 @@ import {
 	Platform
 } from "react-native";
 import { systemWeights } from "react-native-typography";
-import { Text, TouchableOpacity } from "../styles/components";
+import { Text, TouchableOpacity, EvilIcon } from "../styles/components";
 
-const {
-	Constants: {
-		colors
-	}
-} = require("../../ProjectData.json");
 const {
 	setKeychainValue,
 	getKeychainValue,
@@ -268,7 +262,7 @@ const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice 
 				</TouchableOpacity>
 				<PinPadButton onPress={()=> handlePress(digits[9])} num={digits[9]} />
 				<TouchableOpacity onPress={handleRemove} activeOpacity={ACTIVE_OPACITY} style={[styles.buttonContainer, { borderWidth: 0 }]}>
-					<EvilIcons name={"chevron-left"} size={55} color={colors.white} />
+					<EvilIcon type="white" style={{ top: 8 }} name={"chevron-left"} size={55} />
 				</TouchableOpacity>
 			</View>
 
