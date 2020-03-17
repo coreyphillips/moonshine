@@ -3,13 +3,12 @@ import EvilIcons from "react-native-vector-icons/EvilIcons";
 import PropTypes from "prop-types";
 import {
 	StyleSheet,
-	Text,
 	View,
-	TouchableOpacity,
 	LayoutAnimation,
 	Platform
 } from "react-native";
 import { systemWeights } from "react-native-typography";
+import { Text, TouchableOpacity } from "../styles/components";
 
 const {
 	Constants: {
@@ -47,9 +46,7 @@ interface PinComponent {
 const PinPadButton = ({ num, onPress }: { num: number, onPress: Function }) => {
 	return (
 		<TouchableOpacity onPress={onPress} activeOpacity={ACTIVE_OPACITY} style={styles.buttonContainer}>
-			<Text
-				style={styles.button}
-			>
+			<Text type="white" style={styles.button}>
 				{num}
 			</Text>
 		</TouchableOpacity>
@@ -204,11 +201,11 @@ const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice 
 					return (
 						<View style={{alignItems: "center", justifyContent: "center"}}>
 							{invalidPin &&
-							<Text style={styles.text}>
+							<Text type="white" style={styles.text}>
 								Pins Did Not Match
 							</Text>
 							}
-							<Text style={[styles.text, { fontSize: 24 }]}>
+							<Text type="white" style={[styles.text, { fontSize: 24 }]}>
 								Please Enter Your Pin
 							</Text>
 						</View>
@@ -216,7 +213,7 @@ const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice 
 				} else {
 					return (
 						<View style={{ alignItems: "center", justifyContent: "center" }}>
-							<Text style={[styles.text, { fontSize: 24 }]}>
+							<Text type="white" style={[styles.text, { fontSize: 24 }]}>
 								Please Re-Enter Your Pin
 							</Text>
 						</View>
@@ -225,10 +222,10 @@ const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice 
 			}
 			return (
 				<View style={{ alignItems: "center", justifyContent: "center" }}>
-					<Text style={styles.header}>
+					<Text type="white" style={styles.header}>
 						Enter pin:
 					</Text>
-					<Text style={styles.text}>
+					<Text type="white" style={styles.text}>
 						{`Attempts Remaining: ${attemptsRemaining}`}
 					</Text>
 				</View>
@@ -244,7 +241,7 @@ const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice 
 			</View>
 
 			<View style={[styles.row, { paddingHorizontal: 20 }]}>
-				<Text style={styles.dots}>{getDots()}</Text>
+				<Text type="white" style={styles.dots}>{getDots()}</Text>
 			</View>
 
 			<View style={styles.row}>
@@ -267,7 +264,7 @@ const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice 
 
 			<View style={styles.row}>
 				<TouchableOpacity onPress={() => handleClear()} activeOpacity={ACTIVE_OPACITY} style={[styles.buttonContainer, { borderWidth: 0 }]}>
-					<Text style={styles.button}>C</Text>
+					<Text type="white" style={styles.button}>C</Text>
 				</TouchableOpacity>
 				<PinPadButton onPress={()=> handlePress(digits[9])} num={digits[9]} />
 				<TouchableOpacity onPress={handleRemove} activeOpacity={ACTIVE_OPACITY} style={[styles.buttonContainer, { borderWidth: 0 }]}>
@@ -277,7 +274,7 @@ const _Pin = ({ onSuccess = () => null, updateSettings = () => null, wipeDevice 
 
 			<View style={[styles.row, { marginTop: 20 }]}>
 				<TouchableOpacity onPress={handleSubmit} activeOpacity={ACTIVE_OPACITY} style={styles.submitButton}>
-					<Text style={styles.text}>Submit</Text>
+					<Text type="white" style={styles.text}>Submit</Text>
 				</TouchableOpacity>
 			</View>
 		</View>
@@ -305,19 +302,16 @@ const styles = StyleSheet.create({
 	},
 	header: {
 		...systemWeights.light,
-		color: colors.white,
 		fontSize: 35
 	},
 	text: {
 		...systemWeights.regular,
-		color: colors.white,
 		fontSize: 18,
 		textAlign: "center",
 		marginHorizontal: 20
 	},
 	dots: {
 		...systemWeights.bold,
-		color: colors.white,
 		fontSize: 25
 	},
 	buttonContainer: {
@@ -327,7 +321,6 @@ const styles = StyleSheet.create({
 		borderWidth: 1,
 		marginHorizontal: 25,
 		backgroundColor: "transparent",
-		borderColor: colors.white,
 		alignItems:"center",
 		justifyContent:"center"
 	},
@@ -336,7 +329,6 @@ const styles = StyleSheet.create({
 		paddingVertical: 10,
 		paddingHorizontal: 15,
 		borderWidth: 1,
-		borderColor: colors.white,
 		backgroundColor: "transparent"
 	},
 	button: {
@@ -345,7 +337,6 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		textAlign: "center",
-		color: colors.white,
 		opacity: 1
 	},
 	row: {

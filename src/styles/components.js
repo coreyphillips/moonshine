@@ -23,6 +23,7 @@ export const ScrollView = styled.ScrollView`
 
 export const Text = styled.Text`
   color: ${props => props.type ? props.theme[props.type] : props.theme.text};
+  ${props => props.backgroundColor ? `background-color: ${props.theme[props.backgroundColor]}` : null};
 `;
 
 export const TouchableOpacity = styled.TouchableOpacity`
