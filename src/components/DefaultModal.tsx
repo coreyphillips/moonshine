@@ -1,18 +1,11 @@
 import React, { memo } from "react";
 import {
 	StyleSheet,
-	View,
-	ScrollView,
 	Platform
 } from "react-native";
 import PropTypes from "prop-types";
 import Modal from "react-native-modal";
-
-const {
-	Constants: {
-		colors
-	}
-} = require("../../ProjectData.json");
+import { View, ScrollView } from "../styles/components";
 
 interface DefaultModalComponent {
 	isVisible: boolean,
@@ -24,8 +17,6 @@ interface DefaultModalComponent {
 }
 const _DefaultModal = ({ isVisible = false, onClose = () => null, style = {}, contentStyle = {}, type = "ScrollView", children = {} }: DefaultModalComponent) => {
 	
-	//if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
-	
 	return (
 		<Modal
 			isVisible={isVisible}
@@ -33,13 +24,13 @@ const _DefaultModal = ({ isVisible = false, onClose = () => null, style = {}, co
 			backdropOpacity={0.1}
 			propagateSwipe={true}
 		>
-			<View style={[styles.modalContainer, style]}>
+			<View type="background" borderColor="white" style={[styles.modalContainer, style]}>
 				{type === "ScrollView" &&
-				<ScrollView  style={[styles.modalScrollView, { ...contentStyle }]}>
+				<ScrollView type="background" style={[styles.modalScrollView, { ...contentStyle }]}>
 					{children}
 				</ScrollView>}
 				{type !== "ScrollView" &&
-				<View  style={[styles.modalScrollView, { ...contentStyle }]}>
+				<View type="background" style={[styles.modalScrollView, { ...contentStyle }]}>
 					{children}
 				</View>
 				}
@@ -61,14 +52,15 @@ const styles = StyleSheet.create({
 	modalContainer: {
 		alignSelf: "center",
 		width: "100%",
-		height: Platform.OS === "ios" ? "80%" : "84%"
+		height: Platform.OS === "ios" ? "80%" : "84%",
+		borderWidth: 5,
+		borderRadius: 20
 	},
 	modalScrollView: {
 		flex: 1,
 		borderRadius: 16,
 		paddingHorizontal: 10,
-		paddingVertical: 5,
-		backgroundColor: colors.white
+		paddingVertical: 5
 	},
 });
 

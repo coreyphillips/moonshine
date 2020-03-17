@@ -225,7 +225,6 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 			<DefaultModal
 				isVisible={displayAvailableWordlists}
 				onClose={() => setDisplayAvailableWordlists(false)}
-				contentStyle={styles.modalContent}
 			>
 				<FlatList
 					data={Object.keys(availableWordlists)}
@@ -303,11 +302,6 @@ const styles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		bottom: 10
-	},
-	modalContent: {
-		borderWidth: 5,
-		borderRadius: 20,
-		borderColor: colors.lightGray
 	},
 	separator: {
 		width: "100%",

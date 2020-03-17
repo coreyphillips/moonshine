@@ -1,18 +1,13 @@
 import React, {memo} from "react";
-import { StyleSheet, TouchableOpacity, View, Text } from "react-native";
+import { StyleSheet } from "react-native";
 import {systemWeights} from "react-native-typography";
 import PropTypes from "prop-types";
-
-const {
-	Constants: {
-		colors
-	}
-} = require("../../ProjectData.json");
+import { View, TouchableOpacity, Text } from "../styles/components";
 
 const ListItem = ({ id = 0, word = "" } = {}) => {
 	return (
-		<View style={styles.listItem}>
-			<Text style={styles.text}>{id}. {word}</Text>
+		<View type="transparent" style={styles.listItem}>
+			<Text type="text" style={styles.text}>{id}. {word}</Text>
 		</View>
 	);
 };
@@ -31,11 +26,11 @@ const _BackupPhrase = ({ phrase = [{ id: 0, word: "" }], onPress = () => null }:
 	
 	try {
 		return (
-			<TouchableOpacity onPress={onPress} activeOpacity={1} style={styles.container}>
-				<View style={[styles.column, { right: "-10%" }]}>
+			<TouchableOpacity type="background" onPress={onPress} activeOpacity={1} style={styles.container}>
+				<View type="transparent" style={[styles.column, { right: "-10%" }]}>
 					{p1.map(({ id, word }) => <ListItem key={`${id}${word}`} id={id} word={word} />)}
 				</View>
-				<View style={[styles.column, { right: "-5%" }]}>
+				<View type="transparent" style={[styles.column, { right: "-5%" }]}>
 					{p2.map(({ id, word }) => <ListItem key={`${id}${word}`} id={id} word={word} />)}
 				</View>
 			</TouchableOpacity>
@@ -56,7 +51,6 @@ const styles = StyleSheet.create({
 		width: "90%",
 		height: "75%",
 		flexDirection: "row",
-		backgroundColor: colors.white,
 		borderRadius: 15,
 		alignSelf: "center",
 		marginVertical: 20
@@ -66,7 +60,6 @@ const styles = StyleSheet.create({
 	},
 	text: {
 		...systemWeights.semibold,
-		color: colors.purple,
 		fontSize: 18,
 		textAlign: "center",
 		marginVertical: 10

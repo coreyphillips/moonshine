@@ -14,6 +14,11 @@ export const LinearGradient = styled(_LinearGradient).attrs((props) => ({
 
 export const View = styled.View`
   background-color: ${props => props.type ? props.theme[props.type] : props.theme.background};
+  ${props => props.borderColor ? `border-color: ${props.theme[props.borderColor]}` : null};
+`;
+
+export const ScrollView = styled.ScrollView`
+  background-color: ${props => props.type ? props.theme[props.type] : props.theme.background};
 `;
 
 export const Text = styled.Text`

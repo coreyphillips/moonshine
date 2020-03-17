@@ -11,7 +11,8 @@ export const themes = {
 		text: "#631e9a", //colors.purple
 		PRIMARY: "#631e9a", //colors.purple
 		PRIMARY_DARK: "#57158f", //colors.darkPurple
-		white: "#FFF"
+		white: "#FFF",
+		gray: "#efefef" //colors.lightGray
 	},
 	dark: {
 		mode: "dark",
@@ -25,6 +26,7 @@ export const themes = {
 		text: "#f5f5f5",
 		PRIMARY: "#413c69",
 		PRIMARY_DARK: "#2f2d3a",
-		white: "#f5f5f5"
+		white: "#f5f5f5",
+		gray: "#efefef"
 	},
 };

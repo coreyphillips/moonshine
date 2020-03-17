@@ -999,7 +999,6 @@ class SendTransaction extends Component {
 					type="View"
 					isVisible={this.state.displayCoinControlModal}
 					onClose={this.toggleCoinControlModal}
-					contentStyle={styles.modalContent}
 				>
 					<CoinControl
 						selectedCrypto={selectedCrypto}
@@ -1232,11 +1231,6 @@ const styles = StyleSheet.create({
 	buttonContainer: {
 		alignItems: "center",
 		justifyContent: "center"
-	},
-	modalContent: {
-		borderWidth: 5,
-		borderRadius: 20,
-		borderColor: colors.lightGray
 	},
 });
 

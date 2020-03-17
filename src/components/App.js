@@ -2086,7 +2086,6 @@ export default class App extends Component {
 					onClose={this._closeWelcomeModal}
 					type="ScrollView"
 					style={styles.modal}
-					contentStyle={styles.modalContent}
 				>
 					<Welcome onClose={this._closeWelcomeModal} />
 				</DefaultModal>
@@ -2094,8 +2093,6 @@ export default class App extends Component {
 				<DefaultModal
 					isVisible={this.state.displayBackupPhrase}
 					type="ScrollView"
-					style={styles.modal}
-					contentStyle={styles.modalContent}
 				>
 					<View style={{ flex: 1, justifyContent: "center" }}>
 						<BackupPhrase
@@ -2113,7 +2110,6 @@ export default class App extends Component {
 					onClose={this._closeBitidModal}
 					type="View"
 					style={styles.modal}
-					contentStyle={styles.modalContent}
 				>
 					<View style={styles.centerContent}>
 						<Text style={styles.boldText}>Do you want to login to:</Text>
@@ -2267,13 +2263,6 @@ const styles = StyleSheet.create({
 		fontSize: 20,
 		textAlign: "center",
 		backgroundColor: "transparent"
-	},
-	modal: {
-	},
-	modalContent: {
-		borderWidth: 5,
-		borderRadius: 20,
-		borderColor: colors.lightGray
 	},
 	button: {
 		backgroundColor: colors.lightPurple,

@@ -158,7 +158,6 @@ const _SignMessage = (
 			<DefaultModal
 				isVisible={displayAddressModal}
 				onClose={() => setDisplayAddressModal(false)}
-				contentStyle={styles.modalContent}
 			>
 				{addresses.map(({ address, path }, i) => (
 					<TouchableOpacity
@@ -243,11 +242,6 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		backgroundColor: "transparent",
 		fontSize: 16
-	},
-	modalContent: {
-		borderWidth: 5,
-		borderRadius: 20,
-		borderColor: colors.lightGray
 	},
 	pathButton: {
 		borderWidth: 1.5,

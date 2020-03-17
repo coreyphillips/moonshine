@@ -1337,7 +1337,6 @@ class Settings extends PureComponent {
 				<DefaultModal
 					isVisible={this.state.displayGeneralHelp}
 					onClose={() => this.setState({ displayGeneralHelp: false })}
-					contentStyle={styles.modalContent}
 				>
 					{this.props.settings.biometricsIsSupported &&
 					<View style={styles.helpRow}>
@@ -1356,7 +1355,6 @@ class Settings extends PureComponent {
 				<DefaultModal
 					isVisible={this.state.displayWalletHelp}
 					onClose={() => this.setState({ displayWalletHelp: false })}
-					contentStyle={styles.modalContent}
 				>
 					{walletHelpItems.map(({ title, text }) => (
 						<View key={title} style={styles.helpRow}>
@@ -1370,7 +1368,6 @@ class Settings extends PureComponent {
 				<DefaultModal
 					isVisible={this.state.displayFiatModal}
 					onClose={() => this.toggleFiatModal({ display: false })}
-					contentStyle={styles.modalContent}
 				>
 					<FlatList
 						data={Object.keys(currencies)}
@@ -1517,11 +1514,6 @@ const styles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		bottom: 10
-	},
-	modalContent: {
-		borderWidth: 5,
-		borderRadius: 20,
-		borderColor: colors.lightGray
 	},
 	textInput: {
 		flex: 1,

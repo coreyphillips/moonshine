@@ -85,7 +85,7 @@ const _ShareButtons = (
 	
 	return (
 		<View type="transparent">
-			<View type="card2" style={[styles.textContainer, textContainerStyle ]}>
+			<View type="card2" borderColor="text" style={[styles.textContainer, textContainerStyle ]}>
 				<Text type="text" style={styles.text}>{text}</Text>
 				<Animated.View style={[styles.copiedContainer, textContainerStyle, {opacity: textOpacity}]}>
 					<CopiedLinearGradient style={[textContainerStyle, { flex: 1, borderRadius: 5 }]} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
@@ -121,7 +121,8 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		marginTop: 10,
-		padding: 10
+		padding: 10,
+		borderWidth: 1
 	},
 	text: {
 		...systemWeights.light,
@@ -130,12 +131,11 @@ const styles = StyleSheet.create({
 	},
 	copiedContainer: {
 		flex: 1,
-		borderRadius: 4,
 		position: "absolute",
-		left: 0,
-		top: 0,
-		bottom: 0,
-		right: 0
+		left: -2,
+		top: -2,
+		bottom: -2,
+		right: -2
 	},
 	copied: {
 		flex: 1,
