@@ -144,11 +144,7 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", selectedCurrency = "u
 	return (
 		<View style={styles.container}>
 			<View style={styles.qrCodeContainer}>
-				<QRCode
-					value={uri}
-					size={size}
-					backgroundColor={colors.white}
-				/>
+				<QRCode value={uri} size={size} />
 			</View>
 			<ShareButtons
 				text={address}

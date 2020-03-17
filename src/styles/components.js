@@ -31,7 +31,8 @@ export const XButton = styled.View`
 `;
 
 export const QRCode = styled(_QRCode).attrs((props) => ({
-	color: props.theme.PRIMARY
+	color: props.theme.PRIMARY,
+	backgroundColor: props.theme.white
 }))`
 `;
 
