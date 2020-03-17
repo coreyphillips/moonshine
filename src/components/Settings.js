@@ -419,6 +419,15 @@ class Settings extends PureComponent {
 		}
 	};
 	
+	toggleTheme = async () => {
+		try {
+			this.props.forceAppUpdate();
+			this.props.updateSettings({darkMode: !this.props.settings.darkMode});
+		} catch (e) {
+			this.props.updateSettings({ darkMode: true });
+		}
+	};
+	
 	togglePin = async () => {
 		try {
 			if (this.props.settings.pin) {
@@ -1015,6 +1024,12 @@ class Settings extends PureComponent {
 		try {return currencies[this.props.wallet.selectedCurrency].name;} catch (e) {return "usd";}
 	};
 	
+	isDarkMode = () => {
+		try {
+			return this.props.settings["darkMode"];
+		} catch (e) {return false;}
+	};
+	
 	render() {
 		const { selectedWallet, selectedCrypto } = this.props.wallet;
 		const coinTypePath = defaultWalletShape.coinTypePath[selectedCrypto];
@@ -1048,6 +1063,7 @@ class Settings extends PureComponent {
 							{this.props.settings.biometricsIsSupported &&
 								<SettingSwitch setting="biometrics" value={this.props.settings["biometrics"]} title={`Enable ${this.props.settings.biometricTypeSupported}`} onPress={() => this.toggleSetting("biometrics")} />
 							}
+							<SettingSwitch setting="theme" value={this.isDarkMode()} title="Dark Mode" onPress={this.toggleTheme} />
 							<SettingSwitch setting="pin" value={this.props.settings["pin"]} title="Enable Pin" onPress={this.togglePin} />
 							<SettingSwitch setting="testnet" value={this.props.settings["testnet"]} title="Enable Testnet" onPress={this.toggleTestnet} />
 							<SettingSwitch setting="rbf" value={this.props.settings["rbf"]} title="Enable RBF" onPress={this.toggleRBF} />

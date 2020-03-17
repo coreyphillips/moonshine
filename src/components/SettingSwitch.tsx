@@ -1,8 +1,8 @@
 import React, { memo } from "react";
-import {Switch, Text, TouchableOpacity, View, StyleSheet} from "react-native";
+import {Switch, TouchableOpacity, StyleSheet} from "react-native";
 import {systemWeights} from "react-native-typography";
 import PropTypes from "prop-types";
-
+import { View, Text } from "../styles/components";
 const {
 	Constants: {
 		colors
@@ -21,9 +21,9 @@ const _SettingSwitch = ({ title = "", value = false, onPress = () => null, col1S
 	try {
 		return (
 			<TouchableOpacity onPress={() => onPress(value)} activeOpacity={1} style={styles.rowContainer}>
-				<View style={styles.row}>
-					<View style={[styles.col1, col1Style]}>
-						<Text style={[styles.title, titleStyle]}>{title}</Text>
+				<View type="card" style={styles.row}>
+					<View type="transparent" style={[styles.col1, col1Style]}>
+						<Text type="text" style={[styles.title, titleStyle]}>{title}</Text>
 					</View>
 					<TouchableOpacity onPress={() => onPress(value)} style={[styles.col2 , col2Style]}>
 						<Switch
@@ -63,7 +63,6 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
-		backgroundColor: colors.white,
 		borderRadius: 11.5,
 		width: "80%",
 		minHeight: 80,
@@ -81,7 +80,6 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		...systemWeights.regular,
-		color: colors.purple,
 		fontSize: 20,
 		textAlign: "left"
 	},

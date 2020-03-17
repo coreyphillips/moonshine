@@ -48,6 +48,7 @@ module.exports = (state = {
 		message: "",
 		signature: ""
 	},
+	darkMode: false,
 	version: ""
 }, action) => {
 	switch (action.type) {

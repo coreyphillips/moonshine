@@ -40,9 +40,7 @@ const Root = () => {
 				onBeforeLift={null}
 				persistor={persistor}
 			>
-				<SafeAreaView style={styles.container}>
-					<App />
-				</SafeAreaView>
+				<App />
 			</PersistGate>
 		</Provider>
 	);
@@ -50,9 +48,3 @@ const Root = () => {
 
 module.exports = Root;
 
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: colors.darkPurple
-	}
-});

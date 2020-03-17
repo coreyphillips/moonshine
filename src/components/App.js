@@ -20,11 +20,14 @@ import {
 	Easing,
 	Linking
 } from "react-native";
+import { ThemeProvider } from "styled-components/native";
+import { LinearGradient } from "../styles/components";
+import { themes } from "../styles/themes";
+
 import SplashScreen from "react-native-splash-screen";
 import {systemWeights} from "react-native-typography";
 import EvilIcon from "react-native-vector-icons/EvilIcons";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import LinearGradient from "react-native-linear-gradient";
 import TouchID from "react-native-touch-id";
 import "../../shim";
 
@@ -1830,17 +1833,26 @@ export default class App extends Component {
 		} catch (e) {return "";}
 	};
 	
+	forceAppUpdate = () => this.forceUpdate();
+	
+	getTheme = () => {
+		try {
+			return this.props.settings.darkMode ? themes["dark"] : themes["light"];
+		} catch (e) {
+			return themes["light"];
+		}
+	};
+	
 	render() {
 		//return <ElectrumTesting />;
+		//TODO: Remove nested SafeAreaView. Note: Removing it affects XButton position along with a few other items.
 		return (
+			<ThemeProvider theme={this.getTheme()}>
+			<SafeAreaView style={[styles.container, { backgroundColor: this.getTheme().PRIMARY_DARK }]}>
 			<SafeAreaView style={styles.container}>
-				<StatusBar backgroundColor={colors.darkPurple} barStyle="light-content" animated={true} />
+				<StatusBar backgroundColor={this.getTheme().PRIMARY_DARK} barStyle="light-content" animated={true} />
 				<Animated.View style={[styles.upperContent, {flex: this.state.upperContentFlex}]}>
-					<LinearGradient
-						style={styles.linearGradient}
-						colors={["#8e45bf", "#7931ab", "#5e1993", "#59158e"]}
-						start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}
-					>
+					<LinearGradient style={styles.linearGradient} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
 						
 						<TouchableWithoutFeedback style={{flex: 1}} activeOpacity={1} onPress={this.dismissKeyboard}>
 							<View style={{flex: 1}}>
@@ -1903,6 +1915,7 @@ export default class App extends Component {
 										refreshWallet={this.refreshWallet}
 										onSendPress={this.onSendPress}
 										setExchangeRate={this.setExchangeRate}
+										forceAppUpdate={this.forceAppUpdate}
 									/>
 								</Animated.View>}
 								
@@ -2114,6 +2127,8 @@ export default class App extends Component {
 				</DefaultModal>
 				
 			</SafeAreaView>
+			</SafeAreaView>
+			</ThemeProvider>
 		);
 	}
 }

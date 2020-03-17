@@ -7,3 +7,11 @@ export const LinearGradient = styled(_LinearGradient).attrs((props) => ({
 }))`
   flex: 1
 `;
+
+export const View = styled.View`
+  background-color: ${props => props.type ? props.theme[props.type] : props.theme.background};
+`;
+
+export const Text = styled.Text`
+  color: ${props => props.type ? props.theme[props.type] : props.theme.text};
+`;
