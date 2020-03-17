@@ -8,13 +8,13 @@ import {
 	TouchableOpacity
 } from "react-native";
 import PropTypes from "prop-types";
-import QRCode from 'react-native-qrcode-svg';
 import ShareButtons from "./ShareButtons";
 import DefaultModal from "./DefaultModal";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import {systemWeights} from "react-native-typography";
 import bitcoinUnits from "bitcoin-units";
 import NumPad from "./NumPad";
+import { QRCode } from "../styles/components";
 const {
 	Constants: {
 		colors,
@@ -148,7 +148,6 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", selectedCurrency = "u
 					value={uri}
 					size={size}
 					backgroundColor={colors.white}
-					color={colors.purple}
 				/>
 			</View>
 			<ShareButtons

@@ -1,16 +1,14 @@
 import React, { useState, memo } from "react";
 import {
 	StyleSheet,
-	Text,
-	View,
 	Animated,
 	Clipboard, Share,
 	Easing
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
-import LinearGradient from "react-native-linear-gradient";
 import Button from "./Button";
+import { Text, View, CopiedLinearGradient } from "../styles/components";
 const {
 	Constants: {
 		colors
@@ -86,15 +84,15 @@ const _ShareButtons = (
 	};
 	
 	return (
-		<View>
-			<View style={[styles.textContainer, textContainerStyle ]}>
-				<Text style={styles.text}>{text}</Text>
+		<View type="transparent">
+			<View type="card2" style={[styles.textContainer, textContainerStyle ]}>
+				<Text type="text" style={styles.text}>{text}</Text>
 				<Animated.View style={[styles.copiedContainer, textContainerStyle, {opacity: textOpacity}]}>
-					<LinearGradient style={[textContainerStyle, { flex: 1 }]} colors={[ "#6c2c9e", "#68299a", "#662798", "#632596", "#5e2191"]} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
-						<View style={styles.copied}>
+					<CopiedLinearGradient style={[textContainerStyle, { flex: 1, borderRadius: 5 }]} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
+						<View type="transparent" style={styles.copied}>
 							<Text style={styles.copiedText}>{onCopySuccessText}</Text>
 						</View>
-					</LinearGradient>
+					</CopiedLinearGradient>
 				</Animated.View>
 			
 			</View>
@@ -119,9 +117,7 @@ _ShareButtons.propTypes = {
 
 const styles = StyleSheet.create({
 	textContainer: {
-		borderColor: colors.purple,
 		borderRadius: 5,
-		backgroundColor: colors.white,
 		alignItems: "center",
 		justifyContent: "center",
 		marginTop: 10,
@@ -129,13 +125,11 @@ const styles = StyleSheet.create({
 	},
 	text: {
 		...systemWeights.light,
-		color: colors.darkPurple,
 		fontSize: 15,
 		textAlign: "center"
 	},
 	copiedContainer: {
 		flex: 1,
-		backgroundColor: colors.purple,
 		borderRadius: 4,
 		position: "absolute",
 		left: 0,

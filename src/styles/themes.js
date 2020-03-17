@@ -5,7 +5,9 @@ export const themes = {
 		transparent: "transparent",
 		background: "#FFF",
 		card: "#FFF",
+		card2: "#FFF",
 		text: "#631e9a", //colors.purple
+		PRIMARY: "#631e9a", //colors.purple
 		PRIMARY_DARK: "#57158f", //colors.darkPurple
 		white: "#FFF"
 	},
@@ -15,7 +17,9 @@ export const themes = {
 		transparent: "transparent",
 		background: "#302e43",
 		card: "#585664",
+		card2: "transparent",
 		text: "#f5f5f5",
+		PRIMARY: "#413c69",
 		PRIMARY_DARK: "#2f2d3a",
 		white: "#f5f5f5"
 	},
