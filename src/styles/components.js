@@ -2,7 +2,7 @@ import styled from "styled-components";
 import {themes} from "./themes";
 import _LinearGradient from "react-native-linear-gradient";
 import _QRCode from 'react-native-qrcode-svg';
-
+import _EvilIcon from "react-native-vector-icons/EvilIcons";
 /**********************
 General styles
  **********************/
@@ -20,6 +20,22 @@ export const Text = styled.Text`
   color: ${props => props.type ? props.theme[props.type] : props.theme.text};
 `;
 
+export const TouchableOpacity = styled.TouchableOpacity`
+  background-color: ${props => props.type ? props.theme[props.type] : props.theme.text};
+  border-color: ${props => props.theme.white}
+`;
+
+export const TouchableHighlight = styled.TouchableHighlight`
+  background-color: ${props => props.type ? props.theme[props.type] : props.theme.text};
+  border-color: ${props => props.theme.white};
+  border-width: 1px
+`;
+
+export const EvilIcon = styled(_EvilIcon).attrs((props) => ({
+	color: props.type ? props.theme[props.type] : props.theme.text
+}))`
+  flex: 1
+`;
 
 /**********************
 Component-specific styles

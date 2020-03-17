@@ -1,16 +1,17 @@
 import React, { useEffect, memo } from "react";
 import {
 	StyleSheet,
-	Text,
 	View,
-	TouchableOpacity,
-	TouchableHighlight,
 	LayoutAnimation,
 	Platform
 } from "react-native";
 import { systemWeights } from "react-native-typography";
-import EvilIcon from "react-native-vector-icons/EvilIcons";
-
+import {
+	TouchableOpacity,
+	TouchableHighlight,
+	EvilIcon,
+	Text
+} from "../styles/components";
 const {
 	Constants: {
 		colors
@@ -34,16 +35,16 @@ const _CameraRow = ({ onSendPress = () => null, onReceivePress = () => null, onC
 	const _onReceivePress = () => onReceivePress();
 	return (
 		<View style={[styles.container, style]}>
-			<TouchableOpacity onPress={_onSendPress} style={styles.leftItem}>
-				<Text style={styles.text}>Send</Text>
+			<TouchableOpacity type="button" onPress={_onSendPress} style={styles.leftItem}>
+				<Text type="text" style={styles.text}>Send</Text>
 			</TouchableOpacity>
 			<View style={styles.centerItem}>
-				<TouchableHighlight onPress={_onCameraPress} underlayColor={colors.gray} style={styles.cameraIcon}>
-					<EvilIcon style={{ bottom: -2 }} name={"camera"} size={40} color={colors.darkPurple} />
+				<TouchableHighlight type="background" onPress={_onCameraPress} underlayColor={colors.gray} style={styles.cameraIcon}>
+					<EvilIcon style={{ bottom: -15 }} name={"camera"} size={40} />
 				</TouchableHighlight>
 			</View>
-			<TouchableOpacity onPress={_onReceivePress} style={styles.rightItem}>
-				<Text style={styles.text}>Receive</Text>
+			<TouchableOpacity type="button" onPress={_onReceivePress} style={styles.rightItem}>
+				<Text type="text" style={styles.text}>Receive</Text>
 			</TouchableOpacity>
 		</View>
 	);
@@ -59,8 +60,6 @@ const styles = StyleSheet.create({
 		alignItems:"center",
 		justifyContent:"center",
 		paddingVertical: 5,
-		backgroundColor: colors.mediumPurple,
-		borderColor: colors.white,
 		borderWidth: 1,
 		borderRadius: 50,
 		borderTopRightRadius: 0,
@@ -78,7 +77,6 @@ const styles = StyleSheet.create({
 		justifyContent:"center",
 		width:ROW_HEIGHT * 2,
 		height:ROW_HEIGHT * 2,
-		backgroundColor: colors.white,
 		borderRadius:100
 	},
 	rightItem: {
@@ -87,8 +85,6 @@ const styles = StyleSheet.create({
 		alignItems:"center",
 		justifyContent:"center",
 		paddingVertical: 5,
-		backgroundColor: colors.mediumPurple,
-		borderColor: colors.white,
 		borderWidth: 1,
 		borderRadius: 50,
 		borderTopLeftRadius: 0,
