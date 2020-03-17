@@ -1,7 +1,5 @@
 import React, { memo } from "react";
 import {
-	View,
-	Text,
 	TouchableOpacity,
 	StyleSheet,
 	Image
@@ -9,11 +7,8 @@ import {
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
 import bitcoinUnits from "bitcoin-units";
-const {
-	Constants: {
-		colors
-	}
-} = require("../../ProjectData.json");
+import { Text, View } from "../styles/components";
+
 const {
 	formatNumber
 } = require("../utils/helpers");
@@ -60,15 +55,15 @@ interface CoinButtonComponent {
 const _CoinButton = ({ onCoinPress, cryptoUnit = "satoshi", coin = "bitcoin", label = "Bitcoin", walletId = "wallet0", balance = 0 }: CoinButtonComponent) => {
 	return (
 		<TouchableOpacity key={`${coin}${walletId}`} onPress={() => onCoinPress({coin, walletId})} style={styles.button}>
-			<View style={styles.buttonContent}>
+			<View type="card" style={styles.buttonContent}>
 				
 				<Image
 					style={styles.buttonImage}
 					source={getCoinImage(coin)}
 				/>
 				
-				<Text style={styles.text}>{label}</Text>
-				<Text style={styles.subText}>{formatBalance({ balance, coin, cryptoUnit })}</Text>
+				<Text type="text" style={styles.text}>{label}</Text>
+				<Text type="text" style={styles.subText}>{formatBalance({ balance, coin, cryptoUnit })}</Text>
 			
 			</View>
 		</TouchableOpacity>
@@ -97,7 +92,6 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		borderRadius: 40,
 		justifyContent: "center",
-		backgroundColor: colors.white
 	},
 	buttonImage: {
 		width: 48,
@@ -109,13 +103,11 @@ const styles = StyleSheet.create({
 	},
 	text: {
 		...systemWeights.semibold,
-		color: colors.purple,
 		fontSize: 18,
 		textAlign: "center"
 	},
 	subText: {
 		...systemWeights.regular,
-		color: colors.purple,
 		fontSize: 18,
 		textAlign: "center"
 	}
