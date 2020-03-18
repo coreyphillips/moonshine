@@ -1,9 +1,6 @@
 import React, { PureComponent } from "react";
 import {
 	StyleSheet,
-	Text,
-	View,
-	ScrollView,
 	TouchableOpacity,
 	InteractionManager,
 	Alert
@@ -11,9 +8,9 @@ import {
 import { systemWeights } from "react-native-typography";
 import bitcoinUnits from "bitcoin-units";
 import Button from "./Button";
-import EvilIcon from "react-native-vector-icons/EvilIcons";
 import DefaultModal from "./DefaultModal";
 import Loading from "./Loading";
+import { View, Text, ScrollView, EvilIcon } from "../styles/components";
 
 const {
 	Constants: {
@@ -76,10 +73,10 @@ class TransactionDetail extends PureComponent {
 			return (
 				<View style={styles.row}>
 					<View style={[styles.col1, col1Style]}>
-						<Text style={[styles.title, titleStyle]}>{title}</Text>
+						<Text type="text2" style={[styles.title, titleStyle]}>{title}</Text>
 					</View>
 					<TouchableOpacity onPress={onPress} style={[styles.col2, col2Style]}>
-						<Text style={[styles.text, valueStyle]}>{value}</Text>
+						<Text type="text2" style={[styles.text, valueStyle]}>{value}</Text>
 					</TouchableOpacity>
 				</View>
 			);
@@ -95,20 +92,20 @@ class TransactionDetail extends PureComponent {
 			const nextAvailableAddress = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto][addressIndex].address;
 			return (
 				<View style={{ marginTop: 20, alignItems: "center", justifyContent: "center" }}>
-					<Text style={[styles.text, { textAlign: "center" }]}>Transaction taking too long?</Text>
-					<Text style={[styles.text, { textAlign: "center" }]}>Cancel the transaction or increase the fee for a faster transaction:</Text>
+					<Text type="text2" style={[styles.text, { textAlign: "center" }]}>Transaction taking too long?</Text>
+					<Text type="text2" style={[styles.text, { textAlign: "center" }]}>Cancel the transaction or increase the fee for a faster transaction:</Text>
 					<View style={[styles.row, { alignItems: "center", justifyContent: "center" }]}>
 						<TouchableOpacity onPressIn={() => this.updateRbfValue("decrease")} onPressOut={this.stopRbfValueTimer} style={styles.icon}>
-							<EvilIcon name={"minus"} size={42} color={colors.darkPurple} />
+							<EvilIcon type="text2" name={"minus"} size={42} />
 						</TouchableOpacity>
 						<View style={{ flex: 1.5 }}>
-							<Text style={[styles.title, { padding: 5, flex: 0.5 }]}>
+							<Text type="text2" style={[styles.title, { padding: 5, flex: 0.5 }]}>
 								{this.getRbfAmout()}
 							</Text>
 						
 						</View>
 						<TouchableOpacity onPressIn={() => this.updateRbfValue("increase")} onPressOut={this.stopRbfValueTimer} style={styles.icon}>
-							<EvilIcon name={"plus"} size={42} color={colors.darkPurple} />
+							<EvilIcon name={"plus"} size={42} />
 						</TouchableOpacity>
 					</View>
 					<View style={[styles.row, { marginTop: 20 }]}>
@@ -480,45 +477,45 @@ class TransactionDetail extends PureComponent {
 				
 				<ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} style={{ flex: 0.9 }}>
 					<View style={styles.transactionData}>
-						<Text style={styles.header}>Transaction Details</Text>
+						<Text type="text2" style={styles.header}>Transaction Details</Text>
 						
 						{this.Row({ title: "Network:", value: capitalize(selectedCrypto) })}
-						<View style={styles.separator} />
+						<View type="text" style={styles.separator} />
 						
 						{messagesLength > 0 && this.Row({ title: "Message:", value: this.getMessages(), onPress: () => this.openMessage(hash), valueStyle: { textDecorationLine: "underline" } })}
 						{messagesLength > 0 && <View style={styles.separator} />}
 						
 						{type === "sent" && this.Row({ title: "Amount Sent:", value: this.getAmount(amount, false) })}
 						{type === "received" && this.Row({ title: "Amount \n Received:", value: this.getAmount(amount) })}
-						<View style={styles.separator} />
+						<View type="text" style={styles.separator} />
 						
 						{this.Row({ title: "Transaction\nFee:", value: this.getAmount(fee) })}
 						{this.state.rbfIsSupported && confirmations === 0 && this.RbfRow()}
-						<View style={styles.separator} />
+						<View type="text" style={styles.separator} />
 						
 						{type === "sent" && this.Row({ title: "Total Sent:", value: this.getAmount(sentAmount) })}
 						{type === "sent" && <View style={styles.separator} />}
 						
 						{this.Row({ title: "Type:", value: capitalize(type) })}
-						<View style={styles.separator} />
+						<View type="text" style={styles.separator} />
 						
 						{this.Row({ title: "Confirmations:", value: this.getConfirmations() })}
-						<View style={styles.separator} />
+						<View type="text" style={styles.separator} />
 						
 						{this.Row({ title: "Status:", value: capitalize(status) })}
-						<View style={styles.separator} />
+						<View type="text" style={styles.separator} />
 						
 						{this.Row({ title: `Date \n ${capitalize(type)}:`, value: moment.unix(timestamp).format('l @ h:mm a') })}
-						<View style={styles.separator} />
+						<View type="text" style={styles.separator} />
 						
 						{this.Row({ title: "Block:", value: formatNumber(blockHeight), onPress: () => this.openBlock(blockHeight), valueStyle: { textDecorationLine: "underline" } })}
-						<View style={styles.separator} />
+						<View type="text" style={styles.separator} />
 						
 						{type === "received" && this.Row({ title: "Received By\nAddress:", onPress: () => this.openAddress(address), value: address, valueStyle: { textDecorationLine: "underline" } })}
-						{type === "received" && <View style={styles.separator} />}
+						{type === "received" && <View type="text" style={styles.separator} />}
 						
 						{this.Row({ title: "TxId:", value: hash, onPress: () => openTxId(hash, selectedCrypto), valueStyle: { textDecorationLine: "underline" } })}
-						<View style={styles.separator} />
+						<View type="text" style={styles.separator} />
 						
 						{this.isActiveUtxo() &&
 						<Button style={{ ...styles.button, backgroundColor: isBlacklisted ? colors.red : "#813fb1" }} text={isBlacklisted ? "Whitelist UTXO" : "Blacklist UTXO"} onPress={this.toggleUtxoBlacklist} />}
@@ -526,7 +523,7 @@ class TransactionDetail extends PureComponent {
 					</View>
 				</ScrollView>
 				
-				<View style={{ flex: 0.1, backgroundColor: colors.lightGray }} />
+				<View type="background3" style={{ flex: 0.1 }} />
 				
 				<DefaultModal
 					isVisible={this.state.loading}
@@ -539,7 +536,6 @@ class TransactionDetail extends PureComponent {
 						textStyle={{ color: colors.darkGray }}
 						loadingOpacity={1}
 						loadingMessage={this.state.loadingMessage}
-						loadingProgress={0.5}
 						animationName="dino"
 						width={400}
 						enableProgressBar={false}
@@ -558,7 +554,6 @@ const styles = StyleSheet.create({
 	},
 	separator: {
 		height: 1.5,
-		backgroundColor: colors.purple,
 		width: "100%",
 		marginVertical: 8
 	},
@@ -583,23 +578,20 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
-		backgroundColor: colors.white
+		backgroundColor: "transparent"
 	},
 	title: {
 		...systemWeights.bold,
-		color: colors.darkPurple,
 		fontSize: 16,
 		textAlign: "center"
 	},
 	text: {
 		...systemWeights.light,
-		color: colors.darkPurple,
 		fontSize: 16,
 		textAlign: "left"
 	},
 	header: {
 		...systemWeights.bold,
-		color: colors.darkPurple,
 		fontSize: 20,
 		textAlign: "center",
 		marginVertical: 20
@@ -621,10 +613,7 @@ const styles = StyleSheet.create({
 		width: "90%"
 	},
 	modalContent: {
-		backgroundColor: colors.lightGray,
-		borderWidth: 5,
-		borderRadius: 20,
-		borderColor: colors.white
+		backgroundColor: colors.lightGray
 	}
 });
 

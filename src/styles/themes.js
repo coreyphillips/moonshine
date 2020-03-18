@@ -5,6 +5,7 @@ export const themes = {
 		transparent: "transparent",
 		background: "#FFF",
 		background2: "#FFF",
+		background3: "#efefef",
 		button: "#5d2390", //colors.mediumPurple
 		card: "#FFF",
 		card2: "#FFF",
@@ -19,8 +20,9 @@ export const themes = {
 		mode: "dark",
 		gradient: ["#413c69", "#373451", "#302e43"],
 		transparent: "transparent",
-		background: "#302e43",
+		background: "#373451",
 		background2: "#2f2d3a",
+		background3: "#373451",
 		button: "transparent",
 		card: "#585664",
 		card2: "transparent",
