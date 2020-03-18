@@ -1,21 +1,14 @@
 import React, { useEffect, memo } from "react";
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import PropTypes from "prop-types";
 import {
 	StyleSheet,
-	Text,
 	View,
-	TouchableOpacity,
 	LayoutAnimation,
 	Platform
 } from "react-native";
 import { systemWeights } from "react-native-typography";
+import { Text, TouchableOpacity, FontAwesome5 } from "../styles/components";
 
-const {
-	Constants: {
-		colors
-	}
-} = require("../../ProjectData.json");
 const {
 	vibrate,
 } = require("../utils/helpers");
@@ -32,7 +25,7 @@ interface PinComponent {
 const NumPadButton = ({ val, onPress, style }: { val: number|string, onPress: (string) => void, style: object }) => {
 	return (
 		<TouchableOpacity onPress={onPress} activeOpacity={ACTIVE_OPACITY} style={[styles.buttonContainer, style]}>
-			<Text style={styles.button}>{val}</Text>
+			<Text type="white" style={styles.button}>{val}</Text>
 		</TouchableOpacity>
 	);
 };
@@ -87,12 +80,12 @@ const _NumPad = ({ value = "", onPress = () => null, style = {}, buttonStyle = {
 				<NumPadButton onPress={()=> handlePress(".")} val={"."} style={buttonStyle} />
 				<NumPadButton onPress={()=> handlePress(digits[9])} val={digits[9]} style={buttonStyle} />
 				<TouchableOpacity onPress={handleRemove} activeOpacity={ACTIVE_OPACITY} style={[styles.buttonContainer, { borderWidth: 0 }, buttonStyle]}>
-					<FontAwesome5 name={"backspace"} size={30} color={colors.purple} />
+					<FontAwesome5 name={"backspace"} size={30} />
 				</TouchableOpacity>
 			</View>
 			<View style={[styles.row, { marginBottom: 0 }]}>
 				<TouchableOpacity onPress={() => handleClear()} activeOpacity={ACTIVE_OPACITY} style={[styles.buttonContainer, { borderWidth: 0 }, buttonStyle]}>
-					<Text style={styles.button}>Clear</Text>
+					<Text type="white" style={styles.button}>Clear</Text>
 				</TouchableOpacity>
 			</View>
 		</View>
@@ -122,7 +115,6 @@ const styles = StyleSheet.create({
 		borderWidth: 2,
 		marginHorizontal: 6,
 		backgroundColor: "transparent",
-		borderColor: colors.purple,
 		alignItems:"center",
 		justifyContent:"center"
 	},
@@ -138,7 +130,6 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		textAlign: "center",
-		color: colors.purple
 	}
 });
 
