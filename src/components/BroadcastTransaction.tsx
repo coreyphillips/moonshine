@@ -1,8 +1,6 @@
 import React, {useState, memo} from 'react';
 import {
 	StyleSheet,
-	View,
-	TextInput,
 	Dimensions,
 	Animated,
 	Text
@@ -10,8 +8,8 @@ import {
 import PropTypes from "prop-types";
 import XButton from "./XButton";
 import Button from "./Button";
-import Foundation from "react-native-vector-icons/Foundation";
 import {systemWeights} from "react-native-typography";
+import { View, TextInput, Foundation } from "../styles/components";
 
 const {
 	Constants: {
@@ -75,12 +73,12 @@ const _BroadcastTransaction = ({ broadcastTransaction = _defaultBroadcastTransac
 	};
 	
 	return (
-		<View style={styles.container}>
+		<View type="transparent" style={styles.container}>
 			
 			<View style={styles.textInputContainer}>
 				
-				<View style={styles.broadcastIcon}>
-					<Foundation name="mobile-signal" size={50} color={colors.purple} />
+				<View type="PRIMARY_DARK" style={styles.broadcastIcon}>
+					<Foundation type="white" name="mobile-signal" size={50} />
 				</View>
 				
 				<TextInput
@@ -128,7 +126,8 @@ _BroadcastTransaction.propTypes = {
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1
+		flex: 1,
+		backgroundColor: "transparent"
 	},
 	textInputContainer: {
 		position: "absolute",
@@ -137,32 +136,31 @@ const styles = StyleSheet.create({
 		top: height*-0.2,
 		bottom: 0,
 		left: 0,
-		right: 0
+		right: 0,
+		backgroundColor: "transparent"
 	},
 	textInput: {
 		width: "80%",
 		minHeight: 150,
-		backgroundColor: colors.white,
 		borderRadius: 10,
 		padding: 10,
 		textAlign: "left",
 		alignItems: "center",
 		justifyContent: "center",
-		color: colors.purple,
 		fontWeight: "bold"
 	},
 	broadcastIcon: {
 		width: 80,
 		height: 80,
 		borderRadius: 80/2,
-		backgroundColor: colors.white,
 		alignItems: "center",
 		justifyContent: "center",
 		marginBottom: 20
 	},
 	sendButton: {
 		alignItems: "center",
-		justifyContent: "center"
+		justifyContent: "center",
+		backgroundColor: "transparent"
 	},
 	xButton: {
 		position: "absolute",

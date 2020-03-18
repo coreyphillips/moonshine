@@ -1,11 +1,12 @@
 import React, {memo, useState} from 'react';
-import {Animated, StyleSheet, TextInput, TouchableOpacity, View, Text, Easing} from 'react-native';
+import {Animated, StyleSheet, TouchableOpacity, View, Easing} from 'react-native';
 import PropTypes from "prop-types";
 import XButton from "./XButton";
 import Button from "./Button";
 import ShareButtons from "./ShareButtons";
 import {systemWeights} from "react-native-typography";
 import DefaultModal from "./DefaultModal";
+import { Text, TextInput } from "../styles/components";
 
 const {
 	Constants: {
@@ -102,20 +103,20 @@ const _SignMessage = (
 				
 				<View style={{ flex: 1, width: "80%", alignItems: "center" }}>
 					<View style={{ paddingVertical: 10 }} />
-					<Text style={styles.header}>Sign message using:</Text>
+					<Text type="white" style={styles.header}>Sign message using:</Text>
 					<View style={{ paddingVertical: 2.5 }} />
 					<TouchableOpacity
 						onPress={() => setDisplayAddressModal(true)}
 						style={styles.pathButton}
 					>
-						<Text style={styles.text}>{path}</Text>
-						<Text style={styles.text}>{shortendAddress}</Text>
+						<Text type="white" style={styles.text}>{path}</Text>
+						<Text type="white" style={styles.text}>{shortendAddress}</Text>
 					</TouchableOpacity>
 				</View>
 				
 				<View style={{ flex: 1, width: "80%" }}>
 					<View style={{ paddingVertical: 15 }} />
-					<Text style={styles.header}>Message:</Text>
+					<Text type="white" style={styles.header}>Message:</Text>
 					<View style={{ paddingVertical: 2.5 }} />
 				</View>
 				<TextInput
@@ -132,7 +133,7 @@ const _SignMessage = (
 				
 				<Animated.View style={{ opacity: signatureOpacity, flex: 1, width: "80%" }}>
 					<View style={{ paddingVertical: 15 }} />
-					<Text style={styles.header}>Signature:</Text>
+					<Text type="white" style={styles.header}>Signature:</Text>
 					<View style={{ paddingVertical: 2.5 }} />
 					<ShareButtons
 						textContainerStyle={{ borderRadius: 10 }}
@@ -168,8 +169,8 @@ const _SignMessage = (
 							setDisplayAddressModal(false);
 						}}
 					>
-						<Text style={[styles.header, { color: colors.purple, textAlign: "left" }]}>{path}</Text>
-						<Text style={[styles.text, { color: colors.purple, textAlign: "left" }]}>{address}</Text>
+						<Text style={[styles.header, { textAlign: "left" }]}>{path}</Text>
+						<Text style={[styles.text, { textAlign: "left" }]}>{address}</Text>
 					</TouchableOpacity>
 				))}
 			</DefaultModal>
@@ -207,13 +208,11 @@ const styles = StyleSheet.create({
 		width: "80%",
 		minHeight: 50,
 		maxHeight: 150,
-		backgroundColor: colors.white,
 		borderRadius: 10,
 		padding: 10,
 		textAlign: "left",
 		alignItems: "center",
 		justifyContent: "center",
-		color: colors.purple,
 		fontWeight: "bold"
 	},
 	sendButton: {
@@ -230,7 +229,6 @@ const styles = StyleSheet.create({
 	},
 	header: {
 		...systemWeights.thin,
-		color: colors.white,
 		textAlign: "center",
 		backgroundColor: "transparent",
 		fontSize: 18,
@@ -238,7 +236,6 @@ const styles = StyleSheet.create({
 	},
 	text: {
 		...systemWeights.semibold,
-		color: colors.white,
 		textAlign: "center",
 		backgroundColor: "transparent",
 		fontSize: 16

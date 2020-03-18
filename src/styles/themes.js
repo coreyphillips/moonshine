@@ -19,6 +19,7 @@ export const themes = {
 		gray: "#efefef", //colors.lightGray
 		gray2: "#6e6e6e", //colors.darkGray
 		warning: "#F15B2A", //colors.red
+		uneditable: "#efefef" //colors.lightGray
 	},
 	dark: {
 		mode: "dark",
@@ -40,5 +41,6 @@ export const themes = {
 		gray: "#efefef",
 		gray2: "#efefef",
 		warning: "#F15B2A",
+		uneditable: "#585664"
 	},
 };

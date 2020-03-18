@@ -1,10 +1,11 @@
 import React, {memo, useState} from 'react';
-import {Animated, StyleSheet, TextInput, View, Text, Easing} from 'react-native';
+import {Animated, StyleSheet, View, Easing} from 'react-native';
 import PropTypes from "prop-types";
 import XButton from "./XButton";
 import Button from "./Button";
 import {systemWeights} from "react-native-typography";
 import LottieView from "lottie-react-native";
+import { Text, TextInput } from "../styles/components";
 
 const {
 	Constants: {
@@ -73,7 +74,7 @@ const _VerifyMessage = (
 			<View style={styles.contentContainer}>
 				<View style={styles.textInputContainer}>
 					
-					<Text style={styles.text}>Address:</Text>
+					<Text type="white" style={styles.text}>Address:</Text>
 					<TextInput
 						placeholder="Address"
 						style={styles.textInput}
@@ -91,7 +92,7 @@ const _VerifyMessage = (
 						blurOnSubmit={false}
 					/>
 					
-					<Text style={styles.text}>Message:</Text>
+					<Text type="white" style={styles.text}>Message:</Text>
 					<TextInput
 						placeholder="Message"
 						style={styles.textInput}
@@ -108,7 +109,7 @@ const _VerifyMessage = (
 						}}
 					/>
 					
-					<Text style={styles.text}>Signature:</Text>
+					<Text type="white" style={styles.text}>Signature:</Text>
 					<TextInput
 						placeholder="Signature"
 						style={styles.textInput}
@@ -122,7 +123,7 @@ const _VerifyMessage = (
 					/>
 					
 					<Animated.View style={[styles.animation, {opacity: animationOpacity}]}>
-						<Text style={styles.text}>{dataIsValid ? "Valid Signature!" : "Invalid Signature"}</Text>
+						<Text type="white" style={styles.text}>{dataIsValid ? "Valid Signature!" : "Invalid Signature"}</Text>
 						<LottieView
 							ref={animation => {
 								// @ts-ignore
@@ -181,14 +182,12 @@ const styles = StyleSheet.create({
 		width: "100%",
 		minHeight: 0,
 		maxHeight: 150,
-		backgroundColor: colors.white,
 		borderRadius: 8,
 		padding: 10,
 		paddingTop: 11,
 		textAlign: "left",
 		alignItems: "center",
 		justifyContent: "center",
-		color: colors.purple,
 		fontWeight: "bold"
 	},
 	sendButton: {
@@ -205,7 +204,6 @@ const styles = StyleSheet.create({
 	},
 	text: {
 		...systemWeights.semibold,
-		color: colors.white,
 		textAlign: "left",
 		backgroundColor: "transparent",
 		fontSize: 18,
