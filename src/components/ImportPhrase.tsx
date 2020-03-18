@@ -7,7 +7,8 @@ import {
 	TouchableOpacity,
 	Easing,
 	Text,
-	FlatList
+	FlatList,
+	Keyboard
 } from 'react-native';
 import PropTypes from "prop-types";
 import Camera from "./Camera";
@@ -156,6 +157,13 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 		setDisplayAvailableWordlists(false);
 	};
 	
+	const onCameraPress = () => {
+		try {
+			Keyboard.dismiss();
+			updateCamera({ display: true });
+		} catch (e) {}
+	};
+	
 	return (
 		<View style={styles.container}>
 			<View style={{ flex: 0.25 }}>
@@ -199,7 +207,7 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 					multiline={true}
 				/>
 				<View style={styles.centerItem}>
-					<TouchableOpacity onPress={() => updateCamera({ display: true })} style={styles.cameraIcon}>
+					<TouchableOpacity onPress={onCameraPress} style={styles.cameraIcon}>
 						<EvilIcon style={{ bottom: -2 }} name={"camera"} size={40} color={colors.darkPurple} />
 					</TouchableOpacity>
 				</View>
@@ -211,7 +219,7 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 			</View>
 
 			{displayCamera &&
-				<Animated.View style={[styles.camera, { opacity: cameraOpacity, zIndex: 1000 }]}>
+				<Animated.View style={[styles.camera, { opacity: cameraOpacity }]}>
 					<Camera onClose={() => updateCamera({ display: false })} onBarCodeRead={(data) => onBarCodeRead(data)} />
 				</Animated.View>
 			}
@@ -274,8 +282,10 @@ const styles = StyleSheet.create({
 		fontWeight: "bold"
 	},
 	camera: {
-		flex: 1,
-		zIndex: 500
+		position: "absolute",
+		height: "100%",
+		width: "100%",
+		zIndex: 1000
 	},
 	centerItem: {
 		zIndex: 10,
