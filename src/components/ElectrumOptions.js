@@ -1,20 +1,17 @@
 import React, { PureComponent } from 'react';
 import {
 	StyleSheet,
-	View,
-	TextInput,
 	Dimensions,
 	Animated,
 	TouchableOpacity,
 	ScrollView,
-	Text,
 	FlatList
 } from 'react-native';
 import {systemWeights} from "react-native-typography/dist/index";
 import XButton from "./XButton";
 import Button from "./Button";
 import * as electrum from "../utils/electrum";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { View, Text, TextInput, MaterialCommunityIcons } from "../styles/components";
 
 const {
 	Constants: {
@@ -354,25 +351,21 @@ ElectrumOptions.defaultProps = {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: colors.white,
 		borderRadius: 20
 	},
 	header: {
 		...systemWeights.semibold,
-		color: colors.purple,
 		fontSize: 20,
 		textAlign: "center",
 		marginVertical: 20
 	},
 	title: {
 		...systemWeights.semibold,
-		color: colors.purple,
 		fontSize: 20,
 		textAlign: "left"
 	},
 	textInputTitle: {
 		...systemWeights.semibold,
-		color: colors.purple,
 		fontSize: 16,
 		textAlign: "left",
 		paddingLeft: 10
@@ -385,14 +378,11 @@ const styles = StyleSheet.create({
 	textInput: {
 		width: "80%",
 		minHeight: 40,
-		backgroundColor: colors.white,
 		borderRadius: 10,
 		textAlign: "left",
 		alignItems: "center",
 		justifyContent: "center",
-		color: colors.purple,
 		fontWeight: "bold",
-		borderColor: colors.darkPurple,
 		borderWidth: 2,
 		paddingLeft: 12
 	},
@@ -408,7 +398,6 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		width: "80%",
 		minHeight: 40,
-		backgroundColor: colors.white,
 		borderRadius: 10,
 		textAlign: "left",
 		alignItems: "center",

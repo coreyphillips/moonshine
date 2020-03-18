@@ -12,6 +12,7 @@ export const themes = {
 		card3: "#631e9a", //colors.purple
 		text: "#631e9a", //colors.purple
 		text2: "#57158f", //colors.darkPurple
+		text3: "#a25ad7", //colors.lightPurple
 		PRIMARY: "#631e9a", //colors.purple
 		PRIMARY_DARK: "#57158f", //colors.darkPurple
 		white: "#FFF",
@@ -32,6 +33,7 @@ export const themes = {
 		card3: "#373451",
 		text: "#f5f5f5",
 		text2: "#f5f5f5",
+		text3: "#585664",
 		PRIMARY: "#413c69",
 		PRIMARY_DARK: "#2f2d3a",
 		white: "#f5f5f5",

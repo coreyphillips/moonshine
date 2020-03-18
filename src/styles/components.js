@@ -46,8 +46,9 @@ export const TouchableHighlight = styled.TouchableHighlight`
 export const TextInput = styled.TextInput.attrs((props) => ({
 	backgroundColor: props.theme.background2,
 	color: props.theme.text,
-	placeholderTextColor: props.theme.gray2,
+	placeholderTextColor: props.theme.gray2
 }))`
+  border-color: ${props => props.theme.mode === "dark" ? "transparent" : props.theme.text2}
 `;
 
 export const EvilIcon = styled(_EvilIcon).attrs((props) => ({

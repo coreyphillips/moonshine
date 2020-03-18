@@ -89,7 +89,6 @@ const styles = StyleSheet.create({
 		width: "90%",
 		borderRadius: 5,
 		padding: 5,
-		borderColor: colors.lightPurple,
 		borderWidth: 1,
 		fontWeight: "bold"
 	},
