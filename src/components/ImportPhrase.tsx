@@ -2,22 +2,19 @@ import React, {useState, memo} from 'react';
 import {
 	StyleSheet,
 	View,
-	TextInput,
 	Animated,
-	TouchableOpacity,
 	Easing,
-	Text,
 	FlatList,
 	Keyboard
 } from 'react-native';
 import PropTypes from "prop-types";
 import Camera from "./Camera";
-import EvilIcon from "react-native-vector-icons/EvilIcons";
 import XButton from "./XButton";
 import Button from "./Button";
 import ListItem from "./ListItem";
 import DefaultModal from "./DefaultModal";
 import {systemWeights} from "react-native-typography";
+import { Text, EvilIcon, TouchableOpacity, TextInput } from "../styles/components";
 
 const {
 	Constants: {
@@ -168,8 +165,8 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 		<View style={styles.container}>
 			<View style={{ flex: 0.25 }}>
 				<View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-					<TouchableOpacity onPress={() => setDisplayAvailableWordlists(true)}>
-						<Text style={[styles.title, { marginTop: 10 }]}>
+					<TouchableOpacity type="transparent" onPress={() => setDisplayAvailableWordlists(true)}>
+						<Text type="white" style={[styles.title, { marginTop: 10 }]}>
 							Selected Wordlist: {availableWordlists[selectedWordlist].title}
 						</Text>
 					</TouchableOpacity>
@@ -184,7 +181,7 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 							try {
 								return (
 									<TouchableOpacity activeOpacity={0} style={styles.scrollView}>
-										<TouchableOpacity onPress={() => addWordToMnemonic(word)} style={styles.button}>
+										<TouchableOpacity type="transparent" onPress={() => addWordToMnemonic(word)} style={styles.button}>
 											<Text key={word} style={{ color: colors.white, textAlign: "center" }}>{word}</Text>
 										</TouchableOpacity>
 									</TouchableOpacity>
@@ -207,8 +204,8 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 					multiline={true}
 				/>
 				<View style={styles.centerItem}>
-					<TouchableOpacity onPress={onCameraPress} style={styles.cameraIcon}>
-						<EvilIcon style={{ bottom: -2 }} name={"camera"} size={40} color={colors.darkPurple} />
+					<TouchableOpacity type="background" onPress={onCameraPress} style={styles.cameraIcon}>
+						<EvilIcon style={{ bottom: -2 }} name={"camera"} size={40} />
 					</TouchableOpacity>
 				</View>
 
@@ -261,24 +258,22 @@ _ImportPhrase.propTypes = {
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1
+		flex: 1,
+		backgroundColor: "transparent"
 	},
 	title: {
 		...systemWeights.semibold,
-		color: colors.white,
 		fontSize: 16,
 		textAlign: "center"
 	},
 	textInput: {
 		width: "80%",
 		minHeight: 150,
-		backgroundColor: colors.white,
 		borderRadius: 10,
 		padding: 10,
 		textAlign: "left",
 		alignItems: "center",
 		justifyContent: "center",
-		color: colors.purple,
 		fontWeight: "bold"
 	},
 	camera: {
@@ -298,8 +293,8 @@ const styles = StyleSheet.create({
 		justifyContent:"center",
 		width: 64,
 		height: 64,
-		backgroundColor: colors.white,
-		borderRadius: 100
+		borderRadius: 100,
+		borderWidth: 1
 	},
 	sendButton: {
 		alignItems: "center",
@@ -332,7 +327,8 @@ const styles = StyleSheet.create({
 		alignSelf: "center",
 		alignItems: "center",
 		justifyContent: "center",
-		height: "100%"
+		height: "100%",
+		backgroundColor: "transparent"
 	}
 });
 

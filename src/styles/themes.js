@@ -9,12 +9,14 @@ export const themes = {
 		button: "#5d2390", //colors.mediumPurple
 		card: "#FFF",
 		card2: "#FFF",
+		card3: "#631e9a", //colors.purple
 		text: "#631e9a", //colors.purple
 		text2: "#57158f", //colors.darkPurple
 		PRIMARY: "#631e9a", //colors.purple
 		PRIMARY_DARK: "#57158f", //colors.darkPurple
 		white: "#FFF",
-		gray: "#efefef" //colors.lightGray
+		gray: "#efefef", //colors.lightGray
+		gray2: "#6e6e6e" //colors.darkGray
 	},
 	dark: {
 		mode: "dark",
@@ -26,11 +28,13 @@ export const themes = {
 		button: "transparent",
 		card: "#585664",
 		card2: "transparent",
+		card3: "#373451",
 		text: "#f5f5f5",
 		text2: "#f5f5f5",
 		PRIMARY: "#413c69",
 		PRIMARY_DARK: "#2f2d3a",
 		white: "#f5f5f5",
-		gray: "#efefef"
+		gray: "#efefef",
+		gray2: "#efefef"
 	},
 };

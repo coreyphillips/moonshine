@@ -1,15 +1,12 @@
 import React, { PureComponent } from "react";
 import {
 	StyleSheet,
-	Text,
 	TouchableOpacity,
 	View,
 	Animated,
 	LayoutAnimation,
 	ScrollView,
-	ActivityIndicator,
 	Platform,
-	TextInput,
 	Easing,
 	Linking,
 	FlatList,
@@ -35,6 +32,10 @@ import * as electrum from "../utils/electrum";
 import BackupPhrase from './BackupPhrase';
 import BroadcastTransaction from "./BroadcastTransaction";
 import ListItem from "./ListItem";
+import TextInputRow from "./SettingsOptions/TextInputRow";
+import HeaderRow from "./SettingsOptions/HeaderRow";
+import MultiOptionRow from "./SettingsOptions/MultiOptionRow";
+import { Text } from "../styles/components";
 
 const {
 	Constants: {
@@ -49,7 +50,6 @@ const {
 	getKeychainValue,
 	capitalize,
 	getExchangeRate,
-	openUrl,
 	setKeychainValue
 } = require("../utils/helpers");
 const {
@@ -211,59 +211,6 @@ class Settings extends PureComponent {
 		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
 	}
 	
-	HeaderRow({ header = "", title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col1ImageColor = colors.purple, col2Image = "", onPress = () => null, headerStyle = {}, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle= {} } = {}) {
-		try {
-			return (
-				<TouchableOpacity onPress={() => onPress(value)} activeOpacity={1} style={styles.rowContainer}>
-					<View style={styles.row}>
-						
-						<View style={{ flex: 1 }}>
-							<View style={{ alignItems: "center", justifyContent: "center" }}>
-								{!col1Loading && col1Image === "" &&
-								<View style={[styles.header, col1Style]}>
-									<Text style={[styles.title, headerStyle]}>{header}</Text>
-								</View>}
-							</View>
-							<View style={{ flexDirection: "row" }}>
-								{!col1Loading && col1Image === "" &&
-								<View style={[styles.col1, col1Style]}>
-									<Text style={[styles.title, titleStyle]}>{title}</Text>
-								</View>}
-								{col1Loading &&
-								<View style={[styles.col1, col1Style]}>
-									<ActivityIndicator size="large" color={colors.lightPurple} />
-								</View>}
-								{!col1Loading && col1Image !== "" &&
-								<View style={[styles.col1, col1Image]}>
-									<MaterialCommunityIcons name={col1Image} size={50} color={col1ImageColor} />
-								</View>
-								}
-								
-								{!col2Loading && col2Image === "" &&
-								<View style={[styles.col2, col2Style]}>
-									<Text style={[styles.text, valueStyle]}>{value}</Text>
-								</View>}
-								{col2Loading &&
-								<View style={[styles.col2, col2Style]}>
-									<ActivityIndicator size="large" color={colors.lightPurple} />
-								</View>}
-								
-								{!col2Loading && col2Image !== "" &&
-								<View style={[styles.col2, col2Style]}>
-									<MaterialCommunityIcons name={col2Image} size={50} color={colors.purple} />
-								</View>
-								}
-							</View>
-						</View>
-					
-					</View>
-				</TouchableOpacity>
-			);
-		} catch (e) {
-			console.log(e);
-		}
-	}
-	
 	_displayOption({ value = "", key = "", currentValue = "", onPress = () => null, optionsLength = 1 } = {}) {
 		let width = 90/(optionsLength).toFixed(0);
 		width = width.toString();
@@ -279,61 +226,6 @@ class Settings extends PureComponent {
 				<Text style={[styles.text, { color: isMatch ? colors.white : colors.purple}]}>{value}</Text>
 			</TouchableOpacity>
 		);
-	}
-	MultiOptionRow({ title = "", subTitle = "", currentValue = "", options = [{ key: "", value: "", onPress: () => null }], subTitleIsLink = false, loading = false } = {}) {
-		const optionsLength = options.length;
-		try {
-			return (
-				<View style={styles.rowContainer}>
-					<View style={styles.row}>
-						<View>
-							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
-								<Text style={styles.title}>{title}</Text>
-								{subTitle !== "" && !subTitleIsLink && <Text style={styles.subTitle}>{subTitle}</Text>}
-								{subTitle !== "" && subTitleIsLink &&
-								<TouchableOpacity onPress={() => openUrl(`https://${subTitle}`)} style={{ alignItems: "center", justifyContent: "center" }}>
-									<Text style={styles.subTitle}>{subTitle}</Text>
-								</TouchableOpacity>}
-							</View>
-							<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginHorizontal: 20 }}>
-								{!loading && options.map((option) => this._displayOption({ ...option, optionsLength, currentValue}))}
-								{loading && <ActivityIndicator size="large" color={colors.lightPurple} />}
-							</View>
-						</View>
-					</View>
-				</View>
-			);
-		} catch (e) {}
-	}
-	
-	TextInputRow({ title = "", subTitle = "", currentValue = "", onChangeText = () => null, onPress = () => null, secureTextEntry = true, submitText = "Add Passphrase" } = {}) {
-		try {
-			return (
-				<View style={styles.rowContainer}>
-					<View style={styles.row}>
-						<View>
-							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 10 }}>
-								<Text style={styles.title}>{title}</Text>
-								<TextInput
-									style={styles.textInput}
-									secureTextEntry={secureTextEntry}
-									autoCapitalize="none"
-									autoCompleteType="off"
-									autoCorrect={false}
-									selectionColor={colors.lightPurple}
-									onChangeText={onChangeText}
-									value={currentValue}
-									placeholder={subTitle}
-								/>
-							</View>
-							<View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginHorizontal: 20 }}>
-								{this._displayOption({ value: submitText, optionsLength: 1, currentValue: submitText, onPress})}
-							</View>
-						</View>
-					</View>
-				</View>
-			);
-		} catch (e) {}
 	}
 	
 	updateItems = (items = []) => {
@@ -1045,7 +937,7 @@ class Settings extends PureComponent {
 				
 				<Animated.View style={{ flex: 1, opacity: this.state.settingsOpacity }}>
 					<ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps={"handled"} contentContainerStyle={{flexGrow:1}} style={{ flex: 1, paddingTop: 20 }}>
-						<TouchableOpacity activeOpacity={1} style={styles.container}>
+						<TouchableOpacity activeOpacity={1} onPress={Keyboard.dismiss} style={styles.container}>
 							
 							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
 								<View style={[styles.header, { marginBottom: 5 }]}>
@@ -1077,22 +969,22 @@ class Settings extends PureComponent {
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
 							
-							{this.MultiOptionRow({
-								title: "Exchange Rate Source",
-								subTitle: this.getExchangeRateSourceUrl({ selectedService: this.props.settings.selectedService}),
-								subTitleIsLink: true,
-								currentValue: this.props.settings.selectedService,
-								options: this.getExchangeRateOptions()
-							})}
+							<MultiOptionRow
+								title="Exchange Rate Source"
+								subTitle={this.getExchangeRateSourceUrl({ selectedService: this.props.settings.selectedService})}
+								subTitleIsLink={true}
+								currentValue={this.props.settings.selectedService}
+								options={this.getExchangeRateOptions()}
+							/>
 							
-							{this.MultiOptionRow({
-								title: "Crypto Units",
-								currentValue: this.props.settings.cryptoUnit,
-								options:[
+							<MultiOptionRow
+								title="Crypto Units"
+								currentValue={this.props.settings.cryptoUnit}
+								options={[
 									{key: "BTC", value: coinDataLabel.acronym, onPress: () => this.updateCryptoUnit("BTC") },
 									{key: "satoshi", value: coinDataLabel.satoshi, onPress: () => this.updateCryptoUnit("satoshi") }
-								]
-							})}
+								]}
+							/>
 							
 							<SettingGeneral
 								title=""
@@ -1131,78 +1023,80 @@ class Settings extends PureComponent {
 								</View>
 								<View style={{ height: 1.5, backgroundColor: colors.white, width: "80%" }} />
 							</View>
+							<TextInputRow
+								title={`Wallet Name (${this.state.walletName.length}/16)`}
+								subTitle={`Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}`}
+								currentValue={this.state.walletName || ""}
+								onChangeText={(walletName) => walletName.length < 17 ? this.setState({walletName}) : null}
+								onPress={this.addWalletName}
+								secureTextEntry={false}
+								submitText="Add Name"
+							/>
 							
-							{this.TextInputRow({
-								title: `Wallet Name (${this.state.walletName.length}/16)`,
-								subTitle: `Wallet ${this.props.wallet.walletOrder.indexOf(selectedWallet)}`,
-								currentValue: this.state.walletName || "",
-								onChangeText: (walletName) => walletName.length < 17 ? this.setState({walletName}) : null,
-								onPress: this.addWalletName,
-								secureTextEntry: false,
-								submitText: "Add Name"
-							})}
+							<HeaderRow
+								header="Connected To:"
+								value={`${this.getPeerInfo().host}:${this.getPeerInfo().port}`}
+								onPress={this.reconnectToPeer}
+								col2Loading={this.state.connectingToElectrum || !this.getPeerInfo().host}
+								col1Style={{ flex: 0 }}
+								col2Style={{ flex: 1, alignItems: "center", justifyContent: "flex-start", paddingHorizontal: 10, marginTop: 5 }}
+							/>
 							
-							{this.HeaderRow({
-								header: "Connected To:",
-								value: `${this.getPeerInfo().host}:${this.getPeerInfo().port}`,
-								onPress: this.reconnectToPeer,
-								col2Loading: this.state.connectingToElectrum || !this.getPeerInfo().host,
-								col1Style: { flex: 0 },
-								col2Style: { flex: 1, alignItems: "center", justifyContent: "flex-start", paddingHorizontal: 10, marginTop: 5 }
-							})}
-							
-							{this.MultiOptionRow({
-								title: "Address Type",
-								subTitle: `Path: m/${keyDerivationPath}'/${coinTypePath}'/0'/0/0`,
-								currentValue: addressType,
-								options:[
+							<MultiOptionRow
+								title="Address Type"
+								subTitle={`Path: m/${keyDerivationPath}'/${coinTypePath}'/0'/0/0`}
+								currentValue={addressType}
+								options={[
 									{value: "Legacy", onPress: () => this.updateAddressType({ addressType: "legacy" }) },
 									{value: "Segwit", onPress: () => this.updateAddressType({ addressType: "segwit" }) },
 									{value: "Bech32", onPress: () => this.updateAddressType({ addressType: "bech32" }) },
-								],
-								loading: this.state.rescanningWallet
-							})}
+								]}
+								loading={this.state.rescanningWallet}
+							/>
 							
-							{/*this.MultiOptionRow({
-								title: "Key Derivation Path",
-								subTitle: `m/${keyDerivationPath}'/${coinTypePath}'/0'/0/0`,
-								currentValue: keyDerivationPath,
-								options:[
+							{/*
+							<MultiOptionRow
+								title="Key Derivation Path"
+								subTitle={`m/${keyDerivationPath}'/${coinTypePath}'/0'/0/0`}
+								currentValue={keyDerivationPath}
+								options={[
 									{value: "0", onPress: () => this.updateKeyDerivationPath({ keyDerivationPath: "0" }) },
 									{value: "44", onPress: () => this.updateKeyDerivationPath({ keyDerivationPath: "44" }) },
 									{value: "49", onPress: () => this.updateKeyDerivationPath({ keyDerivationPath: "49" }) },
 									{value: "84", onPress: () => this.updateKeyDerivationPath({ keyDerivationPath: "84" }) },
-								]
-							})*/}
+								]}
+								loading={this.state.rescanningWallet}
+							/>
+							*/}
 							
 							{!this.state.bip39PassphraseIsSet &&
-							this.TextInputRow({
-								title: "BIP39 Passphrase",
-								subTitle: "Enter your passphrase here...",
-								currentValue: this.state.bip39Passphrase,
-								onChangeText: (bip39Passphrase) => this.setState({bip39Passphrase}),
-								onPress: this.addBip39Passphrase
-							})
-							}
+							<TextInputRow
+								title="BIP39 Passphrase"
+								subTitle="Enter your passphrase here..."
+								currentValue={this.state.bip39Passphrase}
+								onChangeText={(bip39Passphrase) => this.setState({bip39Passphrase})}
+								onPress={this.addBip39Passphrase}
+								submitText="Add Passphrase"
+							/>}
 							
 							{this.state.bip39PassphraseIsSet &&
-							this.MultiOptionRow({
-								title: "BIP39 Passphrase",
-								subTitle: "o-o-o-o",
-								currentValue: "Remove Passphrase",
-								options:[
+							<MultiOptionRow
+								title="BIP39 Passphrase"
+								subTitle="o-o-o-o"
+								currentValue="Remove Passphrase"
+								options={[
 									{value: "Remove Passphrase", onPress: this.removeBip39Passphrase }
-								]
-							})}
+								]}
+							/>}
 							
-							{this.MultiOptionRow({
-								title: "Sign & Verify Messages",
-								currentValue: addressType,
-								options:[
+							<MultiOptionRow
+								title="Sign & Verify Messages"
+								currentValue={addressType}
+								options={[
 									{value: "Sign", onPress: () => this.toggleSignMessage({ display: true }) },
 									{value: "Verify", onPress: () => this.toggleVerifyMessage({ display: true }) }
-								]
-							})}
+								]}
+							/>
 							
 							<SettingGeneral
 								title=""
@@ -1340,13 +1234,13 @@ class Settings extends PureComponent {
 				>
 					{this.props.settings.biometricsIsSupported &&
 					<View style={styles.helpRow}>
-						<Text style={styles.helpTitle}>Enable FaceID:</Text>
-						<Text style={styles.helpText}>This option allows you to toggle FaceID on/off as a form of authentication when opening this app.</Text>
+						<Text type="text2" style={styles.helpTitle}>Enable FaceID:</Text>
+						<Text type="text2" style={styles.helpText}>This option allows you to toggle FaceID on/off as a form of authentication when opening this app.</Text>
 					</View>}
 					{generalHelpItems.map(({ title, text }) => (
 						<View key={title} style={styles.helpRow}>
-							<Text style={styles.helpTitle}>{title}</Text>
-							<Text style={styles.helpText}>{text}</Text>
+							<Text type="text2" style={styles.helpTitle}>{title}</Text>
+							<Text type="text2" style={styles.helpText}>{text}</Text>
 						</View>
 					))}
 					<View style={{ paddingVertical: "40%" }} />
@@ -1358,8 +1252,8 @@ class Settings extends PureComponent {
 				>
 					{walletHelpItems.map(({ title, text }) => (
 						<View key={title} style={styles.helpRow}>
-							<Text style={styles.helpTitle}>{title}</Text>
-							<Text style={styles.helpText}>{text}</Text>
+							<Text type="text2" style={styles.helpTitle}>{title}</Text>
+							<Text type="text2" style={styles.helpText}>{text}</Text>
 						</View>
 					))}
 					<View style={{ paddingVertical: "40%" }} />
@@ -1414,22 +1308,6 @@ const styles = StyleSheet.create({
 		flex: 1,
 		backgroundColor: "transparent"
 	},
-	rowContainer: {
-		width: "100%",
-		backgroundColor: "transparent",
-		alignItems: "center",
-		marginBottom: 20
-	},
-	row: {
-		flexDirection: "row",
-		alignItems: "center",
-		justifyContent: "center",
-		backgroundColor: colors.white,
-		borderRadius: 11.5,
-		width: "80%",
-		minHeight: 80,
-		paddingVertical: 10
-	},
 	cryptoUnitButton: {
 		alignItems: "center",
 		justifyContent: "center",
@@ -1449,34 +1327,21 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		backgroundColor: "transparent"
 	},
-	col1: {
-		flex: 0.4,
-		alignItems: "center",
-		justifyContent: "center",
-	},
-	col2: {
-		flex: 0.6,
-		alignItems: "flex-start",
-		justifyContent: "center",
-	},
 	helpRow: {
 		marginBottom: 10,
 	},
 	helpTitle: {
 		...systemWeights.semibold,
-		color: colors.darkPurple,
 		fontSize: 22,
 		textAlign: "left"
 	},
 	helpText: {
 		...systemWeights.regular,
-		color: colors.darkPurple,
 		fontSize: 18,
 		textAlign: "left"
 	},
 	title: {
 		...systemWeights.regular,
-		color: colors.purple,
 		fontSize: 20,
 		textAlign: "left"
 	},
@@ -1484,18 +1349,6 @@ const styles = StyleSheet.create({
 		...systemWeights.regular,
 		color: colors.purple,
 		fontSize: 16,
-		textAlign: "left"
-	},
-	subTitle: {
-		...systemWeights.light,
-		color: colors.purple,
-		fontSize: 16,
-		textAlign: "left"
-	},
-	fiatText : {
-		...systemWeights.semibold,
-		color: colors.darkPurple,
-		fontSize: 18,
 		textAlign: "left"
 	},
 	header: {
@@ -1514,18 +1367,6 @@ const styles = StyleSheet.create({
 		left: 0,
 		right: 0,
 		bottom: 10
-	},
-	textInput: {
-		flex: 1,
-		height: 30,
-		width: "90%",
-		borderRadius: 5,
-		padding: 5,
-		backgroundColor: colors.white,
-		borderColor: colors.lightPurple,
-		borderWidth: 1,
-		color: colors.purple,
-		fontWeight: "bold"
 	},
 	separator: {
 		width: "100%",

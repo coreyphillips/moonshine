@@ -40,6 +40,13 @@ export const TouchableHighlight = styled.TouchableHighlight`
   border-width: 1px
 `;
 
+export const TextInput = styled.TextInput.attrs((props) => ({
+	backgroundColor: props.theme.background2,
+	color: props.theme.text,
+	placeholderTextColor: props.theme.gray2,
+}))`
+`;
+
 export const EvilIcon = styled(_EvilIcon).attrs((props) => ({
 	color: props.type ? props.theme[props.type] : props.theme.text
 }))`
