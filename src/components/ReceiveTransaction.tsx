@@ -4,17 +4,15 @@ import {
 	View,
 	LayoutAnimation,
 	Platform,
-	Text,
 	TouchableOpacity
 } from "react-native";
 import PropTypes from "prop-types";
 import ShareButtons from "./ShareButtons";
 import DefaultModal from "./DefaultModal";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import {systemWeights} from "react-native-typography";
 import bitcoinUnits from "bitcoin-units";
 import NumPad from "./NumPad";
-import { QRCode } from "../styles/components";
+import { QRCode, Text, MaterialIcons } from "../styles/components";
 const {
 	Constants: {
 		colors,
@@ -178,20 +176,20 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", selectedCurrency = "u
 				type="View"
 				style={{ height: "96%" }}
 			>
-				<View style={{ flex: 1, justifyContent: "center" }}>
+				<View style={{ flex: 1, justifyContent: "center", backgroundColor: "transparent" }}>
 					<Text style={styles.textInput}>{`${getRequestedValue()} ${displayInCrypto ? acronym : ""}`}</Text>
 					<Text style={styles.amountText}>{`${displayInCrypto ? fiatAmount : cryptoAmount} ${!displayInCrypto ? acronym : ""}`}</Text>
 					<TouchableOpacity style={styles.swapButton} onPress={toggleDisplayInCrypto}>
 						<View style={{ flexDirection: "row" }}>
 							<View style={styles.swapIcon}>
-								<MaterialIcons name={"swap-calls"} size={25} color={colors.purple} />
+								<MaterialIcons type="text" name={"swap-calls"} size={25} />
 							</View>
 							<Text style={styles.amountText}>{displayInCrypto ? `${acronym}` : currencies[selectedCurrency].unit}</Text>
 						</View>
 					</TouchableOpacity>
 					<NumPad style={{ marginTop: 20 }} onPress={updateRequestedAmount} value={getRequestedValue()} />
 					<TouchableOpacity onPress={toggleSpecifyAmount} style={[styles.centerContent]}>
-						<MaterialIcons name={"check-circle"} size={70} color={colors.purple} />
+						<MaterialIcons type="text" name={"check-circle"} size={70} />
 					</TouchableOpacity>
 				</View>
 			</DefaultModal>
@@ -231,24 +229,22 @@ const styles = StyleSheet.create({
 	},
 	textInput: {
 		padding: 15,
-		backgroundColor: colors.white,
-		color: colors.purple,
 		textAlign: "center",
 		fontSize: Platform.OS === "ios" ? 30 : 26,
-		fontWeight: "bold"
+		fontWeight: "bold",
+		backgroundColor: "transparent"
 	},
 	swapButton: {
 		alignItems: "center",
 		justifyContent: "center",
 		alignSelf: "center",
-		backgroundColor: colors.white,
+		backgroundColor: "transparent",
 		paddingVertical: 10,
 		paddingHorizontal: 20
 	},
 	amountText: {
 		textAlign: "center",
 		...systemWeights.regular,
-		color: colors.purple,
 		fontSize: Platform.OS === "ios" ? 30 : 26,
 	},
 	requestButtonText: {

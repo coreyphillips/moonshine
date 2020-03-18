@@ -5,6 +5,7 @@ import _QRCode from 'react-native-qrcode-svg';
 import _EvilIcon from "react-native-vector-icons/EvilIcons";
 import _FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import _MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import _MaterialIcons from "react-native-vector-icons/MaterialIcons";
 /**********************
 General styles
  **********************/
@@ -30,7 +31,7 @@ export const Text = styled.Text`
 
 export const TouchableOpacity = styled.TouchableOpacity`
   background-color: ${props => props.type ? props.theme[props.type] : props.theme.text};
-  border-color: ${props => props.theme.white}
+  border-color: ${props => props.borderColor ? props.theme[props.borderColor] : props.theme.white}
 `;
 
 export const TouchableHighlight = styled.TouchableHighlight`
@@ -50,6 +51,11 @@ export const FontAwesome5 = styled(_FontAwesome5).attrs((props) => ({
 `;
 
 export const MaterialCommunityIcons = styled(_MaterialCommunityIcons).attrs((props) => ({
+	color: props.type ? props.theme[props.type] : props.theme.text
+}))`
+`;
+
+export const MaterialIcons = styled(_MaterialIcons).attrs((props) => ({
 	color: props.type ? props.theme[props.type] : props.theme.text
 }))`
 `;

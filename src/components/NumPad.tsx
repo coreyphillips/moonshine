@@ -24,8 +24,8 @@ interface PinComponent {
 
 const NumPadButton = ({ val, onPress, style }: { val: number|string, onPress: (string) => void, style: object }) => {
 	return (
-		<TouchableOpacity onPress={onPress} activeOpacity={ACTIVE_OPACITY} style={[styles.buttonContainer, style]}>
-			<Text type="white" style={styles.button}>{val}</Text>
+		<TouchableOpacity borderColor="text" onPress={onPress} activeOpacity={ACTIVE_OPACITY} style={[styles.buttonContainer, style]}>
+			<Text type="text" style={styles.button}>{val}</Text>
 		</TouchableOpacity>
 	);
 };
