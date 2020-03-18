@@ -4,6 +4,7 @@ import _LinearGradient from "react-native-linear-gradient";
 import _QRCode from 'react-native-qrcode-svg';
 import _EvilIcon from "react-native-vector-icons/EvilIcons";
 import _FontAwesome5 from "react-native-vector-icons/FontAwesome5";
+import _MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 /**********************
 General styles
  **********************/
@@ -44,6 +45,11 @@ export const EvilIcon = styled(_EvilIcon).attrs((props) => ({
 `;
 
 export const FontAwesome5 = styled(_FontAwesome5).attrs((props) => ({
+	color: props.type ? props.theme[props.type] : props.theme.text
+}))`
+`;
+
+export const MaterialCommunityIcons = styled(_MaterialCommunityIcons).attrs((props) => ({
 	color: props.type ? props.theme[props.type] : props.theme.text
 }))`
 `;

@@ -1,18 +1,12 @@
 import React, { memo } from "react";
 import {
 	View,
-	Text,
 	TouchableOpacity,
 	StyleSheet
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-const {
-	Constants: {
-		colors
-	}
-} = require("../../ProjectData.json");
+import { Text, MaterialCommunityIcons } from "../styles/components";
 
 interface ListItemComponent {
 	onPress: (item?: string) => void,
@@ -27,15 +21,15 @@ const _ListItem = ({ onPress = () => null, item = "", title = "", isSelected = f
 			style={styles.container}
 		>
 			<View style={styles.titleContainer}>
-				<Text style={[styles.title, {color: colors.purple}]}>
+				<Text type="text" style={styles.title}>
 					{title}
 				</Text>
 			</View>
 			<View style={styles.iconContainer}>
 				<MaterialCommunityIcons
+					type="text2"
 					name={isSelected ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"}
 					size={30}
-					color={colors.darkPurple}
 				/>
 			</View>
 		</TouchableOpacity>
@@ -62,7 +56,6 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		...systemWeights.semibold,
-		color: colors.darkPurple,
 		fontSize: 18,
 		textAlign: "left"
 	},
