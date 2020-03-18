@@ -2011,7 +2011,7 @@ export default class App extends Component {
 					</LinearGradient>
 				</Animated.View>
 				
-				<Animated.View style={[styles.lowerContent, {flex: this.state.lowerContentFlex}]}>
+				<Animated.View style={[styles.lowerContent, {flex: this.state.lowerContentFlex, backgroundColor: this.getTheme().background }]}>
 					
 					<View style={{flex: 1}}>
 						
@@ -2111,8 +2111,7 @@ export default class App extends Component {
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
-		backgroundColor: colors.darkPurple
+		flex: 1
 	},
 	linearGradient: {
 		flex: 1
@@ -2121,7 +2120,6 @@ const styles = StyleSheet.create({
 		backgroundColor: "transparent"
 	},
 	lowerContent: {
-		backgroundColor: colors.white
 	},
 	centerContent: {
 		flex: 1,
