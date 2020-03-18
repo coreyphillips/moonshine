@@ -41,7 +41,6 @@ export const TouchableHighlight = styled.TouchableHighlight`
 export const EvilIcon = styled(_EvilIcon).attrs((props) => ({
 	color: props.type ? props.theme[props.type] : props.theme.text
 }))`
-  flex: 1
 `;
 
 export const FontAwesome5 = styled(_FontAwesome5).attrs((props) => ({
