@@ -9,6 +9,7 @@ import _MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunity
 import _MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import _Fontisto from "react-native-vector-icons/Fontisto";
 import _Foundation from "react-native-vector-icons/Foundation";
+import _Ionicons from "react-native-vector-icons/Ionicons";
 /**********************
 General styles
  **********************/
@@ -83,6 +84,16 @@ export const Fontisto = styled(_Fontisto).attrs((props) => ({
 `;
 
 export const Foundation = styled(_Foundation).attrs((props) => ({
+	color: props.type ? props.theme[props.type] : props.theme.text
+}))`
+`;
+
+export const Ionicons = styled(_Ionicons).attrs((props) => ({
+	color: props.type ? props.theme[props.type] : props.theme.text
+}))`
+`;
+
+export const ActivityIndicator = styled.ActivityIndicator.attrs((props) => ({
 	color: props.type ? props.theme[props.type] : props.theme.text
 }))`
 `;

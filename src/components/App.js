@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import {
-	ActivityIndicator,
+	View,
 	Animated,
 	AppState,
 	BackHandler,
@@ -13,20 +13,17 @@ import {
 	SafeAreaView,
 	StatusBar,
 	StyleSheet,
-	Text,
 	TouchableOpacity,
 	TouchableWithoutFeedback,
-	View,
 	Easing,
 	Linking
 } from "react-native";
 import { ThemeProvider } from "styled-components/native";
-import { LinearGradient } from "../styles/components";
+import { LinearGradient, Text } from "../styles/components";
 import { themes } from "../styles/themes";
 
 import SplashScreen from "react-native-splash-screen";
 import {systemWeights} from "react-native-typography";
-import EvilIcon from "react-native-vector-icons/EvilIcons";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import TouchID from "react-native-touch-id";
 import "../../shim";
@@ -52,6 +49,7 @@ import bitcoinUnits from "bitcoin-units";
 import DefaultModal from "./DefaultModal";
 import Welcome from "./Welcome";
 import BackupPhrase from './BackupPhrase';
+import TransactionListHeader from "./TransactionListHeader";
 //import ElectrumTesting from "./ElectrumTesting";
 const uuidv4 = require("uuid/v4");
 const {UIManager} = NativeModules;
@@ -2019,32 +2017,14 @@ export default class App extends Component {
 						
 						<View style={{flex: 1}}>
 							<Animated.View style={{flex: 1, opacity: this.state.transactionListOpacity}}>
-								<View style={styles.transactionListHeader}>
-									{!this.state.loadingTransactions &&
-									<TouchableOpacity onPress={this.refreshWallet} style={styles.refresh}>
-										<Ionicons name={"ios-refresh"} size={18} color={colors.darkPurple} />
-									</TouchableOpacity>}
-									{this.state.loadingTransactions && this.state.displayTransactionList &&
-									<View style={styles.refresh}>
-										<ActivityIndicator size="small" color={colors.lightPurple} />
-									</View>}
-									<TouchableOpacity
-										onPress={this.state.transactionsAreExpanded ? this.resetView : this.expandTransactions}
-										style={[styles.centerContent, { flex: 2 }]}
-									>
-										<Text style={styles.boldText}>Transactions</Text>
-									</TouchableOpacity>
-									
-									<TouchableOpacity
-										onPress={this.state.transactionsAreExpanded ? this.resetView : this.expandTransactions}
-										style={styles.expand}
-									>
-										{this.state.transactionsAreExpanded &&
-										<EvilIcon name={"chevron-down"} size={30} color={colors.darkPurple} />}
-										{!this.state.transactionsAreExpanded &&
-										<EvilIcon name={"chevron-up"} size={30} color={colors.darkPurple} />}
-									</TouchableOpacity>
-								</View>
+								<TransactionListHeader
+									loadingTransactions={this.state.loadingTransactions}
+									refreshWallet={this.refreshWallet}
+									displayTransactionList={this.state.displayTransactionList}
+									transactionsAreExpanded={this.state.transactionsAreExpanded}
+									resetView={this.resetView}
+									expandTransactions={this.expandTransactions}
+								/>
 								<TransactionList
 									exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]}
 									blockHeight={this.props.wallet.blockHeight[this.props.wallet.selectedCrypto]}
@@ -2212,16 +2192,8 @@ const styles = StyleSheet.create({
 		right: 0,
 		bottom: 10
 	},
-	transactionListHeader: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingVertical: 5,
-		borderBottomWidth: 1,
-		borderBottomColor: colors.gray
-	},
 	boldText: {
 		...systemWeights.semibold,
-		color: colors.purple,
 		fontSize: 20,
 		textAlign: "center"
 	},
@@ -2230,18 +2202,6 @@ const styles = StyleSheet.create({
 		color: colors.white,
 		fontSize: 20,
 		textAlign: "center"
-	},
-	refresh: {
-		flex: 0.5,
-		alignItems: "flex-start",
-		justifyContent: "center",
-		paddingLeft: 15
-	},
-	expand: {
-		flex: 0.5,
-		alignItems: "flex-end",
-		justifyContent: "center",
-		paddingRight: 10
 	},
 	camera: {
 		flex: 1,
