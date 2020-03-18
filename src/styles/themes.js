@@ -16,7 +16,8 @@ export const themes = {
 		PRIMARY_DARK: "#57158f", //colors.darkPurple
 		white: "#FFF",
 		gray: "#efefef", //colors.lightGray
-		gray2: "#6e6e6e" //colors.darkGray
+		gray2: "#6e6e6e", //colors.darkGray
+		warning: "#F15B2A", //colors.red
 	},
 	dark: {
 		mode: "dark",
@@ -35,6 +36,7 @@ export const themes = {
 		PRIMARY_DARK: "#2f2d3a",
 		white: "#f5f5f5",
 		gray: "#efefef",
-		gray2: "#efefef"
+		gray2: "#efefef",
+		warning: "#F15B2A",
 	},
 };

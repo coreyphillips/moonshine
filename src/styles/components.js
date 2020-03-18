@@ -3,9 +3,12 @@ import {themes} from "./themes";
 import _LinearGradient from "react-native-linear-gradient";
 import _QRCode from 'react-native-qrcode-svg';
 import _EvilIcon from "react-native-vector-icons/EvilIcons";
+import _FontAwesome from "react-native-vector-icons/FontAwesome";
 import _FontAwesome5 from "react-native-vector-icons/FontAwesome5";
 import _MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import _MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import _Fontisto from "react-native-vector-icons/Fontisto";
+import _Foundation from "react-native-vector-icons/Foundation";
 /**********************
 General styles
  **********************/
@@ -52,6 +55,11 @@ export const EvilIcon = styled(_EvilIcon).attrs((props) => ({
 }))`
 `;
 
+export const FontAwesome = styled(_FontAwesome).attrs((props) => ({
+	color: props.type ? props.theme[props.type] : props.theme.text
+}))`
+`;
+
 export const FontAwesome5 = styled(_FontAwesome5).attrs((props) => ({
 	color: props.type ? props.theme[props.type] : props.theme.text
 }))`
@@ -63,6 +71,16 @@ export const MaterialCommunityIcons = styled(_MaterialCommunityIcons).attrs((pro
 `;
 
 export const MaterialIcons = styled(_MaterialIcons).attrs((props) => ({
+	color: props.type ? props.theme[props.type] : props.theme.text
+}))`
+`;
+
+export const Fontisto = styled(_Fontisto).attrs((props) => ({
+	color: props.type ? props.theme[props.type] : props.theme.text
+}))`
+`;
+
+export const Foundation = styled(_Foundation).attrs((props) => ({
 	color: props.type ? props.theme[props.type] : props.theme.text
 }))`
 `;

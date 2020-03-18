@@ -14,11 +14,6 @@ import {
 } from 'react-native';
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
-import Fontisto from "react-native-vector-icons/Fontisto";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
-import FontAwesome5 from "react-native-vector-icons/FontAwesome5";
-import Foundation from "react-native-vector-icons/Foundation";
 import DefaultModal from "./DefaultModal";
 import XButton from "./XButton";
 import PinPad from "./PinPad";
@@ -35,7 +30,7 @@ import ListItem from "./ListItem";
 import TextInputRow from "./SettingsOptions/TextInputRow";
 import HeaderRow from "./SettingsOptions/HeaderRow";
 import MultiOptionRow from "./SettingsOptions/MultiOptionRow";
-import { Text } from "../styles/components";
+import { Text, Fontisto, MaterialCommunityIcons, FontAwesome, FontAwesome5, Foundation } from "../styles/components";
 
 const {
 	Constants: {
@@ -945,7 +940,7 @@ class Settings extends PureComponent {
 									<Text style={[styles.title, { color: colors.white, fontWeight: "bold" }]}>General Settings</Text>
 									
 									<TouchableOpacity onPress={() => this.setState({ displayGeneralHelp: true })} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
-										<MaterialCommunityIcons name={"help-circle-outline"} size={26} color={colors.white} />
+										<MaterialCommunityIcons type="white" name={"help-circle-outline"} size={26} color={colors.white} />
 									</TouchableOpacity>
 								
 								</View>
@@ -963,9 +958,9 @@ class Settings extends PureComponent {
 							
 							<SettingGeneral
 								value={`Selected Fiat Currency:\n${this.getSelectedCurrency()}`}
-								col1Image={<Fontisto name="money-symbol" style={{ paddingVertical: 2 }} size={50} color={colors.purple} />}
+								col1Image={<Fontisto name="money-symbol" style={{ paddingVertical: 2 }} size={50} />}
 								onPress={() => this.toggleFiatModal({ display: true })}
-								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
+								valueStyle={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
 							
@@ -992,18 +987,16 @@ class Settings extends PureComponent {
 								onPress={() => this.toggleImportPhrase({ display: true })}
 								col1Image={<MaterialCommunityIcons name="import" size={50} color={colors.purple} />}
 								col2Style={{flex: 1.2, alignItems: "center", justifyContent: "center", paddingRight: 10}}
-								titleStyle={{color: colors.purple}}
-								valueStyle={{color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold"}}
+								valueStyle={{fontSize: 16, textAlign: "center", fontWeight: "bold"}}
 							/>
 							
 							<SettingGeneral
 								title=""
 								value="Electrum Options"
 								onPress={() => this.toggleElectrumOptions({ display: true })}
-								col1Image={<Fontisto name="atom" size={45} style={{ paddingVertical: 2 }} color={colors.purple} />}
+								col1Image={<Fontisto name="atom" size={45} style={{ paddingVertical: 2 }} />}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", paddingRight: 10 }}
-								titleStyle={{ color: colors.purple }}
-								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
+								valueStyle={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 							/>
 							
 							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
@@ -1012,7 +1005,7 @@ class Settings extends PureComponent {
 									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{this.getWalletName()}</Text>
 									
 									<TouchableOpacity onPress={() => this.setState({ displayWalletHelp: true })} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
-										<MaterialCommunityIcons name={"help-circle-outline"} size={26} color={colors.white} />
+										<MaterialCommunityIcons type="white" name={"help-circle-outline"} size={26} color={colors.white} />
 									</TouchableOpacity>
 								
 								</View>
@@ -1104,27 +1097,25 @@ class Settings extends PureComponent {
 								onPress={() => this.toggleBroadcastTransaction({ display: true })}
 								col1Image={<Foundation name="mobile-signal" size={50} color={colors.purple} />}
 								col2Style={{flex: 1.2, alignItems: "center", justifyContent: "center", paddingRight: 10}}
-								titleStyle={{color: colors.purple}}
-								valueStyle={{color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold"}}
+								valueStyle={{fontSize: 16, textAlign: "center", fontWeight: "bold"}}
 							/>
 							
 							<SettingGeneral
 								title="Backup Wallet"
 								value={this.getBackupWalletValue()}
 								onPress={() => this.toggleBackupPhrase({ selectedWallet, display: true })}
-								rowStyle={this.hasBackedUpWallet() ? { backgroundColor: colors.white } : { backgroundColor: colors.red }}
-								col1Image={<MaterialCommunityIcons name="wallet" size={50} color={this.hasBackedUpWallet() ? colors.purple : colors.white} />}
+								col1Image={<MaterialCommunityIcons type={this.hasBackedUpWallet() ? "text" : "white"} name="wallet" size={50} />}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", paddingRight: 10 }}
-								titleStyle={{ color: this.hasBackedUpWallet() ? colors.purple : colors.white }}
-								valueStyle={{ color: this.hasBackedUpWallet() ? colors.purple : colors.white, fontSize: 16, textAlign: "center", fontWeight: this.hasBackedUpWallet() ? "normal" : "bold" }}
+								warning={!this.hasBackedUpWallet()}
+								valueStyle={{ fontSize: 16, textAlign: "center", fontWeight: this.hasBackedUpWallet() ? "normal" : "bold" }}
 							/>
 							
 							<SettingGeneral
 								value={`Rescan ${this.getWalletName()}\n${cryptoLabel} Wallet`}
 								col1Loading={this.state.rescanningWallet}
-								col1Image={<MaterialCommunityIcons name="radar" size={50} color={colors.purple} />}
+								col1Image={<MaterialCommunityIcons name="radar" size={50} />}
 								onPress={this.rescanWallet}
-								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
+								valueStyle={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
 							
@@ -1137,17 +1128,17 @@ class Settings extends PureComponent {
 							
 							<SettingGeneral
 								value={`Need Some Help?\nsupport@moonshinewallet.com`}
-								col1Image={<FontAwesome name="support" size={50} color={colors.purple} />}
+								col1Image={<FontAwesome name="support" size={50} />}
 								onPress={this.requestHelp}
-								valueStyle={{ color: colors.purple, fontSize: 14, textAlign: "center", fontWeight: "bold" }}
+								valueStyle={{ fontSize: 14, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
 							
 							<SettingGeneral
 								value={`Found this app useful?\nPlease consider donating`}
-								col1Image={<FontAwesome5 name="coins" size={40} color={colors.purple} />}
+								col1Image={<FontAwesome5 name="coins" size={40} />}
 								onPress={this.donate}
-								valueStyle={{ color: colors.purple, fontSize: 16, textAlign: "center", fontWeight: "bold" }}
+								valueStyle={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
 

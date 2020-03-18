@@ -1,8 +1,8 @@
 import React, {memo} from "react";
-import {ActivityIndicator, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {ActivityIndicator, StyleSheet, TouchableOpacity} from "react-native";
 import {systemWeights} from "react-native-typography";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import PropTypes from "prop-types";
+import { View, Text, MaterialCommunityIcons } from "../styles/components";
 
 const {
 	Constants: {
@@ -14,6 +14,7 @@ interface SettingGeneralComponent {
 	onPress: Function,
 	title?: string, //Text for Column One
 	value?: string, //Text for Column Two
+	warning?: boolean,
 	col1Loading?: boolean,
 	col2Loading?: boolean,
 	col1Image?: string|object,
@@ -24,36 +25,36 @@ interface SettingGeneralComponent {
 	titleStyle?: object, //Style for Column One Text
 	valueStyle?: object //Style for Column Two Text
 }
-const _SettingGeneral = ({ title = "", value = "", col1Loading = false, col2Loading = false, col1Image = "", col2Image = "", rowStyle = {}, onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle = {} }: SettingGeneralComponent) => {
+const _SettingGeneral = ({ title = "", value = "", warning = false, col1Loading = false, col2Loading = false, col1Image = "", col2Image = "", rowStyle = {}, onPress = () => null, col1Style = {}, col2Style = {}, titleStyle = {}, valueStyle = {} }: SettingGeneralComponent) => {
 	try {
 		return (
 			<TouchableOpacity onPress={() => onPress(value)} activeOpacity={1} style={styles.rowContainer}>
-				<View style={[styles.row, rowStyle]}>
+				<View type={warning ? "warning" : "card"} style={[styles.row, rowStyle]}>
 					{!col1Loading && col1Image === "" &&
-					<View style={[styles.col1, col1Style]}>
-						<Text style={[styles.title, titleStyle]}>{title}</Text>
+					<View type={warning ? "warning" : "card"} style={[styles.col1, col1Style]}>
+						<Text type={warning ? "white" : "text"} style={[styles.title, titleStyle]}>{title}</Text>
 					</View>}
 					{col1Loading &&
-					<View style={[styles.col1, col1Style]}>
+					<View type={warning ? "warning" : "card"} style={[styles.col1, col1Style]}>
 						<ActivityIndicator size="large" color={colors.lightPurple} />
 					</View>}
 					{!col1Loading && col1Image !== "" &&
-					<View style={[styles.col1, col1Style]}>
+					<View type={warning ? "warning" : "card"} style={[styles.col1, col1Style]}>
 						{col1Image}
 					</View>}
 					
 					{!col2Loading && col2Image === "" &&
-					<View style={[styles.col2, col2Style]}>
-						<Text style={[styles.text, valueStyle]}>{value}</Text>
+					<View type={warning ? "warning" : "card"} style={[styles.col2, col2Style]}>
+						<Text type={warning ? "white" : "text"} style={[styles.text, valueStyle]}>{value}</Text>
 					</View>}
 					{col2Loading &&
-					<View style={[styles.col2, col2Style]}>
+					<View type={warning ? "warning" : "card"} style={[styles.col2, col2Style]}>
 						<ActivityIndicator size="large" color={colors.lightPurple} />
 					</View>}
 					
 					{!col2Loading && col2Image !== "" &&
 					<View style={[styles.col2, col2Style]}>
-						<MaterialCommunityIcons name={col2Image} size={50} color={colors.purple} />
+						<MaterialCommunityIcons type={warning ? "white" : "text"} name={col2Image} size={50} />
 					</View>
 					}
 				
@@ -69,6 +70,7 @@ _SettingGeneral.propTypes = {
 	onPress: PropTypes.func.isRequired,
 	title: PropTypes.string,
 	value: PropTypes.string,
+	warning: PropTypes.bool,
 	col1Loading: PropTypes.bool,
 	col2Loading: PropTypes.bool,
 	col1Image: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
@@ -92,7 +94,6 @@ const styles = StyleSheet.create({
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
-		backgroundColor: colors.white,
 		borderRadius: 11.5,
 		width: "80%",
 		minHeight: 80,
@@ -102,21 +103,21 @@ const styles = StyleSheet.create({
 		flex: 0.4,
 		alignItems: "center",
 		justifyContent: "flex-start",
+		backgroundColor: "transparent"
 	},
 	col2: {
 		flex: 0.6,
 		alignItems: "flex-start",
 		justifyContent: "center",
+		backgroundColor: "transparent"
 	},
 	title: {
 		...systemWeights.regular,
-		color: colors.purple,
 		fontSize: 20,
 		textAlign: "left"
 	},
 	text: {
 		...systemWeights.regular,
-		color: colors.purple,
 		fontSize: 16,
 		textAlign: "left"
 	},
