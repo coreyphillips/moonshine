@@ -18,6 +18,7 @@ export const themes = {
 		white: "#FFF",
 		gray: "#efefef", //colors.lightGray
 		gray2: "#6e6e6e", //colors.darkGray
+		gray3: "#f0f0f0", //colors.gray
 		warning: "#F15B2A", //colors.red
 		uneditable: "#efefef" //colors.lightGray
 	},
@@ -40,6 +41,7 @@ export const themes = {
 		white: "#f5f5f5",
 		gray: "#efefef",
 		gray2: "#efefef",
+		gray3: "#585664",
 		warning: "#F15B2A",
 		uneditable: "#585664"
 	},

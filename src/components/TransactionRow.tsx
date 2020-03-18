@@ -1,13 +1,12 @@
 import React, { memo } from "react";
 import {
 	StyleSheet,
-	Text,
-	View,
 	TouchableOpacity
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
 import bitcoinUnits from "bitcoin-units";
+import { View, Text } from "../styles/components";
 
 const {
 	Constants: {
@@ -101,31 +100,30 @@ const _TransactionRow = ({ id = "", coin = "bitcoin", address = "", amount = 0, 
 	if (!label) label = address;
 	if (label.length > 18) label = `${label.substr(0, 18)}...`;
 	const fontWeight = type === "sent" ? "normal" : "bold";
-	const backgroundColor = isBlacklisted ? colors.red : "transparent";
-	const textColor = isBlacklisted ? colors.white : colors.darkPurple;
+	const textColor = "text2";
 	return (
-		<TouchableOpacity onPress={() => onTransactionPress(id)} style={[styles.container, { backgroundColor }]}>
-			<View style={styles.header}>
+		<TouchableOpacity onPress={() => onTransactionPress(id)} style={styles.container}>
+			<View type="gray3" style={styles.header}>
 				{isBlacklisted &&<Text style={[styles.text, { fontWeight: "bold", fontSize: 16, color: colors.red  }]}>UTXO Blacklisted</Text>}
-				<Text style={[styles.smallText, { color: isBlacklisted ? colors.red : colors.darkPurple }]}>{moment.unix(date).format('l @ h:mm a')}</Text>
+				<Text type="text2" style={[styles.smallText, { ...systemWeights.semibold, }]}>{moment.unix(date).format('l @ h:mm a')}</Text>
 			</View>
 			<View style={styles.row}>
 				<View style={styles.col1}>
-					<Text style={[styles.text, { fontWeight, fontSize: 14, color: textColor  }]}>{label}</Text>
-					<Text style={[styles.smallText, { fontWeight, fontSize: 14, color: textColor  }]}>Confirmations: {getConfirmations()}</Text>
+					<Text type={textColor} style={[styles.text, { fontWeight, fontSize: 14  }]}>{label}</Text>
+					<Text type={textColor} style={[styles.smallText, { fontWeight, fontSize: 14  }]}>Confirmations: {getConfirmations()}</Text>
 				</View>
 				<View style={styles.col2}>
-					<Text style={[styles.text, { fontWeight, color: textColor  }]}>{getFiatAmountLabel()}</Text>
-					<Text style={[styles.text, { fontWeight, color: textColor  }]}>{type === "received" ? "+" : "-"}{getCryptoAmountLabel()}</Text>
+					<Text type={textColor} style={[styles.text, { fontWeight }]}>{getFiatAmountLabel()}</Text>
+					<Text type={textColor} style={[styles.text, { fontWeight  }]}>{type === "received" ? "+" : "-"}{getCryptoAmountLabel()}</Text>
 				</View>
 			</View>
 			{messages.length > 0 &&
 			<View style={styles.row}>
 				<View style={[styles.col1, { flex: 0.6 }]}>
-					<Text style={[styles.text, { fontWeight, fontSize: 16, color: textColor  }]}>Message:</Text>
+					<Text type={textColor} style={[styles.text, { fontWeight, fontSize: 16  }]}>Message:</Text>
 				</View>
 				<View style={[styles.col2, { flex: 1 }]}>
-					<Text style={[styles.text, { fontWeight, color: textColor  }]}>{getMessages()}</Text>
+					<Text type={textColor} style={[styles.text, { fontWeight }]}>{getMessages()}</Text>
 				</View>
 			</View>}
 		</TouchableOpacity>
@@ -155,7 +153,6 @@ const styles = StyleSheet.create({
 	},
 	header: {
 		flex: 1,
-		backgroundColor: colors.gray,
 		alignItems: "center",
 		justifyContent: "center",
 		paddingVertical: 2,
@@ -183,13 +180,11 @@ const styles = StyleSheet.create({
 	},
 	text: {
 		...systemWeights.light,
-		color: colors.darkPurple,
 		fontSize: 16,
 		textAlign: "center"
 	},
 	smallText: {
 		...systemWeights.thin,
-		color: colors.darkPurple,
 		fontSize: 14,
 		textAlign: "center"
 	}

@@ -1,8 +1,6 @@
 import React, {memo} from "react";
 import {
 	StyleSheet,
-	Text,
-	View,
 	FlatList,
 	RefreshControl
 } from "react-native";
@@ -10,6 +8,7 @@ import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
 import TransactionRow from "./TransactionRow";
 import LottieView from "lottie-react-native";
+import { View, Text } from "../styles/components";
 
 const {
 	Constants: {
@@ -135,7 +134,7 @@ const _TransactionList = (
 		try {
 			return (
 				<View style={{ position: "absolute", alignItems: "center", justifyContent: "center", top: 0, bottom: 0, left: 0, right: 0, borderWidth: 1, borderColor: "blue" }}>
-					<Text style={[styles.boldPurpleText, { marginTop: 20 }]}>No items to display...</Text>
+					<Text style={[styles.boldText, { marginTop: 20 }]}>No items to display...</Text>
 					<LottieView
 						source={require("../assets/lottie/empty_list")}
 						autoPlay={true}
@@ -174,7 +173,7 @@ const _TransactionList = (
 		<View style={styles.container}>
 			{!hasTransactions() &&
 			<View style={styles.emptyComponentContainer}>
-				<Text style={styles.purpleText}>No transactions to display...</Text>
+				<Text style={styles.text}>No transactions to display...</Text>
 			</View>
 			}
 			{hasTransactions() &&
@@ -229,22 +228,18 @@ _TransactionList.propTypes = {
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1,
-		backgroundColor: colors.white
+		flex: 1
 	},
 	transaction: {
-		flex: 1,
-		backgroundColor: colors.white
+		flex: 1
 	},
-	boldPurpleText: {
+	boldText: {
 		...systemWeights.bold,
-		color: colors.purple,
 		fontSize: 20,
 		textAlign: "center"
 	},
-	purpleText: {
+	text: {
 		...systemWeights.regular,
-		color: colors.purple,
 		fontSize: 18,
 		textAlign: "center"
 	},
@@ -252,8 +247,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 		alignItems: "center",
 		justifyContent: "center",
-		paddingBottom: 50,
-		backgroundColor: colors.white
+		paddingBottom: 50
 	}
 });
 
