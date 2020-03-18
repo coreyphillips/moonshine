@@ -2,13 +2,12 @@ import React, {memo} from "react";
 import PropTypes from "prop-types";
 import {
 	StyleSheet,
-	Text,
 	View,
 	TouchableOpacity,
 	FlatList
 } from "react-native";
 import { systemWeights } from "react-native-typography";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import { Text, MaterialCommunityIcons } from "../styles/components";
 const {
 	getCoinData
 } = require("../utils/networks");
@@ -190,13 +189,13 @@ const _CoinControl = (
 	return (
 		<View style={[styles.container, { ...style }]}>
 			
-			<Text style={styles.coinControlText}>
+			<Text type="text2" style={styles.coinControlText}>
 				Amount available to spend:
 			</Text>
-			<Text style={[styles.coinControlHeader, { marginTop: 10, marginBottom: 2 }]}>
+			<Text type="text2" style={[styles.coinControlHeader, { marginTop: 10, marginBottom: 2 }]}>
 				{getAvailableToSpendText()}
 			</Text>
-			<Text style={[styles.coinControlHeader, { marginBottom: 10 }]}>
+			<Text type="text2" style={[styles.coinControlHeader, { marginBottom: 10 }]}>
 				{`Fiat: ${fiatSymbol}${getFiatBalance({ balance: whiteListedUtxosBalance, exchangeRate })}`}
 			</Text>
 			<Text style={[styles.coinControlText, { fontSize: 20 }]}>What coins would you like to use in this transaction?</Text>
@@ -247,7 +246,6 @@ const styles = StyleSheet.create({
 	},
 	header: {
 		...systemWeights.thin,
-		color: colors.purple,
 		textAlign: "left",
 		backgroundColor: "transparent",
 		fontSize: 18,
@@ -265,13 +263,11 @@ const styles = StyleSheet.create({
 	},
 	text: {
 		...systemWeights.semibold,
-		color: colors.purple,
 		textAlign: "left",
 		backgroundColor: "transparent",
 		fontSize: 16
 	},
 	coinControlText: {
-		color: colors.darkPurple,
 		...systemWeights.regular,
 		fontSize: 22,
 		textAlign: "center"
@@ -281,7 +277,6 @@ const styles = StyleSheet.create({
 		textAlign: "center",
 		backgroundColor: "transparent",
 		fontWeight: "bold",
-		color: colors.darkPurple,
 		fontSize: 18
 	}
 });
