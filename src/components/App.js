@@ -79,12 +79,14 @@ const {
 } = require("../../package");
 const {width} = Dimensions.get("window");
 const bip39 = require("bip39");
-this.subscribedAddress = ""; //Holds currently subscribed address
-this.headersAreSubscribed = false; //Determines whether wallet is subscribed to new headers
-this.subscribedWithPeer = ""; //Holds what peer we are subscribed to new headers with
-this.authenticating = false; //Determines whether the app is currently authenticating. This attempts to address issue #5.
-this.deepLinkUrl = ""; // Holds url for a deep link event.
-this.settingsWasPreviouslyOpen = false;
+try {
+	this.subscribedAddress = ""; //Holds currently subscribed address
+	this.headersAreSubscribed = false; //Determines whether wallet is subscribed to new headers
+	this.subscribedWithPeer = ""; //Holds what peer we are subscribed to new headers with
+	this.authenticating = false; //Determines whether the app is currently authenticating. This attempts to address issue #5.
+	this.deepLinkUrl = ""; // Holds url for a deep link event.
+	this.settingsWasPreviouslyOpen = false;
+} catch (e) {}
 export default class App extends Component {
 	
 	state = {

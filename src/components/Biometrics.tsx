@@ -1,5 +1,3 @@
-import Ionicons from "react-native-vector-icons/Ionicons";
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import React, { memo } from "react";
 import PropTypes from "prop-types";
 import {
@@ -8,13 +6,7 @@ import {
 	TouchableOpacity
 } from "react-native";
 import { systemWeights } from "react-native-typography";
-import { Text } from "../styles/components";
-
-const {
-	Constants: {
-		colors
-	}
-} = require("../../ProjectData.json");
+import { Text, Ionicons, MaterialCommunityIcons } from "../styles/components";
 
 interface General {
 	biometricTypeSupported: string, //FaceID or TouchID
@@ -25,39 +17,39 @@ const GetIcon = ({ biometricTypeSupported = "", retryAuthentication = () => null
 		if (biometricTypeSupported === "FaceID") {
 			return (
 				<TouchableOpacity activeOpacity={0.6} onPress={retryAuthentication} style={styles.container}>
-					<MaterialCommunityIcons name={"face"} size={65} color={colors.white} />
-					<Text style={styles.text}>
+					<MaterialCommunityIcons type="white" name={"face"} size={65} />
+					<Text type="white" style={styles.text}>
 						FaceID Enabled
 					</Text>
-					<Text style={styles.smallText}>Retry</Text>
+					<Text type="white" style={styles.smallText}>Retry</Text>
 				</TouchableOpacity>
 			);
 		}
 		if (biometricTypeSupported === "TouchID") {
 			return (
 				<TouchableOpacity activeOpacity={0.6} onPress={retryAuthentication} style={styles.container}>
-					<Ionicons name={"ios-finger-print"} size={65} color={colors.white} />
-					<Text style={styles.text}>
+					<Ionicons type="white" name={"ios-finger-print"} size={65} />
+					<Text type="white" style={styles.text}>
 						TouchID Enabled
 					</Text>
-					<Text style={styles.smallText}>Retry</Text>
+					<Text type="white" style={styles.smallText}>Retry</Text>
 				</TouchableOpacity>
 			);
 		}
 		return(
 			<TouchableOpacity activeOpacity={0.6} onPress={retryAuthentication} style={styles.container}>
-				<Ionicons name={"ios-finger-print"} size={65} color={colors.white} />
-				<Text style={styles.text}>
+				<Ionicons type="white" name={"ios-finger-print"} size={65} />
+				<Text type="white" style={styles.text}>
 					It appears that your device does not support Biometric security.
 				</Text>
-				<Text style={styles.smallText}>Retry</Text>
+				<Text type="white" style={styles.smallText}>Retry</Text>
 			</TouchableOpacity>
 		);
 	} catch (e) {
 		return(
 			<View style={styles.container}>
-				<Ionicons name={"ios-finger-print"} size={65} color={colors.white} />
-				<Text style={styles.text}>
+				<Ionicons type="white" name={"ios-finger-print"} size={65} />
+				<Text type="white" style={styles.text}>
 					It appears that your device does not support Biometric security.
 				</Text>
 			</View>

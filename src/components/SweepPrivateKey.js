@@ -889,34 +889,34 @@ class SendTransaction extends PureComponent {
 				<View style={{ flex: 1 }}>
 
 					<View style={{ alignItems: "center", justifyContent: "center" }}>
-						<Text style={[styles.header, { marginBottom: 5 }]}>Amount Detected:</Text>
-						<Text style={styles.largeText}>{`${this.props.settings.fiatSymbol}${this.state.fiatBalance.balance || 0}`}</Text>
-						<Text style={styles.largeText}>{`${this.state.cryptoBalance.balance || 0} ${this.state.cryptoUnitLabel}`}</Text>
+						<Text type="white" style={[styles.header, { marginBottom: 5 }]}>Amount Detected:</Text>
+						<Text type="white" style={styles.largeText}>{`${this.props.settings.fiatSymbol}${this.state.fiatBalance.balance || 0}`}</Text>
+						<Text type="white" style={styles.largeText}>{`${this.state.cryptoBalance.balance || 0} ${this.state.cryptoUnitLabel}`}</Text>
 					</View>
 
 					<View style={{ flex: 0.7, justifyContent: "space-evenly", marginTop: 20 }}>
 
 						<View style={styles.row}>
 							<View style={{ flex: 1, justifyContent: "flex-end", alignItems: "flex-start" }}>
-								<Text style={[styles.largeText, { fontWeight: "bold" }]}>Sending To: <Text style={styles.largeText}>{`Wallet ${this.props.wallet.walletOrder.indexOf(this.props.wallet.selectedWallet)}`}</Text></Text>
+								<Text type="white" style={[styles.largeText, { fontWeight: "bold" }]}>Sending To: <Text type="white" style={styles.largeText}>{`Wallet ${this.props.wallet.walletOrder.indexOf(this.props.wallet.selectedWallet)}`}</Text></Text>
 							</View>
 						</View>
 
 						<View style={styles.row}>
 							<View style={{ flex: 1, justifyContent: "flex-end", alignItems: "flex-start" }}>
-								<Text style={[styles.largeText, { fontWeight: "bold" }]}>Amount: <Text style={styles.largeText}>{`${this.state.cryptoBalance.balanceMinusFees} ${this.state.cryptoUnitLabel}`}</Text></Text>
+								<Text type="white" style={[styles.largeText, { fontWeight: "bold" }]}>Amount: <Text type="white" style={styles.largeText}>{`${this.state.cryptoBalance.balanceMinusFees} ${this.state.cryptoUnitLabel}`}</Text></Text>
 							</View>
 						</View>
 
 						<View style={[styles.row, { marginTop: 20, marginBottom: 1 }]}>
 							<View style={{ flex: 1.2 }}>
-								<Text style={styles.text}>Fee: {this.state.fee || this.state.recommendedFee}sat/B </Text>
+								<Text type="white" style={styles.text}>Fee: {this.state.fee || this.state.recommendedFee}sat/B </Text>
 							</View>
 							<View style={{ flex: 1 }}>
-								<Text style={[styles.text, { textAlign: "center" }]}>{this.props.settings.fiatSymbol}{this.state.totalFiatFee}</Text>
+								<Text type="white" style={[styles.text, { textAlign: "center" }]}>{this.props.settings.fiatSymbol}{this.state.totalFiatFee}</Text>
 							</View>
 							<View style={{ flex: 1 }}>
-								<Text style={[styles.text, { textAlign: "center" }]}>{this.state.totalFee} sats</Text>
+								<Text type="white" style={[styles.text, { textAlign: "center" }]}>{this.state.totalFee} sats</Text>
 							</View>
 						</View>
 						<View style={styles.sliderRow}>

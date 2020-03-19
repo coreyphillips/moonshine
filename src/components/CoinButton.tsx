@@ -22,7 +22,7 @@ const {
 interface FormatBalance {
 	coin: string,
 	cryptoUnit: string,
-	balance: number
+	balance?: number
 }
 const formatBalance = ({ coin = "", cryptoUnit = "satoshi", balance = 0 }: FormatBalance): string => {
 	try {
@@ -50,7 +50,7 @@ interface CoinButtonComponent {
 	coin: string,
 	label: string,
 	walletId: string,
-	balance: number
+	balance?: number
 }
 const _CoinButton = ({ onCoinPress, cryptoUnit = "satoshi", coin = "bitcoin", label = "Bitcoin", walletId = "wallet0", balance = 0 }: CoinButtonComponent) => {
 	return (
@@ -76,7 +76,7 @@ _CoinButton.propTypes = {
 	coin: PropTypes.string.isRequired,
 	label: PropTypes.string.isRequired,
 	walletId: PropTypes.string.isRequired,
-	balance: PropTypes.number.isRequired
+	balance: PropTypes.number
 };
 
 const styles = StyleSheet.create({

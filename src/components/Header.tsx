@@ -1,14 +1,10 @@
 import React, {memo} from "react";
-import {StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {StyleSheet, TouchableOpacity, View} from "react-native";
 import PropTypes from "prop-types";
 import bitcoinUnits from "bitcoin-units";
 import {systemWeights} from "react-native-typography";
+import { Text } from "../styles/components";
 
-const {
-	Constants: {
-		colors
-	}
-} = require("../../ProjectData.json");
 const {
 	formatNumber,
 	capitalize
@@ -79,23 +75,23 @@ const _Header = ({compress = false, fiatSymbol = "$", selectedCrypto = "bitcoin"
 	return (
 		<TouchableOpacity style={styles.container} activeOpacity={activeOpacity} onPress={_onSelectCoinPress}>
 			{walletName !== "" &&
-			<Text style={[styles.cryptoValue, { fontSize: fontSize/2.5 }]}>{walletName}{compress && `: ${getCryptoLabel({selectedCrypto})}`}</Text>}
+			<Text type="white" style={[styles.cryptoValue, { fontSize: fontSize/2.5 }]}>{walletName}{compress && `: ${getCryptoLabel({selectedCrypto})}`}</Text>}
 			{!compress && <Text style={[styles.cryptoValue, { fontSize: fontSize/2.5, ...selectedCryptoStyle }]}>{getCryptoLabel({selectedCrypto})}</Text>}
 			<View style={styles.row}>
 				<View style={{ flexDirection: "row", alignItems: "center", left: -4 }}>
-					<Text style={[styles.fiatSymbol, { fontSize: fontSize/1.5 }]}>{fiatSymbol} </Text>
-					<Text style={[styles.fiatValue, { fontSize: fontSize }]}>{formatNumber(fiatValue)}</Text>
+					<Text type="white" style={[styles.fiatSymbol, { fontSize: fontSize/1.5 }]}>{fiatSymbol} </Text>
+					<Text type="white" style={[styles.fiatValue, { fontSize: fontSize }]}>{formatNumber(fiatValue)}</Text>
 				</View>
 			</View>
 			<View style={styles.cryptoValueRow}>
-				<Text style={[styles.cryptoValue, { fontSize: fontSize/2.5 }]}>{formatNumber(cryptoValue)}  {getCryptoUnitLabel({ cryptoUnit, selectedCrypto })}</Text>
+				<Text type="white" style={[styles.cryptoValue, { fontSize: fontSize/2.5 }]}>{formatNumber(cryptoValue)}  {getCryptoUnitLabel({ cryptoUnit, selectedCrypto })}</Text>
 			</View>
 			{isOnline !== false &&
 			<View style={styles.cryptoValueRow}>
-				<Text style={[styles.exchangeRate, { fontSize: fontSize/4 }]}>{`1  ${getCoinData({selectedCrypto, cryptoUnit}).crypto} = ${fiatSymbol}${formatNumber(exchangeRate)}`}</Text>
+				<Text type="white" style={[styles.exchangeRate, { fontSize: fontSize/4 }]}>{`1  ${getCoinData({selectedCrypto, cryptoUnit}).crypto} = ${fiatSymbol}${formatNumber(exchangeRate)}`}</Text>
 			</View>}
 			{isOnline !== true &&
-			<Text style={[styles.cryptoValue, { marginTop: 10, fontSize: fontSize/2.5 }]}>Currently Offline</Text>
+			<Text type="white" style={[styles.cryptoValue, { marginTop: 10, fontSize: fontSize/2.5 }]}>Currently Offline</Text>
 			}
 		</TouchableOpacity>
 	);
@@ -137,27 +133,23 @@ const styles = StyleSheet.create({
 	},
 	fiatSymbol: {
 		...systemWeights.light,
-		color: colors.white,
 		alignItems: "center",
 		justifyContent: "center",
 		backgroundColor: "transparent"
 	},
 	fiatValue: {
 		...systemWeights.thin,
-		color: colors.white,
 		textAlign: "center",
 		left: -4,
 		backgroundColor: "transparent"
 	},
 	cryptoValue: {
 		...systemWeights.thin,
-		color: colors.white,
 		textAlign: "center",
 		backgroundColor: "transparent"
 	},
 	exchangeRate: {
 		...systemWeights.light,
-		color: colors.white,
 		textAlign: "center",
 		backgroundColor: "transparent"
 	}
