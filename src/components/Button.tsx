@@ -1,14 +1,15 @@
 import React, { memo } from "react";
 import {
-	StyleSheet,
-	Text,
-	TouchableOpacity,
-	ActivityIndicator,
-	View
+	StyleSheet
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
 import LinearGradient from "react-native-linear-gradient";
+import {
+	Text,
+	TouchableOpacity,
+	ActivityIndicator
+} from "../styles/components";
 
 const {
 	Constants: {
@@ -45,34 +46,44 @@ const _Button = ({ title = "", onPress = () => null, text = "", activeOpacity = 
 					start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}
 				>
 					{loading &&
-					<ActivityIndicator size="small" color={colors.white} />
+					<ActivityIndicator type="white" size="small" />
 					}
 					{title !== "" && !loading &&
-					<Text style={[styles.title, { color, ...titleStyle }]}>{title}</Text>
+					<Text type={disabled ? "gray" : "white"} style={[styles.title, titleStyle]}>{title}</Text>
 					}
 					{text !== "" && !loading &&
-					<Text style={[styles.text, { color, ...textStyle}]}>{text}</Text>
+					<Text type={disabled ? "gray" : "white"} style={[styles.text, textStyle]}>{text}</Text>
 					}
 					{text2 !== "" && !loading &&
-					<Text style={[styles.text, { color, ...textStyle}]}>{text2}</Text>
+					<Text type={disabled ? "gray" : "white"} style={[styles.text, textStyle]}>{text2}</Text>
 					}
 				</LinearGradient>
 			</TouchableOpacity>
-		)
+		);
 	} else {
 		return (
-			<TouchableOpacity style={[styles.container, { borderColor: color, opacity, ...style }]} onPress={_handleOnPress} activeOpacity={activeOpacity} disabled={disabled || loading}>
+			<TouchableOpacity
+				type="transparent"
+				borderColor={disabled ? "gray" : "white"}
+				style={[styles.container, {
+					opacity,
+					...style
+				}]}
+				onPress={_handleOnPress}
+				activeOpacity={activeOpacity}
+				disabled={disabled || loading}
+			>
 				{loading &&
-				<ActivityIndicator size="small" color={colors.white} />
+				<ActivityIndicator type="white" size="small" />
 				}
 				{title !== "" && !loading &&
-				<Text style={[styles.title, { color, ...titleStyle }]}>{title}</Text>
+				<Text type={disabled ? "gray" : "white"} style={[styles.title, titleStyle]}>{title}</Text>
 				}
 				{text !== "" && !loading &&
-				<Text style={[styles.text, { color, ...textStyle}]}>{text}</Text>
+				<Text type={disabled ? "gray" : "white"} style={[styles.text, textStyle]}>{text}</Text>
 				}
 				{text2 !== "" && !loading &&
-				<Text style={[styles.text, { color, ...textStyle}]}>{text2}</Text>
+				<Text type={disabled ? "gray" : "white"} style={[styles.text, textStyle]}>{text2}</Text>
 				}
 			</TouchableOpacity>
 		);
@@ -99,20 +110,17 @@ const styles = StyleSheet.create({
 		borderRadius: 10,
 		paddingHorizontal: 15,
 		paddingVertical: 12,
-		borderColor: colors.white,
 		alignItems: "center",
 		justifyContent: "center",
 		minWidth: "40%"
 	},
 	title: {
 		...systemWeights.bold,
-		color: colors.white,
 		fontSize: 20,
 		textAlign: "center"
 	},
 	text: {
 		...systemWeights.light,
-		color: colors.white,
 		fontSize: 18,
 		textAlign: "center"
 	}
