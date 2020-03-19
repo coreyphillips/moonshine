@@ -4,11 +4,11 @@ import React, { memo } from "react";
 import PropTypes from "prop-types";
 import {
 	StyleSheet,
-	Text,
 	View,
 	TouchableOpacity
 } from "react-native";
 import { systemWeights } from "react-native-typography";
+import { Text } from "../styles/components";
 
 const {
 	Constants: {
@@ -91,14 +91,12 @@ const styles = StyleSheet.create({
 	},
 	text: {
 		...systemWeights.regular,
-		color: colors.white,
 		fontSize: 18,
 		textAlign: "center",
 		marginHorizontal: 20
 	},
 	smallText: {
 		...systemWeights.light,
-		color: colors.white,
 		fontSize: 16,
 		textAlign: "center",
 		marginHorizontal: 20,
