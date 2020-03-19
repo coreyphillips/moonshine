@@ -1015,7 +1015,7 @@ class SendTransaction extends Component {
 						onPress={this.toggleCoinControlModal}
 						style={[styles.row, {justifyContent: "center", paddingVertical: 5 }]}
 					>
-						<FontAwesome5 name="coins" size={20} color={colors.white} />
+						<FontAwesome5 type="white" name="coins" size={20} />
 						<Text style={styles.text}>Coin Control</Text>
 						{this.state.whiteListedUtxos.length > 0 &&
 						<Text style={styles.text}>{`(${this.state.whiteListedUtxos.length}/${this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto].length})`}</Text>

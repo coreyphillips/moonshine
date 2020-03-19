@@ -40,7 +40,7 @@ const _CameraRow = ({ onSendPress = () => null, onReceivePress = () => null, onC
 			</TouchableOpacity>
 			<View style={styles.centerItem}>
 				<TouchableHighlight type="background" onPress={_onCameraPress} underlayColor={colors.gray} style={styles.cameraIcon}>
-					<EvilIcon style={{ bottom: -1, left: 0.25 }} name={"camera"} size={40} />
+					<EvilIcon style={{ bottom: -1.5, left: 0.3 }} name={"camera"} size={40} />
 				</TouchableHighlight>
 			</View>
 			<TouchableOpacity type="button" onPress={_onReceivePress} style={styles.rightItem}>
