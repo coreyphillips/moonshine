@@ -76,7 +76,7 @@ const _Header = ({compress = false, fiatSymbol = "$", selectedCrypto = "bitcoin"
 		<TouchableOpacity style={styles.container} activeOpacity={activeOpacity} onPress={_onSelectCoinPress}>
 			{walletName !== "" &&
 			<Text type="white" style={[styles.cryptoValue, { fontSize: fontSize/2.5 }]}>{walletName}{compress && `: ${getCryptoLabel({selectedCrypto})}`}</Text>}
-			{!compress && <Text style={[styles.cryptoValue, { fontSize: fontSize/2.5, ...selectedCryptoStyle }]}>{getCryptoLabel({selectedCrypto})}</Text>}
+			{!compress && <Text type="white" style={[styles.cryptoValue, { fontSize: fontSize/2.5, ...selectedCryptoStyle }]}>{getCryptoLabel({selectedCrypto})}</Text>}
 			<View style={styles.row}>
 				<View style={{ flexDirection: "row", alignItems: "center", left: -4 }}>
 					<Text type="white" style={[styles.fiatSymbol, { fontSize: fontSize/1.5 }]}>{fiatSymbol} </Text>

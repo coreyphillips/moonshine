@@ -24,7 +24,7 @@ const _DefaultModal = ({ isVisible = false, onClose = () => null, style = {}, co
 			backdropOpacity={0.1}
 			propagateSwipe={true}
 		>
-			<View type="background" borderColor="white" style={[styles.modalContainer, style]}>
+			<View type="background" borderColor="gray3" style={[styles.modalContainer, style]}>
 				{type === "ScrollView" &&
 				<ScrollView type="background" style={[styles.modalScrollView, { ...contentStyle }]}>
 					{children}

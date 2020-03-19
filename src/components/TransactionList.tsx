@@ -172,7 +172,7 @@ const _TransactionList = (
 	return (
 		<View style={styles.container}>
 			{!hasTransactions() &&
-			<View style={styles.emptyComponentContainer}>
+			<View type="background2" style={styles.emptyComponentContainer}>
 				<Text style={styles.text}>No transactions to display...</Text>
 			</View>
 			}
