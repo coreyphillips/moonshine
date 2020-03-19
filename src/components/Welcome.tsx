@@ -11,11 +11,7 @@ const {
 } = require("../../ProjectData.json");
 
 const updates = [
-	`Added ability to toggle between multiple wordlists when importing mnemonic phrases.`,
-	`Fixed a connection bug when attempting to connect to custom electrum servers.`,
-	`To prevent misspellings and make the import process faster, suggested words now appear as the user types when importing mnemonic phrases.`,
-	`Fixed message text when attempting to share an address or request an invoice.`,
-	`Fixed a bug in the "Connected To" settings option that would cause it to hang as it attempted to connect to a new random peer.`
+	`Added Dark Mode.`
 ];
 
 const _Welcome = ({ onClose = () => null, children = <View /> } = {}) => {

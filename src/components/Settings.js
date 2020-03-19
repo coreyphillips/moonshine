@@ -951,8 +951,8 @@ class Settings extends PureComponent {
 							{this.props.settings.biometricsIsSupported &&
 								<SettingSwitch setting="biometrics" value={this.props.settings["biometrics"]} title={`Enable ${this.props.settings.biometricTypeSupported}`} onPress={() => this.toggleSetting("biometrics")} />
 							}
-							<SettingSwitch setting="theme" value={this.isDarkMode()} title="Dark Mode" onPress={this.toggleTheme} />
 							<SettingSwitch setting="pin" value={this.props.settings["pin"]} title="Enable Pin" onPress={this.togglePin} />
+							<SettingSwitch setting="theme" value={this.isDarkMode()} title="Dark Mode" onPress={this.toggleTheme} />
 							<SettingSwitch setting="testnet" value={this.props.settings["testnet"]} title="Enable Testnet" onPress={this.toggleTestnet} />
 							<SettingSwitch setting="rbf" value={this.props.settings["rbf"]} title="Enable RBF" onPress={this.toggleRBF} />
 							<SettingSwitch setting="sendTransactionFallback" value={this.props.settings["sendTransactionFallback"]} title="Send Transaction Fallback" onPress={this.toggleSendTransactionFallback} />
