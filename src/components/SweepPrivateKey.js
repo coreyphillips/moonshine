@@ -1,7 +1,6 @@
 import React, { PureComponent } from "react";
 import {
 	StyleSheet,
-	Text,
 	View,
 	Animated,
 	LayoutAnimation,
@@ -17,6 +16,7 @@ import "../../shim";
 
 import Button from "./Button";
 import Loading from "./Loading";
+import { Text } from "../styles/components";
 import bitcoinUnits from "bitcoin-units";
 import * as electrum from "../utils/electrum";
 
@@ -962,20 +962,17 @@ const styles = StyleSheet.create({
 	},
 	text: {
 		...systemWeights.regular,
-		color: colors.white,
 		fontSize: 18,
 		textAlign: "left",
 		marginLeft: 5
 	},
 	largeText: {
 		...systemWeights.regular,
-		color: colors.white,
 		fontSize: 20,
 		textAlign: "center"
 	},
 	header: {
 		...systemWeights.regular,
-		color: colors.white,
 		fontSize: 26,
 		textAlign: "center"
 	},
