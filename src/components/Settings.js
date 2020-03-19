@@ -913,6 +913,7 @@ class Settings extends PureComponent {
 	
 	isDarkMode = () => {
 		try {
+			if (this.props.settings["darkMode"] === undefined) return false;
 			return this.props.settings["darkMode"];
 		} catch (e) {return false;}
 	};

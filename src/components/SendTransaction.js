@@ -1,10 +1,7 @@
 import React, { Component } from "react";
 import {
 	StyleSheet,
-	Text,
 	TouchableOpacity,
-	View,
-	TextInput,
 	Animated,
 	Clipboard,
 	LayoutAnimation,
@@ -17,18 +14,25 @@ import {
 import PropTypes from "prop-types";
 import Slider from "@react-native-community/slider";
 import { systemWeights } from "react-native-typography";
-import EvilIcon from "react-native-vector-icons/EvilIcons";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
 import Modal from "react-native-modal";
 
 import Header from "./Header";
 import Button from "./Button";
-import XButton from "./XButton";
 import Loading from "./Loading";
 import bitcoinUnits from "bitcoin-units";
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import DefaultModal from './DefaultModal';
 import CoinControl from "./CoinControl";
+import XButton from "./XButton";
+import {
+	View,
+	Text,
+	TextInput,
+	FontAwesome,
+	FontAwesome5,
+	EvilIcon,
+	LinearGradient
+} from "../styles/components";
+import {themes} from "../styles/themes";
 
 const {
 	Constants: {
@@ -714,7 +718,9 @@ class SendTransaction extends Component {
 				});
 				this.props.resetUtxos({ addresses, changeAddresses, currentBlockHeight, selectedCrypto, selectedWallet, currentUtxos });
 				await pauseExecution(1500);
-				//Fade out the loading view
+				//Close component
+				setTimeout(() => this.props.onClose(), 100);
+				//Fade out the loading view as the component closes
 				Animated.timing(
 					this.state.loadingOpacity,
 					{
@@ -724,8 +730,8 @@ class SendTransaction extends Component {
 						useNativeDriver: true
 					}
 				).start(async () => {
-					//Close component after opacity fade-out
-					await this.props.onClose();
+					//Close confirmation modal
+					this.updateConfirmationModal({ display: false });
 					await pauseExecution(1000);
 					this.props.refreshWallet({ ignoreLoading: true });
 				});
@@ -847,6 +853,14 @@ class SendTransaction extends Component {
 		} catch (e) {}
 	};
 	
+	getTheme = () => {
+		try {
+			return this.props.settings.darkMode ? themes["dark"] : themes["light"];
+		} catch (e) {
+			return themes["light"];
+		}
+	};
+	
 	shouldComponentUpdate(nextProps, nextState) {
 		try {return nextProps.transaction !== this.props.transaction || nextState !== this.state;} catch (e) {return false;}
 	}
@@ -858,7 +872,7 @@ class SendTransaction extends Component {
 
 		return (
 			<View style={styles.container}>
-				<View style={{ flex: 1 }}>
+				<View style={{ flex: 1, backgroundColor: "transparent" }}>
 					<Header
 						compress={true}
 						fontSize={45}
@@ -877,7 +891,7 @@ class SendTransaction extends Component {
 					/>
 
 					<View style={styles.row}>
-						<View style={{ flex: 1, justifyContent: "flex-end", alignItems: "flex-start" }}>
+						<View style={styles.addressTitle}>
 							<Text style={styles.text}>Address</Text>
 						</View>
 					</View>
@@ -893,23 +907,25 @@ class SendTransaction extends Component {
 							value={this.props.transaction.address}
 						>
 						</TextInput>
-						<TouchableOpacity style={styles.leftIconContainer} onPress={this.getClipboardContent}>
-							<FontAwesome style={styles.clipboardIcon} name={"clipboard"} size={25} color={colors.purple} />
+						<TouchableOpacity style={[styles.leftIconContainer, { backgroundColor: this.getTheme().background2 }]} onPress={this.getClipboardContent}>
+							<FontAwesome style={styles.clipboardIcon} name={"clipboard"} size={25} />
 						</TouchableOpacity>
-						<TouchableOpacity style={[styles.rightIconContainer, { backgroundColor: colors.white }]} onPress={this.state.onCameraPress}>
-							<EvilIcon style={styles.cameraIcon} name={"camera"} size={40} color={colors.purple} />
+						<TouchableOpacity style={[styles.rightIconContainer, { backgroundColor: this.getTheme().background2 }]} onPress={this.state.onCameraPress}>
+							<EvilIcon style={styles.cameraIcon} name={"camera"} size={40} />
 						</TouchableOpacity>
 					</View>
 
 					<View style={styles.row}>
-						<View style={{ flex: 1, justifyContent: "flex-end", alignItems: "flex-start" }}>
+						<View style={styles.amountContainer}>
 							<Text style={styles.text}>Amount</Text>
 						</View>
 					</View>
 
 					<View style={styles.textInputRow}>
 						<TextInput
-							style={[styles.textInput, { backgroundColor: this.state.spendMaxAmount ? colors.gray : colors.white }]}
+							style={[styles.textInput, {
+								backgroundColor: this.state.spendMaxAmount ? this.getTheme().gray3 : this.getTheme().background2
+							}]}
 							selectionColor={colors.lightPurple}
 							autoCompleteType="off"
 							autoCorrect={false}
@@ -919,21 +935,39 @@ class SendTransaction extends Component {
 							keyboardType="decimal-pad"
 							placeholder="0"
 						/>
-						<TouchableOpacity style={styles.leftIconContainer} onPress={this.onDisplayInCryptoToggle}>
-							<View style={{ flexDirection: "row" }}>
+						<TouchableOpacity
+							style={[styles.leftIconContainer, {
+								backgroundColor: this.state.spendMaxAmount ? this.getTheme().gray3 : this.getTheme().background2
+							}]}
+							onPress={this.onDisplayInCryptoToggle}
+						>
+							<View type="transparent" style={{ flexDirection: "row" }}>
 								<View style={styles.rotatedIcon}>
-									<FontAwesome name={"exchange"} size={15} color={colors.purple} />
+									<FontAwesome name={"exchange"} size={15} />
 								</View>
-								<Text style={styles.amountText}>{this.state.displayInCrypto ? `${getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit }).acronym}` : "USD"}</Text>
+								<Text style={styles.amountText}>
+									{this.state.displayInCrypto ? `${getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit }).acronym}` : "USD"}
+								</Text>
 							</View>
 						</TouchableOpacity>
-						<TouchableOpacity style={[styles.rightIconContainer, { backgroundColor: this.state.spendMaxAmount ? "#813fb1" : colors.white }]} onPress={this.onMaxPress}>
-							<Text style={[styles.amountText, { color: this.state.spendMaxAmount ? colors.white : colors.purple }]}>Max</Text>
+						<TouchableOpacity
+							style={[styles.rightIconContainer, {
+								backgroundColor: this.state.spendMaxAmount ? "#813fb1" : this.getTheme().background2
+							}]}
+							onPress={this.onMaxPress}
+						>
+							<Text
+								style={[styles.amountText, {
+									color: this.state.spendMaxAmount ? this.getTheme().white : this.getTheme().text
+								}]}
+							>
+								Max
+							</Text>
 						</TouchableOpacity>
 					</View>
 
 					<View style={styles.row}>
-						<View style={{ flex: 1, justifyContent: "flex-end", alignItems: "flex-start" }}>
+						<View style={styles.messageHeaderContainer}>
 							<Text style={styles.text}>Message (Optional)</Text>
 						</View>
 					</View>
@@ -954,13 +988,13 @@ class SendTransaction extends Component {
 					</View>
 
 					<View style={[styles.row, { marginTop: 20, marginBottom: 1 }]}>
-						<View style={{ flex: 1.2 }}>
+						<View type="transparent" style={{ flex: 1.2 }}>
 							<Text style={styles.text}>Fee: {this.props.transaction.fee || this.props.transaction.recommendedFee}sat/B </Text>
 						</View>
-						<View style={{ flex: 1 }}>
+						<View type="transparent" style={{ flex: 1 }}>
 							<Text style={[styles.text, { textAlign: "center" }]}>{this.props.settings.fiatSymbol}{fiatFeeLabel}</Text>
 						</View>
-						<View style={{ flex: 1 }}>
+						<View type="transparent" style={{ flex: 1 }}>
 							<Text style={[styles.text, { textAlign: "center" }]}>{cryptoFeeLabel} sats</Text>
 						</View>
 					</View>
@@ -977,7 +1011,10 @@ class SendTransaction extends Component {
 					</View>
 					
 					{this.state.displayCoinControlButton &&
-					<TouchableOpacity onPress={this.toggleCoinControlModal} style={[styles.row, { justifyContent: "center", paddingVertical: 5 }]}>
+					<TouchableOpacity
+						onPress={this.toggleCoinControlModal}
+						style={[styles.row, {justifyContent: "center", paddingVertical: 5 }]}
+					>
 						<FontAwesome5 name="coins" size={20} color={colors.white} />
 						<Text style={styles.text}>Coin Control</Text>
 						{this.state.whiteListedUtxos.length > 0 &&
@@ -989,9 +1026,15 @@ class SendTransaction extends Component {
 					</TouchableOpacity>}
 				</View>
 
-				<View style={{ flex: Platform.OS === "ios" ? 0.45 : 0.45, justifyContent: "flex-start" }}>
-					<View style={styles.buttonContainer}>
-						<Button title="Send" text={`~${this.props.settings.fiatSymbol}${this.getSendButtonFiatLabel()}`} text2={this.getSendButtonCryptoLabel()} textStyle={{ paddingTop: 5, ...systemWeights.light, }} onPress={this.validateTransaction} />
+				<View style={[styles.sendButtonContainer, { flex: Platform.OS === "ios" ? 0.45 : 0.45 }]}>
+					<View style={styles.sendButton}>
+						<Button
+							title="Send"
+							text={`~${this.props.settings.fiatSymbol}${this.getSendButtonFiatLabel()}`}
+							text2={this.getSendButtonCryptoLabel()}
+							textStyle={{ paddingTop: 5, ...systemWeights.light, }}
+							onPress={this.validateTransaction}
+						/>
 					</View>
 				</View>
 
@@ -1013,49 +1056,57 @@ class SendTransaction extends Component {
 				</DefaultModal>
 				
 				<Modal
-					backdropColor={colors.purple}
+					backdropColor={this.getTheme().PRIMARY}
 					deviceHeight={height*-1}
 					deviceWidth={width*-1}
 					style={{ flex: 1 }}
 					isVisible={this.state.displayConfirmationModal}
 				>
-					<View style={{ flex: 1, borderRadius: 5, alignItems: "center", justifyContent: "center", backgroundColor: colors.purple }}>
-
-						<View style={{ paddingVertical: 20, width: "80%", height: "70%", paddingHorizontal: 10, backgroundColor: colors.white, borderRadius: 20, justifyContent: "center", top: -50 }}>
+					<View type="PRIMARY" style={styles.modalContainer}>
+						
+						<View style={styles.modalContent}>
 							<View style={{ flex: 1 }}>
-								<View style={{ justifyContent: "flex-start", alignItems: "center", marginBottom: 20 }}>
-									<Text style={[styles.boldPurpleText, { fontSize: 24 }]}>Is This Correct?</Text>
+								<Text style={[styles.boldModalText, { fontSize: 24, textAlign: "center", marginBottom: 20 }]}>
+									Is This Correct?
+								</Text>
+								<View style={styles.modalUpperContent}>
+									<View style={{ flex: 1, backgroundColor: "transparent", alignItems: "center", justifyContent: "center" }}>
+										<Text style={[styles.boldModalText, { alignSelf: "center", textAlign: "center" }]}>Send To:</Text>
+										<Text style={styles.modalText}>{this.props.transaction.address}</Text>
+									</View>
+									<View style={{ flex: 1, backgroundColor: "transparent", marginVertical: 5, flexDirection: "row", justifyContent: "center" }}>
+										<View style={{ flex: 1, backgroundColor: "transparent", alignItems: "center" }}>
+											<Text style={styles.boldModalText}>Amount:</Text>
+											<Text style={styles.modalText}>{this.satsToUnit(this.props.transaction.amount)} {getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit }).acronym}</Text>
+											<Text style={styles.modalText}>{this.props.settings.fiatSymbol}{parseFloat(this.props.transaction.fiatAmount).toFixed(2)}</Text>
+										</View>
+										<View style={{ flex: 1, backgroundColor: "transparent", alignItems: "center" }}>
+											<Text style={styles.boldModalText}>Fee:</Text>
+											<Text style={styles.modalText}>{this.satsToUnit(cryptoFeeLabel)} {getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit }).acronym}</Text>
+											<Text style={styles.modalText}>{this.props.settings.fiatSymbol}{fiatFeeLabel}</Text>
+										</View>
+									</View>
 								</View>
-								<View style={{ flex: 0.4, justifyContent: "space-evenly" }}>
-									<Text style={styles.boldPurpleText}>Send To:</Text>
-									<Text style={styles.purpleText}>{this.props.transaction.address}</Text>
-									<View style={{ marginVertical: 5 }} />
-									<Text style={styles.boldPurpleText}>Amount:</Text>
-									<Text style={styles.purpleText}>{this.satsToUnit(this.props.transaction.amount)} {getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit }).acronym}</Text>
-									<Text style={styles.purpleText}>{this.props.settings.fiatSymbol}{parseFloat(this.props.transaction.fiatAmount).toFixed(2)}</Text>
-									<View style={{ marginVertical: 5 }} />
-									<Text style={styles.boldPurpleText}>Fee:</Text>
-									<Text style={styles.purpleText}>{this.satsToUnit(cryptoFeeLabel)} {getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit }).acronym}</Text>
-									<Text style={styles.purpleText}>{this.props.settings.fiatSymbol}{fiatFeeLabel}</Text>
-								</View>
-								<View style={{ flex: 0.4, alignItems: "center", justifyContent: "center", marginVertical: 10 }}>
-
-									<Text style={[styles.boldPurpleText, { fontSize: 24 }]}>Total:</Text>
-									<Text style={[styles.purpleText, { fontSize: 20 }]}>{this.satsToUnit(Number(this.props.transaction.amount) + Number(cryptoFeeLabel))} {getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit }).acronym}</Text>
-									<Text style={[styles.purpleText, { fontSize: 20 }]}>{this.props.settings.fiatSymbol}{(Number(this.props.transaction.fiatAmount) + Number(fiatFeeLabel)).toFixed(2)}</Text>
-
+								
+								<View style={styles.modalMiddleContent}>
+									
+									<Text style={[styles.boldModalText, { fontSize: 24 }]}>Total:</Text>
+									<Text style={[styles.modalText, { fontSize: 20 }]}>{this.satsToUnit(Number(this.props.transaction.amount) + Number(cryptoFeeLabel))} {getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit }).acronym}</Text>
+									<Text style={[styles.modalText, { fontSize: 20 }]}>{this.props.settings.fiatSymbol}{(Number(this.props.transaction.fiatAmount) + Number(fiatFeeLabel)).toFixed(2)}</Text>
+									
 									<Animated.View style={[styles.copiedContainer, { opacity: this.state.rawTxCopiedOpacity }]}>
 										<View style={styles.copied}>
 											<Text style={styles.copiedText}>RawTx Copied!</Text>
-											<Text style={[styles.purpleText, { fontSize: 14, marginTop: 5 }]}>
+											<Text style={[styles.modalText, { fontSize: 14, marginTop: 5 }]}>
 												{this.state.rawTx}
 											</Text>
 										</View>
 									</Animated.View>
-
+								
 								</View>
-								<View style={{ flex: 0.2, justifyContent: "flex-end" }}>
-									<View style={{ flexDirection: "row", justifyContent: "space-evenly", alignItems: "center" }}>
+								
+								<View style={styles.modalBottomContainer}>
+									<View style={styles.modalBottomContent}>
 										<Button
 											title="Copy TxHex"
 											loading={this.state.generatingTxHex}
@@ -1079,18 +1130,19 @@ class SendTransaction extends Component {
 							</View>
 						</View>
 						{this.state.displayLoading &&
-						<Loading
-							loadingOpacity={this.state.loadingOpacity}
-							loadingMessage={this.state.loadingMessage}
-							loadingProgress={this.state.loadingProgress}
-							enableSpinner={this.state.enableLoadingSpinner}
-							enableProgressBar={this.state.enableLoadingProgressBar}
-							enableSuccessIcon={this.state.enableLoadingSuccessIcon}
-							enableErrorIcon={this.state.enableLoadingErrorIcon}
-							width={width/2}
-							style={{ backgroundColor: colors.purple, bottom: 0 }}
-							animationName="loader"
-						/>}
+						<LinearGradient style={styles.loadingContainer}>
+							<Loading
+								loadingOpacity={this.state.loadingOpacity}
+								loadingMessage={this.state.loadingMessage}
+								loadingProgress={this.state.loadingProgress}
+								enableSpinner={this.state.enableLoadingSpinner}
+								enableProgressBar={this.state.enableLoadingProgressBar}
+								enableSuccessIcon={this.state.enableLoadingSuccessIcon}
+								enableErrorIcon={this.state.enableLoadingErrorIcon}
+								width={width/2}
+								animationName="loader"
+							/>
+						</LinearGradient>}
 						{this.state.displayXButton &&
 						<Animated.View style={styles.xButton}>
 							<XButton onPress={this.onXButtonPress} />
@@ -1118,7 +1170,8 @@ SendTransaction.propTypes = {
 
 const styles = StyleSheet.create({
 	container: {
-		flex: 1
+		flex: 1,
+		backgroundColor: "transparent"
 	},
 	xButton: {
 		position: "absolute",
@@ -1144,7 +1197,6 @@ const styles = StyleSheet.create({
 	},
 	copiedText: {
 		...systemWeights.bold,
-		color: colors.purple,
 		fontSize: 16,
 		textAlign: "center"
 	},
@@ -1158,7 +1210,8 @@ const styles = StyleSheet.create({
 	textInputRow: {
 		flexDirection: "row",
 		alignItems: "center",
-		justifyContent: "center"
+		justifyContent: "center",
+		backgroundColor: "transparent"
 	},
 	textInput: {
 		flex: 1,
@@ -1166,10 +1219,8 @@ const styles = StyleSheet.create({
 		borderTopLeftRadius: 5,
 		borderBottomLeftRadius: 5,
 		paddingLeft: 5,
-		backgroundColor: colors.white,
 		paddingTop: 0,
 		paddingBottom: 0,
-		color: colors.purple,
 		fontWeight: "bold"
 	},
 	cameraIcon: {
@@ -1177,30 +1228,27 @@ const styles = StyleSheet.create({
 	},
 	rotatedIcon: {
 		transform: [{ rotate: "90deg"}],
-		marginRight: 3
+		marginRight: 3,
+		backgroundColor: "transparent"
 	},
-	boldPurpleText: {
+	boldModalText: {
 		...systemWeights.bold,
-		color: colors.purple,
 		fontSize: 16
 	},
-	purpleText: {
+	modalText: {
 		...systemWeights.light,
-		color: colors.purple,
 		fontSize: 16
 	},
 	amountText: {
 		textAlign: "right",
 		...systemWeights.regular,
-		color: colors.purple,
 		fontSize: 16
 	},
 	leftIconContainer: {
 		height: 30,
 		alignItems: "center",
 		justifyContent: "center",
-		paddingHorizontal: 5,
-		backgroundColor: colors.white
+		paddingHorizontal: 5
 	},
 	rightIconContainer: {
 		backgroundColor: "transparent",
@@ -1215,7 +1263,8 @@ const styles = StyleSheet.create({
 	sliderRow: {
 		flexDirection: "row",
 		alignItems: "center",
-		justifyContent: "center"
+		justifyContent: "center",
+		backgroundColor: "transparent",
 	},
 	slider: {
 		flex: 1,
@@ -1226,12 +1275,80 @@ const styles = StyleSheet.create({
 	},
 	row: {
 		flexDirection: "row",
-		marginTop: 10
+		marginTop: 10,
+		backgroundColor: "transparent"
 	},
-	buttonContainer: {
+	sendButtonContainer: {
+		justifyContent: "flex-start",
+		backgroundColor: "transparent"
+	},
+	sendButton: {
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "transparent"
+	},
+	loadingContainer: {
+		position: "absolute",
+		height: "100%",
+		width: "100%"
+	},
+	modalContainer: {
+		flex: 1,
+		borderRadius: 5,
 		alignItems: "center",
 		justifyContent: "center"
 	},
+	modalContent: {
+		paddingVertical: 20,
+		width: "80%",
+		height: "70%",
+		paddingHorizontal: 10,
+		borderRadius: 20,
+		justifyContent: "center",
+		top: -50
+	},
+	modalUpperContent: {
+		flex: 0.4,
+		alignItems: "center",
+		justifyContent: "center",
+		backgroundColor: "transparent"
+	},
+	modalMiddleContent: {
+		flex: 0.4,
+		alignItems: "center",
+		justifyContent: "center",
+		marginVertical: 10,
+		backgroundColor: "transparent"
+	},
+	modalBottomContainer: {
+		flex: 0.2,
+		justifyContent: "center",
+		backgroundColor: "transparent"
+	},
+	modalBottomContent: {
+		flexDirection: "row",
+		justifyContent: "space-evenly",
+		alignItems: "center",
+		backgroundColor: "transparent"
+	},
+	amountContainer: {
+		flex: 1,
+		justifyContent: "flex-end",
+		alignItems: "flex-start",
+		backgroundColor: "transparent"
+	},
+	messageHeaderContainer: {
+		flex: 1,
+		justifyContent: "flex-end",
+		alignItems: "flex-start",
+		backgroundColor: "transparent"
+	},
+	addressTitle: {
+		flex: 1,
+		justifyContent: "flex-end",
+		alignItems: "flex-start",
+		backgroundColor: "transparent"
+	}
 });
 
 const connect = require("react-redux").connect;
