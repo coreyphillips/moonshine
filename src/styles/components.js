@@ -45,11 +45,11 @@ export const TouchableHighlight = styled.TouchableHighlight`
 `;
 
 export const TextInput = styled.TextInput.attrs((props) => ({
-	backgroundColor: props.editable === false ? props.theme.uneditable : props.theme.background2,
-	color: props.theme.text,
-	placeholderTextColor: props.theme.gray2,
+	placeholderTextColor: props.theme.mode === "light" ? props.theme.gray2 : props.theme.card,
 	keyboardAppearance: props.theme.mode === "light" ? "light" : "dark"
 }))`
+  background-color: ${props => props.editable === false ? props.theme.uneditable : props.theme.background2};
+  color: ${props => props.theme.text};
   border-color: ${props => props.theme.mode === "light" ? props.theme.text2 : "transparent"}
 `;
 
