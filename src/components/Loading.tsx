@@ -79,27 +79,25 @@ const _Loading = ({loadingOpacity = 0, loadingMessage = "Loading State", loading
 	};
 	
 	return (
-		<Animated.View style={[styles.container, { ...style }]}>
-			<Animated.View style={[styles.loading, { opacity: loadingOpacity }]}>
-				
-				<View style={{ flex: 1, alignItems: "center", justifyContent: "flex-end", marginBottom: 10 }}>
-					{enableSpinner && !enableErrorIcon && !enableSuccessIcon &&
-					Icon()}
-					{enableSuccessIcon &&
-					<EvilIcon name={"check"} size={110} color={colors.white} style={{ marginBottom: 10 }} />
-					}
-					{enableErrorIcon &&
-					<EvilIcon name={"exclamation"} size={110} color={colors.white} style={{ marginBottom: 10 }} />
-					}
-					{enableProgressBar &&
-					<ProgressBar progress={loadingProgress} height={7} width={width} />}
-				</View>
-				
-				<View style={{ flex: 1, alignItems: "center", justifyContent: "flex-start", marginTop: 10 }}>
-					<Text style={[styles.boldText, { ...textStyle }]}>{loadingMessage}</Text>
-				</View>
+		<Animated.View style={[styles.container, { ...style, opacity: loadingOpacity }]}>
 			
-			</Animated.View>
+			<View style={styles.content}>
+				{enableSpinner && !enableErrorIcon && !enableSuccessIcon &&
+				Icon()}
+				{enableSuccessIcon &&
+				<EvilIcon name={"check"} size={110} color={colors.white} style={{ marginBottom: 10 }} />
+				}
+				{enableErrorIcon &&
+				<EvilIcon name={"exclamation"} size={110} color={colors.white} style={{ marginBottom: 10 }} />
+				}
+				{enableProgressBar &&
+				<ProgressBar progress={loadingProgress} height={7} width={width} />}
+			</View>
+			
+			<View style={styles.messageContainer}>
+				<Text style={[styles.boldText, { ...textStyle }]}>{loadingMessage}</Text>
+			</View>
+			
 		</Animated.View>
 	);
 };
@@ -131,15 +129,17 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 20,
 		zIndex: 200
 	},
-	loading: {
-		position: "absolute",
-		top: 0,
-		bottom: 0,
-		left: 0,
-		right: 0,
+	content: {
+		flex: 1,
 		alignItems: "center",
-		justifyContent: "center",
-		backgroundColor: "transparent"
+		justifyContent: "flex-end",
+		marginBottom: 10
+	},
+	messageContainer: {
+		flex: 1,
+		alignItems: "center",
+		justifyContent: "flex-start",
+		marginTop: 10
 	},
 	boldText: {
 		...systemWeights.semibold,
