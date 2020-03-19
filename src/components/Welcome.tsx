@@ -1,7 +1,8 @@
 import React, {useEffect, memo} from "react";
-import {StyleSheet, View, LayoutAnimation, Platform, Text, Image, Linking} from "react-native";
+import {StyleSheet, View, LayoutAnimation, Platform, Image, Linking} from "react-native";
 import {systemWeights} from "react-native-typography";
 import XButton from "./XButton";
+import { Text } from "../styles/components";
 
 const {
 	Constants: {
@@ -66,7 +67,6 @@ const styles = StyleSheet.create({
 	},
 	header: {
 		...systemWeights.semibold,
-		color: colors.purple,
 		textAlign: "center",
 		fontSize: 24
 	},
@@ -75,23 +75,20 @@ const styles = StyleSheet.create({
 		fontSize: 18,
 		alignSelf: "flex-start",
 		textAlign: "left",
-		marginTop: 10,
-		color: colors.purple,
+		marginTop: 10
 	},
 	semiBoldText: {
 		...systemWeights.semibold,
 		fontSize: 18,
 		alignSelf: "flex-start",
 		textAlign: "left",
-		marginTop: 10,
-		color: colors.purple,
+		marginTop: 10
 	},
 	subHeader: {
 		...systemWeights.light,
 		fontSize: 18,
 		alignSelf: "flex-start",
 		textAlign: "left",
-		color: colors.purple,
 		marginTop: 20,
 		...systemWeights.semibold
 	}
