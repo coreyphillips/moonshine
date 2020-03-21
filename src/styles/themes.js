@@ -15,6 +15,7 @@ export const themes = {
 		text3: "#a25ad7", //colors.lightPurple
 		PRIMARY: "#631e9a", //colors.purple
 		PRIMARY_DARK: "#57158f", //colors.darkPurple
+		lightPurple: "#a25ad7",
 		white: "#FFF",
 		gray: "#efefef", //colors.lightGray
 		gray2: "#6e6e6e", //colors.darkGray
@@ -38,6 +39,7 @@ export const themes = {
 		text3: "#585664",
 		PRIMARY: "#413c69",
 		PRIMARY_DARK: "#2f2d3a",
+		lightPurple: "#a25ad7",
 		white: "#f5f5f5",
 		gray: "#efefef",
 		gray2: "#efefef",

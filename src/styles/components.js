@@ -41,7 +41,6 @@ export const TouchableOpacity = styled.TouchableOpacity`
 export const TouchableHighlight = styled.TouchableHighlight`
   background-color: ${props => props.type ? props.theme[props.type] : props.theme.text};
   border-color: ${props => props.theme.white};
-  border-width: 1px
 `;
 
 export const TextInput = styled.TextInput.attrs((props) => ({

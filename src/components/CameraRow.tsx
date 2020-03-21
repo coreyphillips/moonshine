@@ -77,7 +77,8 @@ const styles = StyleSheet.create({
 		justifyContent:"center",
 		width:ROW_HEIGHT * 2,
 		height:ROW_HEIGHT * 2,
-		borderRadius:100
+		borderRadius:100,
+		borderWidth: 1
 	},
 	rightItem: {
 		flex: 1,

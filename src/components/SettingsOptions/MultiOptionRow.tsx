@@ -2,11 +2,10 @@ import React, { memo } from "react";
 import {
 	ActivityIndicator,
 	StyleSheet,
-	TouchableOpacity
 } from "react-native";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
-import { View, Text } from "../../styles/components";
+import { View, Text, TouchableOpacity } from "../../styles/components";
 
 const {
 	Constants: {
@@ -35,7 +34,7 @@ const _MultiOptionRow = ({ title = "", subTitle = "", currentValue = "", options
 						<Text style={styles.title}>{title}</Text>
 						{subTitle !== "" && !subTitleIsLink && <Text style={styles.subTitle}>{subTitle}</Text>}
 						{subTitle !== "" && subTitleIsLink &&
-						<TouchableOpacity onPress={() => openUrl(`https://${subTitle}`)} style={styles.centerContent}>
+						<TouchableOpacity type="transparent" onPress={() => openUrl(`https://${subTitle}`)} style={styles.centerContent}>
 							<Text style={styles.subTitle}>{subTitle}</Text>
 						</TouchableOpacity>}
 					</View>
@@ -45,8 +44,8 @@ const _MultiOptionRow = ({ title = "", subTitle = "", currentValue = "", options
 							try {isMatch = value.toLowerCase() === currentValue.toLowerCase();} catch (e) {}
 							if (!isMatch) isMatch = key.toLowerCase() === currentValue.toLowerCase();
 							return (
-								<TouchableOpacity key={value} onPress={onPress} style={[styles.cryptoUnitButton, { backgroundColor: isMatch ? colors.lightPurple : colors.white }]}>
-									<Text style={[styles.text, { color: isMatch ? colors.white : colors.purple}]}>{value}</Text>
+								<TouchableOpacity type={isMatch ? "lightPurple" : "transparent"} key={value} onPress={onPress} style={[styles.cryptoUnitButton]}>
+									<Text type={isMatch ? "white" : "text"} style={[styles.text]}>{value}</Text>
 								</TouchableOpacity>
 							);
 						})}
@@ -121,7 +120,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		borderRadius: 5,
-		borderWidth: 1,
+		borderWidth: 2,
 		flex: 1,
 		borderColor: colors.lightPurple,
 		marginHorizontal: 5,
