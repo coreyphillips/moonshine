@@ -38,13 +38,15 @@ class TransactionDetail extends PureComponent {
 	
 	constructor(props){
 		super(props);
+		let rbfIsSupported = false;
+		try {rbfIsSupported = this.canRbf();} catch (e) {}
 		this.state = {
 			transactionData: {},
 			loading: false,
 			loadingMessage: `Updating fee.\nOne moment please.`,
 			initialFee: 1, //sat/byte
 			rbfValue: 0, //sat/byte
-			rbfIsSupported: false
+			rbfIsSupported
 		};
 		
 		//Handle long press when updating rbfValue
@@ -59,8 +61,11 @@ class TransactionDetail extends PureComponent {
 			try {
 				const {selectedWallet, selectedCrypto} = this.props.wallet;
 				const wallet = this.props.wallet.wallets[selectedWallet];
-				const rbfIsSupported = this.canRbf({rbfData: wallet.rbfData[selectedCrypto]});
-				if (!rbfIsSupported) return;
+				const rbfIsSupported = this.canRbf();
+				if (!rbfIsSupported) {
+					this.setState({rbfIsSupported});
+					return;
+				}
 				const {hash} = this.props.wallet.selectedTransaction;
 				const {transactionFee} = wallet.rbfData[selectedCrypto][hash];
 				this.setState({initialFee: transactionFee, rbfValue: transactionFee + 1, rbfIsSupported});
@@ -99,7 +104,7 @@ class TransactionDetail extends PureComponent {
 							<EvilIcon type="text2" name={"minus"} size={42} />
 						</TouchableOpacity>
 						<View style={{ flex: 1.5 }}>
-							<Text type="text2" style={[styles.title, { padding: 5, flex: 0.5 }]}>
+							<Text type="text2" style={[styles.title, { padding: 5 }]}>
 								{this.getRbfAmout()}
 							</Text>
 						
@@ -109,8 +114,8 @@ class TransactionDetail extends PureComponent {
 						</TouchableOpacity>
 					</View>
 					<View style={[styles.row, { marginTop: 20 }]}>
-						<Button style={{ ...styles.button, backgroundColor: "#813fb1", width: "50%" }} text={"Cancel Transaction"} onPress={() => this.cancelTransaction(nextAvailableAddress)} />
-						<Button style={{ ...styles.button, backgroundColor: "#813fb1", width: "50%" }} text="Increase Fee" onPress={this.attemptRbf} />
+						<Button style={{ ...styles.button, backgroundColor: "#813fb1", width: "47%", marginRight: 5 }} text={"Cancel Transaction"} onPress={() => this.cancelTransaction(nextAvailableAddress)} />
+						<Button style={{ ...styles.button, backgroundColor: "#813fb1", width: "47%", marginLeft: 5 }} text="Increase Fee" onPress={this.attemptRbf} />
 					</View>
 				</View>
 			);
@@ -160,22 +165,26 @@ class TransactionDetail extends PureComponent {
 	};
 	
 	getAmount = (amount, displayFeePerByte = true): string => {
-		const cryptoUnit = this.props.settings.cryptoUnit;
-		const selectedCrypto = this.props.wallet.selectedCrypto;
-		const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
-		const fiatSymbol = this.props.settings.fiatSymbol;
-		amount = Number(amount);
-		const crypto = cryptoUnit === "satoshi" ? amount : bitcoinUnits(amount, "satoshi").to(cryptoUnit).value();
-		bitcoinUnits.setFiat("usd", exchangeRate);
-		let fiat = bitcoinUnits(amount, "satoshi").to("usd").value().toFixed(2);
-		fiat = amount < 0 ? `-${fiatSymbol}${formatNumber(Math.abs(fiat).toFixed(2))}` : `${fiatSymbol}${formatNumber(fiat)}`;
-		//If rbfIsSupported include the initialFee provided by the rbfData for the transaction
-		if (this.state.rbfIsSupported && displayFeePerByte) {
-			const initialFee = this.state.initialFee;
-			const { acronym, oshi } = getCoinData({selectedCrypto, cryptoUnit});
-			return `${fiat}\n${formatNumber(crypto)} ${acronym}\n${initialFee} ${oshi}/byte`;
+		try {
+			const cryptoUnit = this.props.settings.cryptoUnit;
+			const selectedCrypto = this.props.wallet.selectedCrypto;
+			const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
+			const fiatSymbol = this.props.settings.fiatSymbol;
+			amount = Number(amount);
+			const crypto = cryptoUnit === "satoshi" ? amount : bitcoinUnits(amount, "satoshi").to(cryptoUnit).value();
+			bitcoinUnits.setFiat("usd", exchangeRate);
+			let fiat = bitcoinUnits(amount, "satoshi").to("usd").value().toFixed(2);
+			fiat = amount < 0 ? `-${fiatSymbol}${formatNumber(Math.abs(fiat).toFixed(2))}` : `${fiatSymbol}${formatNumber(fiat)}`;
+			//If rbfIsSupported include the initialFee provided by the rbfData for the transaction
+			if (this.state.rbfIsSupported && displayFeePerByte) {
+				const initialFee = this.state.initialFee;
+				const { acronym, oshi } = getCoinData({selectedCrypto, cryptoUnit});
+				return `${fiat}\n${formatNumber(crypto)} ${acronym}\n${initialFee} ${oshi}/byte`;
+			}
+			return `${fiat}\n${formatNumber(crypto)} ${getCoinData({ selectedCrypto, cryptoUnit }).acronym}`;
+		} catch (e) {
+			return "$0.00\n0 sats";
 		}
-		return `${fiat}\n${formatNumber(crypto)} ${getCoinData({ selectedCrypto, cryptoUnit }).acronym}`;
 	};
 	
 	canAffordRbf = (rbfValue = undefined): boolean => {
@@ -317,7 +326,7 @@ class TransactionDetail extends PureComponent {
 			if (confirmations > 0) return false;
 			
 			//Ensure the user has enough funds to rbf.
-			if (!this.canAffordRbf()) return false;
+			if (!this.canAffordRbf(1)) return false;
 			
 			//Ensure the app has stored the necessary data to perform the RBF.
 			let rbfData = this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto];
@@ -472,6 +481,11 @@ class TransactionDetail extends PureComponent {
 		const messagesLength = this.props.wallet.selectedTransaction.messages.length;
 		const isBlacklisted = this.isBlacklisted();
 		
+		let amountSent, amountReceived, transactionFee, totalSent = "$0.00\n0sats";
+		try {amountSent = this.getAmount(amount, false);} catch (e) {}
+		try {amountReceived = this.getAmount(amount);} catch (e) {}
+		try {transactionFee = this.getAmount(fee);} catch (e) {}
+		try {totalSent = this.getAmount(sentAmount);} catch (e) {}
 		return (
 			<View style={styles.container}>
 				
@@ -485,16 +499,16 @@ class TransactionDetail extends PureComponent {
 						{messagesLength > 0 && this.Row({ title: "Message:", value: this.getMessages(), onPress: () => this.openMessage(hash), valueStyle: { textDecorationLine: "underline" } })}
 						{messagesLength > 0 && <View style={styles.separator} />}
 						
-						{type === "sent" && this.Row({ title: "Amount Sent:", value: this.getAmount(amount, false) })}
-						{type === "received" && this.Row({ title: "Amount \n Received:", value: this.getAmount(amount) })}
+						{type === "sent" && this.Row({ title: "Amount Sent:", value: amountSent })}
+						{type === "received" && this.Row({ title: "Amount \n Received:", value: amountReceived })}
 						<View type="text" style={styles.separator} />
 						
-						{this.Row({ title: "Transaction\nFee:", value: this.getAmount(fee) })}
+						{this.Row({ title: "Transaction\nFee:", value: transactionFee })}
 						{this.state.rbfIsSupported && confirmations === 0 && this.RbfRow()}
 						<View type="text" style={styles.separator} />
 						
-						{type === "sent" && this.Row({ title: "Total Sent:", value: this.getAmount(sentAmount) })}
-						{type === "sent" && <View style={styles.separator} />}
+						{type === "sent" && this.Row({ title: "Total Sent:", value: totalSent })}
+						{type === "sent" && <View type="text" style={styles.separator} />}
 						
 						{this.Row({ title: "Type:", value: capitalize(type) })}
 						<View type="text" style={styles.separator} />
