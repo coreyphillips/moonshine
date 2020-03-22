@@ -4,14 +4,9 @@ import {systemWeights} from "react-native-typography";
 import XButton from "./XButton";
 import { Text } from "../styles/components";
 
-const {
-	Constants: {
-		colors
-	}
-} = require("../../ProjectData.json");
-
 const updates = [
-	`Added Dark Mode.`
+	`Dark Mode! This can be enabled from the Settings menu by toggling "Dark Mode" on.`,
+	"Fixed RBF button pop-in animation when transitioning to the Transaction Detail view."
 ];
 
 const _Welcome = ({ onClose = () => null, children = <View /> } = {}) => {

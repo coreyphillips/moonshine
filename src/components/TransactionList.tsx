@@ -7,14 +7,7 @@ import {
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
 import TransactionRow from "./TransactionRow";
-import LottieView from "lottie-react-native";
 import { View, Text } from "../styles/components";
-
-const {
-	Constants: {
-		colors
-	}
-} = require("../../ProjectData.json");
 
 interface DisplayItemComponent {
 	transaction: {
@@ -130,24 +123,6 @@ const _TransactionList = (
 		onTransactionPress = () => null
 	}: TransactionListComponent) => {
 	
-	const displayEmptyComponent = () => {
-		try {
-			return (
-				<View style={{ position: "absolute", alignItems: "center", justifyContent: "center", top: 0, bottom: 0, left: 0, right: 0, borderWidth: 1, borderColor: "blue" }}>
-					<Text style={[styles.boldText, { marginTop: 20 }]}>No items to display...</Text>
-					<LottieView
-						source={require("../assets/lottie/empty_list")}
-						autoPlay={true}
-						loop={true}
-						style={{ width: 150, height: 150, marginTop: 10 }}
-					/>
-				</View>
-			);
-		} catch (e) {
-			console.log(e);
-		}
-	};
-	
 	//Returns all transactions for the selected crypto.
 	const getTransactions = () => {
 		try {
@@ -172,7 +147,7 @@ const _TransactionList = (
 	return (
 		<View style={styles.container}>
 			{!hasTransactions() &&
-			<View type="background2" style={styles.emptyComponentContainer}>
+			<View style={styles.emptyComponentContainer}>
 				<Text style={styles.text}>No transactions to display...</Text>
 			</View>
 			}
@@ -182,7 +157,6 @@ const _TransactionList = (
 				data={transactions}
 				extraData={getTransactions()}
 				keyExtractor={(transaction) => `${transaction.hash}`}
-				ListEmptyComponent={displayEmptyComponent()}
 				renderItem={(transaction): any => {
 					let isBlacklisted = false;
 					try { isBlacklisted = blacklistedUtxos.includes(transaction.item.hash); } catch (e) {}
@@ -197,7 +171,7 @@ const _TransactionList = (
 							cryptoUnit={cryptoUnit}
 							isBlacklisted={isBlacklisted}
 						/>
-						);
+					);
 				}}
 				refreshControl={
 					<RefreshControl
@@ -207,7 +181,7 @@ const _TransactionList = (
 						onRefresh={onRefresh}
 						tintColor={"transparent"}
 						progressBackgroundColor={"transparent"}
-						colors={[colors.white]}
+						colors={["transparent"]}
 					/>
 				}
 			/>}
