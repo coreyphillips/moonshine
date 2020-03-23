@@ -179,6 +179,7 @@ const _TransactionList = (
 						enabled={true}
 						// @ts-ignore
 						onRefresh={onRefresh}
+						progressViewOffset={1000} //This is a dirty hack to hide the refresh icon for Android
 						tintColor={"transparent"}
 						progressBackgroundColor={"transparent"}
 						colors={["transparent"]}
