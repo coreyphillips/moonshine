@@ -1134,14 +1134,15 @@ class Settings extends PureComponent {
 								valueStyle={{ fontSize: 14, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
-							
+
+							{Platform.OS === "ios" &&
 							<SettingGeneral
 								value={`Found this app useful?\nPlease consider donating`}
 								col1Image={<FontAwesome5 name="coins" size={40} />}
 								onPress={this.donate}
 								valueStyle={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
-							/>
+							/>}
 
 							<View style={{ paddingVertical: 70 }} />
 						</TouchableOpacity>
