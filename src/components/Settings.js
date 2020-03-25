@@ -59,6 +59,10 @@ const generalHelpItems = [
 		text: "This option allows you to toggle the Pin on/off as a form of authentication when opening this app. Please be warned, if you enable this option and forget your pin the app's data will be wiped after 5 failed attempts. Make sure to write down your mnemonic phrase prior to enabling this option."
 	},
 	{
+		title: "Enable Dark Mode:",
+		text: "This option allows you to toggle Dark mode on/off. Toggling this option will affect the theme throughout the app."
+	},
+	{
 		title: "Enable Testnet:",
 		text: "This option allows you to toggle the Testnet coins on/off from the coin selection menu. If you do not require the use of any Testnet coins feel free to disable this option."
 	},
