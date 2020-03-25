@@ -132,10 +132,6 @@ const walletHelpItems = [
 	{
 		title: "Support:",
 		text: "Tapping this will prompt you to send an email to support. Please utilize this option and reach out if you have any questions whatsoever."
-	},
-	{
-		title: "Donate:",
-		text: `Tapping this will redirect you to the "Send Transaction" view with a pre-filled address to donate to. I built this app to learn and have fun. I never intend to monetize or turn a profit on this app so if you found it useful please consider donating.`
 	}
 ];
 
@@ -1252,6 +1248,13 @@ class Settings extends PureComponent {
 							<Text type="text2" style={styles.helpText}>{text}</Text>
 						</View>
 					))}
+					{Platform.OS === "ios" &&
+					<View style={styles.helpRow}>
+						<Text type="text2" style={styles.helpTitle}>Donate:</Text>
+						<Text type="text2" style={styles.helpText}>
+							Tapping this will redirect you to the "Send Transaction" view with a pre-filled address to donate to. I built this app to learn and have fun. I never intend to monetize or turn a profit on this app so if you found it useful please consider donating.
+						</Text>
+					</View>}
 					<View style={{ paddingVertical: "40%" }} />
 				</DefaultModal>
 				
