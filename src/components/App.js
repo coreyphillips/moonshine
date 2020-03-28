@@ -1018,7 +1018,8 @@ export default class App extends Component {
 						{
 							toValue: upperContentFlex,
 							duration: duration,
-							easing: Easing.inOut(Easing.ease)
+							easing: Easing.inOut(Easing.ease),
+							useNativeDriver: false
 						}
 					),
 					Animated.timing(
@@ -1026,7 +1027,8 @@ export default class App extends Component {
 						{
 							toValue: lowerContentFlex,
 							duration: duration,
-							easing: Easing.inOut(Easing.ease)
+							easing: Easing.inOut(Easing.ease),
+							useNativeDriver: false
 						}
 					)
 				]).start(() => {
