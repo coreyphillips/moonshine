@@ -1,30 +1,26 @@
 {
   "bitcoin": [
-    "MEADS.hopto.org s t",
-    "cashyes.zapto.org s t",
     "electrumx.nmdps.net s t",
-    "ndnd.selfhost.eu s t",
     "oneweek.duckdns.org s t",
-    "E-X.not.fyi s t",
     "electrum.vom-stausee.de s t",
     "electrum.hsmiths.com s t",
-    "helicarrier.bauerj.eu s t",
-    "electrum.hodlister.co s",
-    "electrum3.hodlister.co s",
-    "btc.usebsv.com s50006",
+    "electrum.hodlister.co s t",
+    "electrum3.hodlister.co s t",
+    "btc.usebsv.com s50006 t",
     "fortress.qtornado.com s443 t",
     "ecdsa.net s110 t",
-    "e2.keff.org s t",
-    "currentlane.lovebitco.in s t",
-    "electrum.jochen-hoenicke.de s50005 t50003",
-    "vps5.hsmiths.com s"
+    "electrum.be s t",
+    "elex01.blackpole.online s t",
+    "kirsche.emzy.de s t",
+    "Electrum.hsmiths.com s t",
+    "elec.luggs.co s443 t",
+    "btc.smsys.me s995 t110"
   ],
   "bitcoinTestnet": [
     "testnet.hsmiths.com t53011 s53012",
-    "testnet.qtornado.com t51001 s51002",
     "testnet1.bauerj.eu t50001 s50002",
     "tn.not.fyi t55001 s55002",
-    "bitcoin.cluelessperson.com t51001 s51002"
+    "testnet.qtornado.com t51001 s51002"
   ],
   "litecoin": [
     "electrum-ltc.bysh.me t50001 s50002",
