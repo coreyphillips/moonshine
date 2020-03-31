@@ -5,10 +5,9 @@ import {
 import AsyncStorage from "@react-native-community/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 import * as Keychain from "react-native-keychain";
-//import { decode as atob } from 'base-64';
 import "../../shim";
 import { randomBytes } from "react-native-randombytes";
-import bitcoinUnits from 'bitcoin-units';
+import bitcoinUnits from "bitcoin-units";
 import ReactNativeHapticFeedback from "react-native-haptic-feedback";
 
 const {
@@ -29,6 +28,9 @@ const {
 	supportsRbf,
 	defaultWalletShape
 } = require("../utils/networks");
+const {
+	getTransaction
+} = require("../utils/electrum");
 
 export const setItem = async (key, value) => {
 	try {
@@ -375,12 +377,13 @@ const getTransactionSize = (numInputs, numOutputs) => {
 	return numInputs*180 + numOutputs*34 + 10 + numInputs;
 };
 
-const setReplaceByFee = ({ txb = {}, setRbf = true } = {}) => {
+const setReplaceByFee = ({ psbt = {}, setRbf = true } = {}) => {
 	try {
 		const defaultSequence = bitcoin.Transaction.DEFAULT_SEQUENCE;
 		//Cannot set replace-by-fee on transaction without inputs.
-		if (txb.__TX.ins.length !== 0) {
-			txb.__TX.ins.forEach(x => {
+		const ins = psbt.data.globalMap.unsignedTx.tx.ins;
+		if (ins.length !== 0) {
+			ins.forEach(x => {
 				if (setRbf) {
 					if (x.sequence >= defaultSequence - 1) {
 						x.sequence = 0;
@@ -413,7 +416,7 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 			if (message !== "") {
 				const data = Buffer.from(message, "utf8");
 				const embed = bitcoin.payments.embed({data: [data], network});
-				targets.push({ address: embed.output, value: 0 });
+				targets.push({ script: embed.output, value: 0 });
 			}
 			
 			//Setup rbfData (Replace-By-Fee Data) for later use.
@@ -435,7 +438,7 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 			const mnemonic = keychainResult.data.password;
 			const seed = await bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
 			const root = bip32.fromSeed(seed, network);
-			let txb = new bitcoin.TransactionBuilder(network);
+			const psbt = new bitcoin.Psbt({ network });
 
 			//Add Inputs
 			const utxosLength = utxos.length;
@@ -447,28 +450,66 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 					const keyPair = root.derivePath(path);
 					
 					if (addressType === "bech32") {
-						const p2wpkh = bitcoin.payments.p2wpkh({pubkey: keyPair.publicKey, network});
-						txb.addInput(utxo.txid, utxo.vout, null, p2wpkh.output);
+						const p2wpkh = bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network });
+						psbt.addInput({
+							hash: utxo.txid,
+							index: utxo.vout,
+							witnessUtxo: {
+								script: p2wpkh.output,
+								value: utxo.value,
+							}
+						});
 					}
 					
-					if (addressType === "segwit") {txb.addInput(utxo.txid, utxo.vout);}
+					if (addressType === "segwit") {
+						const p2wpkh =  bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network });
+						const p2sh = bitcoin.payments.p2sh({ redeem: p2wpkh, network });
+						psbt.addInput({
+							hash: utxo.txid,
+							index: utxo.vout,
+							witnessUtxo: {
+								script: p2sh.output,
+								value: utxo.value,
+							},
+							redeemScript: p2sh.redeem.output
+						});
+					}
 					
-					if (addressType === "legacy") {txb.addInput(utxo.txid, utxo.vout);}
+					if (addressType === "legacy") {
+						const transaction = await getTransaction({ txHash: utxo.txid, coin: selectedCrypto });
+						const nonWitnessUtxo = Buffer.from(transaction.data.hex, "hex");
+						psbt.addInput({
+							hash: utxo.txid,
+							index: utxo.vout,
+							nonWitnessUtxo
+						});
+					}
 				} catch (e) {
 					console.log(e);
 				}
 			}
 			
 			//Set RBF if supported and prompted via rbf in Settings.
-			try { if (rbfIsSupported && setRbf) setReplaceByFee({ txb, setRbf }); } catch (e) {}
+			try { if (rbfIsSupported && setRbf) setReplaceByFee({ psbt, setRbf }); } catch (e) {}
 			
 			//Shuffle and add outputs.
-			try {
-				targets = shuffleArray(targets);
-			} catch (e) {console.log(e);}
+			try {targets = shuffleArray(targets);} catch (e) {}
 			await Promise.all(
 				targets.map((target) => {
-					txb.addOutput(target.address, target.value);
+					//Check if OP_RETURN
+					let isOpReturn = false;
+					try {isOpReturn = !!target.script;} catch (e) {}
+					if (isOpReturn) {
+						psbt.addOutput({
+							script: target.script,
+							value: target.value,
+						});
+					} else {
+						psbt.addOutput({
+							address: target.address,
+							value: target.value,
+						});
+					}
 				})
 			);
 
@@ -480,21 +521,14 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 					if (blacklistedUtxos.includes(utxo.tx_hash)) continue;
 					const path = utxo.path;
 					const keyPair = root.derivePath(path);
-					
-					if (addressType === "bech32") {txb.sign(index, keyPair, null, null, utxo.value);}
-					if (addressType === "segwit") {
-						const p2wpkh = bitcoin.payments.p2wpkh({pubkey: keyPair.publicKey, network});
-						const p2sh = bitcoin.payments.p2sh({redeem: p2wpkh, network});
-						txb.sign(index, keyPair, p2sh.redeem.output, null, utxo.value);
-					}
-					if (addressType === "legacy") {txb.sign(index, keyPair);}
-					
+					psbt.signInput(index, keyPair);
 					index++;
 				} catch (e) {
 					console.log(e);
 				}
 			}
-			const rawTx = txb.build().toHex();
+			psbt.finalizeAllInputs();
+			const rawTx = psbt.extractTransaction().toHex();
 			const data = { error: false, data: rawTx };
 			if (rbfIsSupported && setRbf && rbfData) data["rbfData"] = rbfData;
 			resolve(data);
