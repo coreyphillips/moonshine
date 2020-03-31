@@ -97,8 +97,8 @@ class TransactionDetail extends PureComponent {
 			const nextAvailableAddress = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto][addressIndex].address;
 			return (
 				<View style={{ marginTop: 20, alignItems: "center", justifyContent: "center" }}>
-					<Text type="text2" style={[styles.text, { textAlign: "center" }]}>Transaction taking too long?</Text>
-					<Text type="text2" style={[styles.text, { textAlign: "center" }]}>Cancel the transaction or increase the fee for a faster transaction:</Text>
+					<Text type="text2" style={[styles.text, { textAlign: "center", ...systemWeights.bold }]}>Transaction taking too long?</Text>
+					<Text type="text2" style={[styles.text, { textAlign: "center", ...systemWeights.regular }]}>Cancel the transaction or increase the fee for a faster transaction:</Text>
 					<View style={[styles.row, { alignItems: "center", justifyContent: "center" }]}>
 						<TouchableOpacity onPressIn={() => this.updateRbfValue("decrease")} onPressOut={this.stopRbfValueTimer} style={styles.icon}>
 							<EvilIcon type="text2" name={"minus"} size={42} />
@@ -114,8 +114,8 @@ class TransactionDetail extends PureComponent {
 						</TouchableOpacity>
 					</View>
 					<View style={[styles.row, { marginTop: 20 }]}>
-						<Button style={{ ...styles.button, backgroundColor: "#813fb1", width: "47%", marginRight: 5 }} text={"Cancel Transaction"} onPress={() => this.cancelTransaction(nextAvailableAddress)} />
-						<Button style={{ ...styles.button, backgroundColor: "#813fb1", width: "47%", marginLeft: 5 }} text="Increase Fee" onPress={this.attemptRbf} />
+						<Button style={{ ...styles.button, backgroundColor: "#813fb1", width: "47%", marginRight: 5 }} textStyle={{...systemWeights.semibold, fontSize: 16 }} text={"Cancel\nTransaction"} onPress={() => this.cancelTransaction(nextAvailableAddress)} />
+						<Button style={{ ...styles.button, backgroundColor: "#813fb1", width: "47%", marginLeft: 5 }} textStyle={{...systemWeights.semibold, fontSize: 16 }} text={"Increase\nFee"} onPress={this.attemptRbf} />
 					</View>
 				</View>
 			);
