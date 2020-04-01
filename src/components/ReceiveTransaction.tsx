@@ -59,40 +59,40 @@ interface ReceiveTransactionComponent extends Default, FormatUri {
 	disabled?: boolean // Disable the Copy/Share buttons
 }
 const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", selectedCurrency = "usd", address = "", amount = "", label = "", cryptoUnit = "satoshi", exchangeRate = 0, size = 200, disabled = false }: ReceiveTransactionComponent) => {
-	
+
 	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
 	const [requestedAmount, setRequestedAmount] = useState(amount || "0"); //Represented as sats
 	const [fiatAmount, setFiatAmount] = useState(amount || `${currencies[selectedCurrency].symbol}0`); //Represented and formatted based on selectedFiat (USD)
 	const [cryptoAmount, setCryptoAmount] = useState(amount || "0"); //Represented and formatted based on cryptoUnit (sats/bitcoin)
-	
+
 	const [displaySpecifyAmount, setDisplaySpecifyAmount] = useState(false); //Determines whether the specifyAmount modal is displayed
 	const [displayInCrypto, setDisplayInCrypto] = useState(true); //Determines whether the specifyAmount modal is updating fiat or BTC/LTC
-	
+
 	const acronym = getCoinData({ selectedCrypto, cryptoUnit }).acronym;
 
 	let uri = "";
 	try {uri = formatUri({selectedCrypto, address, amount: requestedAmount, label});} catch (e) {}
-	
+
 	if (!address) return <View />;
-	
+
 	const hasRequestedAmount = () => {try {return Number(requestedAmount) > 0;} catch (e) {return false;}};
-	
+
 	let shareTitle = "My Address.";
 	if (hasRequestedAmount()){
 		try {shareTitle = `Please send ${requestedAmount} ${acronym} to my ${capitalize(selectedCrypto)} address.`;} catch(e) {}
 	} else {
 		try {shareTitle = `My ${capitalize(selectedCrypto)} Address.`;} catch(e) {}
 	}
-	
+
 	//Toggle the request modal
 	const toggleSpecifyAmount = () => {
 		if (displaySpecifyAmount) setFiatAmount(fiatAmount.replace(/^[.\s]+|[.\s]+$/g, ""));
 		try {setDisplaySpecifyAmount(!displaySpecifyAmount);} catch(e) {}
 	};
-	
+
 	//Toggle whether fiat or btc is displayed in the request modal
 	const toggleDisplayInCrypto = () => {try {setDisplayInCrypto(!displayInCrypto);} catch(e) {}};
-	
+
 	//Handles any change to requestedAmount from the request modal in order to parse and format the input accordingly.
 	const updateRequestedAmount = (amount = "") => {
 		try {
@@ -129,16 +129,16 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", selectedCurrency = "u
 			if (cryptoAmount !== _cryptoAmount) setCryptoAmount(_cryptoAmount);
 		} catch (e) {console.log(e);}
 	};
-	
+
 	const getRequestedValue = () => {try {return displayInCrypto ? cryptoAmount : fiatAmount;} catch (e) {return "0";}};
-	
+
 	const getShareMessage = () => {
 		try {
-			if (requestedAmount !== "") return `Address:\n${address}\n\nAmount:\n${requestedAmount} ${acronym}\n${fiatAmount}`;
+			if (hasRequestedAmount()) return `Address:\n${address}\n\nAmount:\n${requestedAmount} ${acronym}\n${fiatAmount}`;
 			return address;
 		} catch (e) {return "";}
 	};
-	
+
 	return (
 		<View style={styles.container}>
 			<View style={styles.qrCodeContainer}>
@@ -152,7 +152,7 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", selectedCurrency = "u
 				onCopySuccessText="Address Copied!"
 				disabled={disabled}
 			/>
-			
+
 			<TouchableOpacity style={styles.specifyAmountButton} onPress={toggleSpecifyAmount}>
 				{!hasRequestedAmount() &&
 					<Text style={[styles.requestButtonText, { fontSize: 14, ...systemWeights.regular }]}>
@@ -169,7 +169,7 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", selectedCurrency = "u
 					</View>
 				}
 			</TouchableOpacity>
-			
+
 			<DefaultModal
 				isVisible={displaySpecifyAmount}
 				onClose={toggleSpecifyAmount}
@@ -193,7 +193,7 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", selectedCurrency = "u
 					</TouchableOpacity>
 				</View>
 			</DefaultModal>
-			
+
 		</View>
 	);
 };
