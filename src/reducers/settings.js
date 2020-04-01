@@ -8,11 +8,15 @@ const {
 const {
 	availableCoins
 } = require("../utils/networks");
+const moment = require("moment");
 
-let peers = {};
+let peers = {
+	lastUpdated: {}
+};
 let customPeers = {};
 availableCoins.map(coin => {
 	peers[coin] = [];
+	peers["lastUpdated"][coin] = "";
 	customPeers[coin] = [];
 });
 
@@ -87,7 +91,11 @@ module.exports = (state = {
 				...state,
 				peers: {
 					...state.peers,
-					[action.payload.coin]: action.payload.peers
+					[action.payload.coin]: action.payload.peers,
+					lastUpdated: {
+						...state.peers.lastUpdated,
+						[action.payload.coin]: moment().format()
+					}
 				}
 			};
 

@@ -71,7 +71,8 @@ const {
 	getTransactionSize,
 	loginWithBitid,
 	vibrate,
-	getKeychainValue
+	getKeychainValue,
+	getDifferenceBetweenDates
 } = require("../utils/helpers");
 const moment = require("moment");
 const {
@@ -347,6 +348,36 @@ export default class App extends Component {
 		}
 	};
 	
+	updatePeerList = async () => {
+		try {
+			const { selectedCrypto } = this.props.wallet;
+			
+			//Determine if the user has set any custom peers.
+			let hasCustomPeers = false;
+			try {
+				if (
+					Array.isArray(this.props.settings.customPeers[selectedCrypto]) &&
+					this.props.settings.customPeers[selectedCrypto].length
+				) {hasCustomPeers = true;}
+			} catch (e) {}
+			
+			//No need to update a peer list if we've already specified a custom server.
+			if (hasCustomPeers) return;
+			
+			//Determine when the peer list was last updated.
+			let start;
+			try {start = this.props.settings.peers["lastUpdated"][selectedCrypto];} catch (e) {}
+			const end = moment().format();
+			const difference = getDifferenceBetweenDates({ start, end });
+			
+			//Update the peer list if unable to capture a previous timestamp or it has been more than a day since the last timestamp.
+			if (!start || difference > 1440) {
+				const peers = await electrum.getPeers({ coin: selectedCrypto });
+				await this.props.updatePeersList({ peerList: peers.data, coin: selectedCrypto });
+			}
+		} catch (e) {}
+	};
+	
 	refreshWallet = async ({ignoreLoading = false, reconnectToElectrum = true, skipSubscribeActions = false} = {}) => {
 		//This helps to prevent the app from disconnecting and stalling when attempting to connect to an electrum server after some time.
 		//await nodejs.start("main.js");
@@ -417,6 +448,9 @@ export default class App extends Component {
 					this.setExchangeRate({selectedCrypto, selectedService, selectedCurrency}); //Set the exchange rate for the selected currency
 				}, 60 * 2000);
 			}
+			
+			//Update peer list if needed.
+			this.updatePeerList();
 			
 			//Update status of the user-facing loading message and progress bar
 			if (ignoreLoading === false) this.setState({
