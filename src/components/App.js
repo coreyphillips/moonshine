@@ -68,7 +68,7 @@ const {
 	getInfoFromAddressPath,
 	getExchangeRate,
 	validatePrivateKey,
-	getTransactionSize,
+	getByteCount,
 	loginWithBitid,
 	vibrate,
 	getKeychainValue,
@@ -510,7 +510,7 @@ export default class App extends Component {
 			}
 			
 			//Update the recommended fee for the selected coin.
-			const transactionSize = getTransactionSize(utxoLength, 2);
+			const transactionSize = getByteCount({[addressType]:utxoLength},{[addressType]:2});
 			this.props.getRecommendedFee({coin: this.props.wallet.selectedCrypto, transactionSize});
 			
 			//Update status of the user-facing loading message and progress bar

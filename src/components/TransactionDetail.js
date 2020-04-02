@@ -24,7 +24,7 @@ const {
 	openTxId,
 	formatNumber,
 	createTransaction,
-	getTransactionSize
+	getByteCount
 } = require("../utils/helpers");
 
 const {
@@ -193,7 +193,8 @@ class TransactionDetail extends PureComponent {
 			rbfValue = rbfValue ? rbfValue : this.state.rbfValue;
 			const hash = this.props.wallet.selectedTransaction.hash;
 			const rbfData = this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto][hash];
-			const transactionSize = getTransactionSize(rbfData.utxos.length, !rbfData.changeAddress ? 1 : 2);
+			const addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
+			const transactionSize = getByteCount({[addressType]:rbfData.utxos.length},{[addressType]:!rbfData.changeAddress ? 1 : 2});
 			const currentBalance = Number(this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto]);
 			
 			//Get original fee total
@@ -218,7 +219,8 @@ class TransactionDetail extends PureComponent {
 			const rbfData = this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto][hash];
 			const fiatSymbol = this.props.settings.fiatSymbol;
 			
-			const transactionSize = getTransactionSize(rbfData.utxos.length, !rbfData.changeAddress ? 1 : 2);
+			const addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
+			const transactionSize = getByteCount({[addressType]:rbfData.utxos.length},{[addressType]:!rbfData.changeAddress ? 1 : 2});
 			
 			//Get original fee per byte value
 			const initialFeePerByte = rbfData.transactionFee;
@@ -436,7 +438,9 @@ class TransactionDetail extends PureComponent {
 						}
 					});
 					
-					const totalFee = this.state.rbfValue * getTransactionSize(newRbfData.utxos.length, !newRbfData.changeAddress ? 1 : 2);
+					const addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
+					const transactionSize = getByteCount({[addressType]:newRbfData.utxos.length},{[addressType]:!newRbfData.changeAddress ? 1 : 2});
+					const totalFee = this.state.rbfValue * transactionSize;
 					
 					//Attempt to add the successful transaction to the transaction list
 					const selectedTransaction = this.props.wallet.selectedTransaction;

@@ -33,7 +33,7 @@ const bitcoin = require("bitcoinjs-lib");
 
 const {
 	createTransaction,
-	getTransactionSize,
+	getByteCount,
 	validateAddress,
 	capitalize,
 	generateAddresses,
@@ -185,13 +185,14 @@ class SendTransaction extends PureComponent {
 
 	calculateFees = async () => {
 		try {
-			const selectedCrypto = this.props.wallet.selectedCrypto;
+			const { selectedCrypto, selectedWallet } = this.props.wallet;
 			const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
+			const addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
 			let utxos = [];
 			utxos = utxos.concat(this.state.privateKeyData.bech32Utxos);
 			utxos = utxos.concat(this.state.privateKeyData.p2shUtxos);
 			utxos = utxos.concat(this.state.privateKeyData.p2pkhUtxos);
-			const transactionSize = getTransactionSize(utxos.length, 1);
+			const transactionSize = getByteCount({[addressType]:utxos.length},{[addressType]:1});
 			const result = await this.props.getRecommendedFee({ coin: selectedCrypto, transactionSize });
 
 			//Ensure we have a valid recommendedFee

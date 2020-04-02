@@ -43,7 +43,7 @@ const {
 const {
 	getDifferenceBetweenDates,
 	createTransaction,
-	getTransactionSize,
+	getByteCount,
 	validateAddress,
 	parseFiat,
 	capitalize,
@@ -117,7 +117,7 @@ class SendTransaction extends Component {
 			this.setState({cryptoBalance, fiatBalance, displayCoinControlButton});
 			
 			//Set the transactionSize to accurately determine the transaction fee
-			const transactionSize = getTransactionSize(utxoLength, 2);
+			const transactionSize = this.getTransactionByteCount();
 			this.props.updateTransaction({ transactionSize });
 			
 			//Set Maximum Fee (recommendedFee * 4) to prevent any user accidents.
@@ -296,15 +296,27 @@ class SendTransaction extends Component {
 			console.log(e);
 		}
 	};
+	
+	getTransactionByteCount = () => {
+		try {
+			const { selectedCrypto, selectedWallet } = this.props.wallet;
+			let addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
+			return getByteCount({[addressType]:this.getUtxoLength()},{[addressType]:this.state.spendMaxAmount ? 1 : 2});
+		} catch (e) {
+			return 256;
+		}
+	};
 
 	onMaxPress = async () => {
 		try {
 			
 			//"spendMaxAmount" will not send funds back to a changeAddress and thus have one less output so we need to update the transactionSize accordingly.
-			const transactionSize = getTransactionSize(this.getUtxoLength(), !this.state.spendMaxAmount ? 1 : 2);
 			const recommendedFee = Number(this.props.transaction.recommendedFee);
 			const walletBalance = this.state.cryptoBalance;
 			
+			const { selectedCrypto, selectedWallet } = this.props.wallet;
+			const addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
+			const transactionSize = getByteCount({[addressType]:this.getUtxoLength()},{[addressType]:!this.state.spendMaxAmount ? 1 : 2});
 			if (!this.state.spendMaxAmount) {
 				const selectedCrypto = this.props.wallet.selectedCrypto;
 				const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
@@ -324,6 +336,8 @@ class SendTransaction extends Component {
 					this.props.updateTransaction({ fee: parseInt(recommendedFee/2), amount: totalFee, fiatAmount, transactionSize });
 				}
 				if (this.state.cryptoUnitAmount !== cryptoUnitAmount) this.setState({ cryptoUnitAmount });
+			} else {
+				this.props.updateTransaction({ transactionSize });
 			}
 			await this.setState({ spendMaxAmount: !this.state.spendMaxAmount });
 		} catch (e) {
@@ -474,7 +488,7 @@ class SendTransaction extends Component {
 			const difference = getDifferenceBetweenDates({ start, end });
 			if (!this.props.transaction.feeTimestamp || difference > 10) {
 				const { selectedCrypto } = this.props.wallet;
-				const transactionSize = getTransactionSize(this.getUtxoLength(), this.state.spendMaxAmount ? 1 : 2);
+				const transactionSize = this.getTransactionByteCount();
 				const result = await this.props.getRecommendedFee({coin: selectedCrypto, transactionSize});
 				
 				//Ensure we have a valid recommendedFee
@@ -531,7 +545,7 @@ class SendTransaction extends Component {
 		const amount = Number(this.props.transaction.amount);
 		const { selectedWallet, selectedCrypto } = this.props.wallet;
 		const balance = this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto];
-		const transactionSize = getTransactionSize(this.getUtxoLength(), this.state.spendMaxAmount ? 1 : 2);
+		const transactionSize = this.getTransactionByteCount();
 		const totalTransactionCost = amount+(fee*transactionSize);
 		if (totalTransactionCost > balance) {
 			alert(`It appears that\nyou do not have enough funds\nto cover the transaction.`);
@@ -832,19 +846,21 @@ class SendTransaction extends Component {
 		} catch (e) {}
 	};
 	
-	onUtxoPress = ({ tx_hash = "", value = 0} = {}) => {
+	onUtxoPress = async ({ tx_hash = "", value = 0} = {}) => {
 		try {
 			if (this.state.whiteListedUtxos.includes(tx_hash)) {
 				let whiteListedUtxos = this.state.whiteListedUtxos;
 				const index = whiteListedUtxos.indexOf(tx_hash);
 				if (index > -1) whiteListedUtxos.splice(index, 1);
 				const whiteListedUtxosBalance = Number(this.state.whiteListedUtxosBalance) - Number(value);
-				this.setState({ whiteListedUtxos, whiteListedUtxosBalance });
+				await this.setState({ whiteListedUtxos, whiteListedUtxosBalance });
+				this.props.updateTransaction({ transactionSize: this.getTransactionByteCount() });
 			} else {
 				const whiteListedUtxos = this.state.whiteListedUtxos;
 				whiteListedUtxos.push(tx_hash);
 				const whiteListedUtxosBalance = Number(this.state.whiteListedUtxosBalance) + Number(value);
-				this.setState({ whiteListedUtxos, whiteListedUtxosBalance });
+				await this.setState({ whiteListedUtxos, whiteListedUtxosBalance });
+				this.props.updateTransaction({ transactionSize: this.getTransactionByteCount() });
 			}
 			//Set user balance information
 			const fiatBalance = this.getFiatBalance();
