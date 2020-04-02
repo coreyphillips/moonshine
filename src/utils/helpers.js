@@ -11,9 +11,6 @@ import bitcoinUnits from "bitcoin-units";
 import ReactNativeHapticFeedback from "react-native-haptic-feedback";
 
 const {
-	networks
-} = require("./networks");
-const {
 	walletHelpers
 } = require("./walletApi");
 const bitcoin = require("bitcoinjs-lib");
@@ -24,6 +21,7 @@ const moment = require("moment");
 const bip21 = require("bip21");
 const Url = require("url-parse");
 const {
+	networks,
 	availableCoins,
 	supportsRbf,
 	defaultWalletShape
@@ -893,7 +891,7 @@ const verifyMessage = ({ message = "", address = "", signature = "", selectedCry
 
 const getBaseDerivationPath = ({ keyDerivationPath = "84", selectedCrypto = "bitcoin" }) => {
 	try {
-		const networkValue = networks.defaultWalletShape.coinTypePath[selectedCrypto];
+		const networkValue = defaultWalletShape.coinTypePath[selectedCrypto];
 		return `m/${keyDerivationPath}'/${networkValue}'/0'/0/0`;
 	} catch (e) {
 		return { error: true, data: e };
