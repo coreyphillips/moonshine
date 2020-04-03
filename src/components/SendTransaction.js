@@ -1020,7 +1020,7 @@ class SendTransaction extends Component {
 							minimumTrackTintColor={colors.lightPurple}
 							maximumValue={this.props.transaction.maximumFee}
 							minimumValue={1}
-							value={!this.state.cryptoBalance.walletBalance ? 0 : Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee)}
+							value={!this.state.cryptoBalance ? 0 : Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee)}
 						/>
 					</View>
 					
