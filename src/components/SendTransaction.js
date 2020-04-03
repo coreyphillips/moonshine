@@ -228,7 +228,7 @@ class SendTransaction extends Component {
 		try {
 			//Return 0 if no exchange rate was given.
 			let crypto = 0, fiat = 0;
-			if (exchangeRate === 0) return { crypto, fiat };
+			if (exchangeRate === 0 || !this.state.cryptoBalance) return { crypto, fiat };
 
 			//Calculate crypto & fiat fees.
 			const fee = Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee);
@@ -311,34 +311,32 @@ class SendTransaction extends Component {
 		try {
 			
 			//"spendMaxAmount" will not send funds back to a changeAddress and thus have one less output so we need to update the transactionSize accordingly.
-			const recommendedFee = Number(this.props.transaction.recommendedFee);
+			const recommendedFee = this.props.transaction.fee || this.props.transaction.recommendedFee;
 			const walletBalance = this.state.cryptoBalance;
-			
+			if (!walletBalance) return; //No need to continue if there's no balance
 			const { selectedCrypto, selectedWallet } = this.props.wallet;
 			const addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
 			const transactionSize = getByteCount({[addressType]:this.getUtxoLength()},{[addressType]:!this.state.spendMaxAmount ? 1 : 2});
-			if (!this.state.spendMaxAmount) {
-				const selectedCrypto = this.props.wallet.selectedCrypto;
-				const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
-				let totalFee = this.getTotalFee(recommendedFee, transactionSize);
-				let cryptoUnitAmount = 0;
+			
+			const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
+			let totalFee = this.getTotalFee(recommendedFee, transactionSize);
+			let cryptoUnitAmount = 0;
 
-				if (walletBalance > totalFee) {
-					const amount = walletBalance - totalFee;
-					const fiatAmount = cryptoToFiat({ amount, exchangeRate });
-					cryptoUnitAmount = bitcoinUnits(amount, "satoshi").to(this.props.settings.cryptoUnit).value();
-					this.props.updateTransaction({ fee: parseInt(recommendedFee), amount, fiatAmount, transactionSize });
-				} else {
-					const difference = totalFee - walletBalance;
-					totalFee = difference / 2;
-					const fiatAmount = cryptoToFiat({ amount: totalFee, exchangeRate });
-					cryptoUnitAmount = bitcoinUnits(totalFee, "satoshi").to(this.props.settings.cryptoUnit).value();
-					this.props.updateTransaction({ fee: parseInt(recommendedFee/2), amount: totalFee, fiatAmount, transactionSize });
-				}
-				if (this.state.cryptoUnitAmount !== cryptoUnitAmount) this.setState({ cryptoUnitAmount });
+			if (walletBalance > totalFee) {
+				const amount = walletBalance - totalFee;
+				const fiatAmount = cryptoToFiat({ amount, exchangeRate });
+				cryptoUnitAmount = bitcoinUnits(amount, "satoshi").to(this.props.settings.cryptoUnit).value();
+				this.props.updateTransaction({ amount, fiatAmount, transactionSize });
 			} else {
-				this.props.updateTransaction({ transactionSize });
+				const difference = totalFee - walletBalance;
+				totalFee = difference / 2;
+				const fiatAmount = cryptoToFiat({ amount: totalFee, exchangeRate });
+				cryptoUnitAmount = bitcoinUnits(totalFee, "satoshi").to(this.props.settings.cryptoUnit).value();
+				this.props.updateTransaction({ fee: parseInt(recommendedFee/2), amount: totalFee, fiatAmount, transactionSize });
 			}
+			
+			if (this.state.cryptoUnitAmount !== cryptoUnitAmount) this.setState({ cryptoUnitAmount });
+			
 			await this.setState({ spendMaxAmount: !this.state.spendMaxAmount });
 		} catch (e) {
 			console.log(e);
@@ -760,13 +758,13 @@ class SendTransaction extends Component {
 			//If toggling to fiat make sure to properly parse/set the fiat amount.
 			if (this.state.displayInCrypto) {
 				let fiatAmount = formatNumber(this.props.transaction.fiatAmount).toString();
-				if (fiatAmount === "0") fiatAmount = "";
+				//if (fiatAmount === "0") fiatAmount = "";
 				this.props.updateTransaction({ fiatAmount });
 			}
 
 			if (!this.state.displayInCrypto) {
 				let satoshiAmount = this.props.transaction.amount.toString();
-				if (satoshiAmount === "0") satoshiAmount = "";
+				//if (satoshiAmount === "0") satoshiAmount = "";
 				this.props.updateTransaction({ satoshiAmount });
 			}
 
@@ -1005,7 +1003,7 @@ class SendTransaction extends Component {
 
 					<View style={[styles.row, { marginTop: 20, marginBottom: 1 }]}>
 						<View type="transparent" style={{ flex: 1.2 }}>
-							<Text style={styles.text}>Fee: {this.props.transaction.fee || this.props.transaction.recommendedFee}sat/B </Text>
+							<Text style={styles.text}>Fee: {!this.state.cryptoBalance ? 0 :this.props.transaction.fee || this.props.transaction.recommendedFee}sat/B </Text>
 						</View>
 						<View type="transparent" style={{ flex: 1 }}>
 							<Text style={[styles.text, { textAlign: "center" }]}>{this.props.settings.fiatSymbol}{fiatFeeLabel}</Text>
@@ -1022,7 +1020,7 @@ class SendTransaction extends Component {
 							minimumTrackTintColor={colors.lightPurple}
 							maximumValue={this.props.transaction.maximumFee}
 							minimumValue={1}
-							value={Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee)}
+							value={!this.state.cryptoBalance.walletBalance ? 0 : Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee)}
 						/>
 					</View>
 					
@@ -1045,6 +1043,7 @@ class SendTransaction extends Component {
 				<View style={[styles.sendButtonContainer, { flex: Platform.OS === "ios" ? 0.45 : 0.45 }]}>
 					<View style={styles.sendButton}>
 						<Button
+							disabled={!this.state.cryptoBalance}
 							title="Send"
 							text={`~${this.props.settings.fiatSymbol}${this.getSendButtonFiatLabel()}`}
 							text2={this.getSendButtonCryptoLabel()}
@@ -1063,6 +1062,7 @@ class SendTransaction extends Component {
 						selectedCrypto={selectedCrypto}
 						utxos={this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto]}
 						cryptoUnit={this.props.settings.cryptoUnit}
+						blacklistedUtxos={this.props.wallet.wallets[selectedWallet].blacklistedUtxos[selectedCrypto]}
 						whiteListedUtxos={this.state.whiteListedUtxos}
 						whiteListedUtxosBalance={this.state.whiteListedUtxosBalance}
 						exchangeRate={Number(this.props.wallet.exchangeRate[selectedCrypto])}

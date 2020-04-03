@@ -44,6 +44,7 @@ interface UtxoRowComponent {
 	fiatBalance: number,
 	onPress: ({tx_hash: string, value: number}) => null,
 	whiteListedUtxos: [string],
+	blacklistedUtxos: [string],
 	coinData: Object,
 	selectedCrypto: string,
 	cryptoUnit: string,
@@ -56,6 +57,7 @@ const _UtxoRow = (
 		fiatBalance = 0,
 		onPress = () => null,
 		whiteListedUtxos = [""],
+		blacklistedUtxos = [""],
 		coinData = { crypto: "", acronym: "" },
 		selectedCrypto = "bitcoin",
 		cryptoUnit = "satoshi",
@@ -67,50 +69,57 @@ const _UtxoRow = (
 		try {balance = cryptoUnit === "satoshi" ? value : satsToBtc({ amount: value });} catch (e) {}
 		let isWhiteListed = false;
 		try {isWhiteListed = whiteListedUtxos.includes(tx_hash);} catch (e) {}
-		
+		let isBlacklisted = false;
+		try {isBlacklisted = blacklistedUtxos.includes(tx_hash);} catch (e) {}
+
 		return (
 			<TouchableOpacity
 				activeOpacity={1}
 				onPress={() => onPress({ tx_hash, value })}
 			>
+				{isBlacklisted &&
+				<Text type="warning" style={[styles.header, { ...systemWeights.semibold, alignSelf: "center" }]}>
+					UTXO Blacklisted
+				</Text>}
+
 				<View style={{ flexDirection: "row" }}>
 					<View style={{ flex: 1 }}>
-						
+
 						<View style={styles.row}>
 							<Text style={[styles.header, { fontSize: 20 }]}>
 								{`${coinData["crypto"]}: `}
 							</Text>
 							<Text style={[styles.text, { fontSize: 18 }]}>{balance} {coinData["acronym"]}</Text>
 						</View>
-						
+
 						<View style={[styles.row, {  marginBottom: 5 }]}>
 							<Text style={[styles.header, { fontSize: 20 }]}>
 								{`Fiat: `}
 							</Text>
 							<Text style={[styles.text, { fontSize: 18 }]}>{fiatSymbol}{fiatBalance}</Text>
 						</View>
-						
+
 						<View style={styles.row}>
 							<Text style={styles.header}>
 								{"Address: "}
 							</Text>
 							<Text style={styles.text}>{address.substring(0, 6)}...{address.substring(address.length-6, address.length)}</Text>
 						</View>
-						
+
 						<View style={styles.row}>
 							<Text style={styles.header}>
 								{"Path: "}
 							</Text>
 							<Text style={styles.text}>{path}</Text>
 						</View>
-						
+
 						<View style={styles.row}>
 							<Text style={styles.header}>
 								{"Confirmations: "}
 							</Text>
 							<Text style={styles.text}>{confirmations}</Text>
 						</View>
-						
+
 						<TouchableOpacity
 							onPress={() => openTxId(tx_hash, selectedCrypto)}
 							style={{ paddingVertical: 2 }}
@@ -119,7 +128,7 @@ const _UtxoRow = (
 								View Transaction
 							</Text>
 						</TouchableOpacity>
-					
+
 					</View>
 					<View style={{ flex: 0.2, justifyContent: "center", alignItems: "center" }}>
 						<MaterialCommunityIcons name={isWhiteListed ? "checkbox-marked-circle" : "checkbox-blank-circle-outline"} size={30} color={colors.darkPurple} />
@@ -138,11 +147,13 @@ const UtxoRow = memo(
 			prevProps.fiatBalance === nextProps.fiatBalance &&
 			prevProps.coinData === nextProps.coinData &&
 			prevProps.selectedCrypto === nextProps.selectedCrypto &&
-			prevProps.whiteListedUtxos === nextProps.whiteListedUtxos;
+			prevProps.whiteListedUtxos === nextProps.whiteListedUtxos &&
+			prevProps.blacklistedUtxos === nextProps.blacklistedUtxos;
 	}
 );
 
 interface CoinControlComponent {
+	blacklistedUtxos: [string],
 	whiteListedUtxos: [string],
 	whiteListedUtxosBalance: number,
 	onPress: ({tx_hash: string, value: number}) => null,
@@ -160,6 +171,7 @@ const Separator = () => {
 
 const _CoinControl = (
 	{
+		blacklistedUtxos = [""],
 		whiteListedUtxos = [""],
 		whiteListedUtxosBalance = 0,
 		onPress = () => null,
@@ -170,9 +182,9 @@ const _CoinControl = (
 		style = {},
 		fiatSymbol = "$"
 	}: CoinControlComponent) => {
-	
+
 	const coinData = getCoinData({selectedCrypto, cryptoUnit });
-	
+
 	const getAvailableToSpendText = () => {
 		try {
 			let balance = 0;
@@ -182,13 +194,13 @@ const _CoinControl = (
 			return `${coinData.crypto}: ${balance} ${coinData.acronym}`;
 		} catch (e) {return "BTC: 0 sats";}
 	};
-	
+
 	//Sort utxos by confirmations.
 	utxos = sortArrOfObjByKey(utxos, "confirmations");
-	
+
 	return (
 		<View style={[styles.container, { ...style }]}>
-			
+
 			<Text type="text2" style={styles.coinControlText}>
 				Amount available to spend:
 			</Text>
@@ -200,7 +212,7 @@ const _CoinControl = (
 			</Text>
 			<Text style={[styles.coinControlText, { fontSize: 20 }]}>What coins would you like to use in this transaction?</Text>
 			<View style={{ width: "100%", height: 1.5, backgroundColor: colors.darkPurple, marginVertical: 5 }} />
-			
+
 			<FlatList
 				contentContainerStyle={{ paddingBottom: 60 }}
 				data={utxos}
@@ -216,6 +228,7 @@ const _CoinControl = (
 								utxo={utxo}
 								fiatBalance={fiatBalance}
 								onPress={onPress}
+								blacklistedUtxos={blacklistedUtxos}
 								whiteListedUtxos={whiteListedUtxos}
 								selectedCrypto={selectedCrypto}
 								cryptoUnit={cryptoUnit}
@@ -230,6 +243,7 @@ const _CoinControl = (
 };
 
 _CoinControl.protoTypes = {
+	blacklistedUtxos: PropTypes.array.isRequired,
 	whiteListedUtxos: PropTypes.array.isRequired,
 	whiteListedUtxosBalance: PropTypes.number.isRequired,
 	onPress: PropTypes.func.isRequired,
@@ -273,7 +287,7 @@ const styles = StyleSheet.create({
 		textAlign: "center"
 	},
 	coinControlHeader: {
-		...systemWeights.thin,
+		...systemWeights.semibold,
 		textAlign: "center",
 		backgroundColor: "transparent",
 		fontWeight: "bold",
