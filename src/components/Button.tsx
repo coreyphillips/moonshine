@@ -36,10 +36,10 @@ const _Button = ({ title = "", onPress = () => null, text = "", activeOpacity = 
 	};
 	const color = disabled ? colors.gray : colors.white;
 	const opacity = disabled ? 0.4 : 1;
-	
+
 	if (gradient) {
 		return (
-			<TouchableOpacity onPress={_handleOnPress} activeOpacity={activeOpacity}>
+			<TouchableOpacity type="transparent" onPress={_handleOnPress} activeOpacity={activeOpacity}>
 				<LinearGradient
 					style={[styles.container, { borderColor: color, opacity, ...style }]}
 					colors={["#8e45bf", "#7931ab", "#5e1993", "#59158e"]}
