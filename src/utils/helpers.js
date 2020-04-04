@@ -1019,9 +1019,9 @@ const getByteCount = (inputs, outputs) => {
 				"P2PKH": 34 * 4,
 				"P2WPKH": 31 * 4,
 				"P2WSH": 43 * 4,
-				"bech32": 31 * 4,
-				"segwit": 32 * 4,
-				"legacy": 34 * 4
+				"bech32": 31 * 4 + 1,
+				"segwit": 32 * 4 + 1,
+				"legacy": 34 * 4 + 1
 			}
 		};
 		
