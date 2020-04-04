@@ -758,13 +758,13 @@ class SendTransaction extends Component {
 			//If toggling to fiat make sure to properly parse/set the fiat amount.
 			if (this.state.displayInCrypto) {
 				let fiatAmount = formatNumber(this.props.transaction.fiatAmount).toString();
-				//if (fiatAmount === "0") fiatAmount = "";
+				if (fiatAmount === "0") fiatAmount = "";
 				this.props.updateTransaction({ fiatAmount });
 			}
 
 			if (!this.state.displayInCrypto) {
 				let satoshiAmount = this.props.transaction.amount.toString();
-				//if (satoshiAmount === "0") satoshiAmount = "";
+				if (satoshiAmount === "0") satoshiAmount = "";
 				this.props.updateTransaction({ satoshiAmount });
 			}
 
@@ -1045,7 +1045,7 @@ class SendTransaction extends Component {
 						<Button
 							disabled={!this.state.cryptoBalance}
 							title="Send"
-							text={`~${this.props.settings.fiatSymbol}${this.getSendButtonFiatLabel()}`}
+							text={`~${this.props.settings.fiatSymbol}${this.getSendButtonFiatLabel() || "0"}`}
 							text2={this.getSendButtonCryptoLabel()}
 							textStyle={{ paddingTop: 5, ...systemWeights.light, }}
 							onPress={this.validateTransaction}
