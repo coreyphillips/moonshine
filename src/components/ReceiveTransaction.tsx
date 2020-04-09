@@ -134,7 +134,7 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", selectedCurrency = "u
 
 	const getShareMessage = () => {
 		try {
-			if (hasRequestedAmount()) return `Address:\n${address}\n\nAmount:\n${requestedAmount} ${acronym}\n${fiatAmount}`;
+			if (hasRequestedAmount()) return `Address:\n${address}\n\nAmount:\n${cryptoAmount} ${acronym}\n${fiatAmount}`;
 			return address;
 		} catch (e) {return "";}
 	};
