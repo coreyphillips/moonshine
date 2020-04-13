@@ -299,9 +299,19 @@ class SendTransaction extends Component {
 	
 	getTransactionByteCount = () => {
 		try {
-			const { selectedCrypto, selectedWallet } = this.props.wallet;
-			let addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
-			return getByteCount({[addressType]:this.getUtxoLength()},{[addressType]:this.state.spendMaxAmount ? 1 : 2});
+			let transactionByteCount = 0;
+			try {
+				const { selectedCrypto, selectedWallet } = this.props.wallet;
+				let addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
+				transactionByteCount = getByteCount({[addressType]:this.getUtxoLength()},{[addressType]:this.state.spendMaxAmount ? 1 : 2});
+			} catch (e) {}
+			let messageByteCount = 0;
+			try {
+				messageByteCount = this.props.transaction.message.length;
+				//Multiply by 2 to help ensure Electrum servers will broadcast the tx.
+				messageByteCount = messageByteCount * 2;
+			} catch (e) {}
+			return transactionByteCount+messageByteCount;
 		} catch (e) {
 			return 256;
 		}
@@ -351,6 +361,7 @@ class SendTransaction extends Component {
 			totalFee = Number(totalFee);
 			let amount = Number(this.props.transaction.amount);
 			let walletBalance = Number(this.state.cryptoBalance);
+			const transactionSize = this.getTransactionByteCount();
 
 			if (this.state.spendMaxAmount) {
 				//Not enough funds to support this fee.
@@ -359,10 +370,10 @@ class SendTransaction extends Component {
 				const fiatAmount = cryptoToFiat({ amount, exchangeRate });
 				const cryptoUnitAmount = bitcoinUnits(amount, "satoshi").to(this.props.settings.cryptoUnit).value();
 				this.setState({ cryptoUnitAmount });
-				this.props.updateTransaction({ fee: Number(fee), amount, fiatAmount });
+				this.props.updateTransaction({ fee: Number(fee), amount, fiatAmount, transactionSize });
 			} else {
 				if (totalFee + amount > walletBalance) return;
-				this.props.updateTransaction({ fee: Number(fee) });
+				this.props.updateTransaction({ fee: Number(fee), transactionSize });
 			}
 		} catch (e) {
 			console.log(e);
@@ -745,7 +756,11 @@ class SendTransaction extends Component {
 					//Close confirmation modal
 					this.updateConfirmationModal({ display: false });
 					await pauseExecution(1000);
-					this.props.refreshWallet({ ignoreLoading: true });
+					/*
+					Since we have a listener setup for our change address
+					we only need to prompt a refresh when sending the max amount.
+					*/
+					if (this.state.spendMaxAmount) this.props.refreshWallet({ ignoreLoading: true, reconnectToElectrum: false });
 				});
 			}
 		} catch (e) {
@@ -995,7 +1010,13 @@ class SendTransaction extends Component {
 							placeholder="Anything entered here will be public"
 							style={[styles.textInput, { borderRadius: 5 }]}
 							selectionColor={colors.lightPurple}
-							onChangeText={(message) => message.length <= MAX_MESSAGE_LENGTH ? this.props.updateTransaction({ message }) : null}
+							onChangeText={message => {
+								if (message.length <= MAX_MESSAGE_LENGTH) {
+									this.props.updateTransaction({message}); //Set message
+									const transactionSize = this.getTransactionByteCount(); //Get new tx size with updated message.
+									this.props.updateTransaction({ transactionSize }); //Set new tx size.
+								}
+							}}
 							value={this.props.transaction.message}
 						>
 						</TextInput>
