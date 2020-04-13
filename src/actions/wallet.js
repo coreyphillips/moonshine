@@ -237,10 +237,8 @@ const updateBalance = ({ wallet = "wallet0", utxos = [], blacklistedUtxos = [], 
 			
 			let confirmedBalance = 0;
 			let unconfirmedBalance = 0;
-			await Promise.all(utxos.map(async (utxo) => {
-				try {
-					if(!blacklistedUtxos.includes(utxo.tx_hash)) confirmedBalance += utxo.value;
-				} catch (e) {}
+			confirmedBalance = await Promise.all(utxos.reduce((sum, utxo) => {
+				try {if(!blacklistedUtxos.includes(utxo.tx_hash)) return utxo.value + sum; } catch (e) {}
 			}));
 			/*
 			await Promise.all(utxos.map(async (utxo) => {
