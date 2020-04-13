@@ -40,7 +40,7 @@ interface TransactionRowComponent {
 	isBlacklisted: boolean
 }
 const _TransactionRow = ({ id = "", coin = "bitcoin", address = "", amount = 0, label = "", date = 0, transactionBlockHeight = 0, exchangeRate = "0", currentBlockHeight = 0, fiatSymbol = "$", cryptoUnit = "satoshi", type = "received", onTransactionPress = () => null, messages = [], isBlacklisted = false}: TransactionRowComponent) => {
-	
+
 	const getCryptoAmountLabel = () => {
 		try {
 			//This prevents the view from displaying 0 BTC
@@ -131,12 +131,12 @@ const _TransactionRow = ({ id = "", coin = "bitcoin", address = "", amount = 0, 
 };
 
 _TransactionRow.propTypes = {
-	id: PropTypes.string.isRequired,
+	id: PropTypes.string,
 	coin: PropTypes.string.isRequired,
-	address: PropTypes.string.isRequired,
+	address: PropTypes.string,
 	amount: PropTypes.number.isRequired,
 	label: PropTypes.string,
-	date: PropTypes.number.isRequired,
+	date: PropTypes.number,
 	transactionBlockHeight: PropTypes.number.isRequired,
 	exchangeRate: PropTypes.string.isRequired,
 	currentBlockHeight: PropTypes.number.isRequired,
