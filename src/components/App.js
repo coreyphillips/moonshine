@@ -82,6 +82,7 @@ const {width} = Dimensions.get("window");
 const bip39 = require("bip39");
 try {
 	this.subscribedAddress = ""; //Holds currently subscribed address
+	this.subscribedChangeAddress = ""; //Holds currently subscribed change address
 	this.headersAreSubscribed = false; //Determines whether wallet is subscribed to new headers
 	this.subscribedWithPeer = ""; //Holds what peer we are subscribed to new headers with
 	this.authenticating = false; //Determines whether the app is currently authenticating. This attempts to address issue #5.
@@ -538,7 +539,10 @@ export default class App extends Component {
 			});
 			
 			//Subscribe to received transactions for the next available address
-			if (!skipSubscribeActions) this.subscribeAddress();
+			if (!skipSubscribeActions) {
+				this.subscribeAddress("address");
+				this.subscribeAddress("changeAddress");
+			}
 			
 			//Update status of the user-facing loading message and progress bar
 			if (ignoreLoading === false) this.setState({loadingMessage: "Updating UTXO's", loadingProgress: 0.8});
@@ -559,6 +563,21 @@ export default class App extends Component {
 				wallet: selectedWallet,
 				currentBlockHeight
 			});
+			
+			//If there was no issue, update the balance using the newly acquired UTXO's.
+			try {
+				if (!resetUtxosResponse.error && Array.isArray(resetUtxosResponse.data.utxos)) {
+					const blacklistedUtxos = this.props.wallet.wallets[selectedWallet].blacklistedUtxos[selectedCrypto];
+					this.props.updateBalance({
+						utxos: resetUtxosResponse.data.utxos,
+						blacklistedUtxos,
+						selectedCrypto,
+						selectedWallet,
+						wallet: selectedWallet
+					});
+				}
+			} catch (e) {}
+			
 			//Iterate over the new utxos and rescan the transactions if a utxo with a new hash appears
 			let needsToRescanTransactions = false;
 			addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
@@ -677,26 +696,6 @@ export default class App extends Component {
 			} catch (e) {
 			}
 			
-			/*
-			 let transactionPathsThatNeedRescanning = [];
-			 await Promise.all(this.props.wallet.wallets[selectedWallet].transactions[selectedCrypto].map((transaction) => {
-			 if (transaction.block <= 0) {
-			 needsToRescanTransactions = true;
-			 transactionPathsThatNeedRescanning.push(transaction.path);
-			 }
-			 }));
-			 await Promise.all(
-			 transactionPathsThatNeedRescanning.map(async (path) => {
-			 const pathInfo = await getInfoFromAddressPath(path);
-			 if (pathInfo.isChangeAddress) {
-			 if (Number(pathInfo.addressIndex) < changeAddressIndex) changeAddressIndex = pathInfo.addressIndex;
-			 } else {
-			 if (Number(pathInfo.addressIndex) < addressIndex) addressIndex = pathInfo.addressIndex;
-			 }
-			 })
-			 );
-			 */
-			
 			//Begin Rescan of transactions if necessary based on the saved path indexes.
 			let getNextAvailableAddressResponse = {error: false, data: []};
 			if (needsToRescanTransactions) {
@@ -720,24 +719,25 @@ export default class App extends Component {
 			if (ignoreLoading === false) this.setState({loadingMessage: "Updating Balance", loadingProgress: 1});
 			
 			//If there was no issue fetching the UTXO sets or the next available addresses, update the balance using the newly acquired UTXO's.
-			if (resetUtxosResponse.error === false && getNextAvailableAddressResponse.error === false) {
-				try {
-					utxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto] || [];
+			try {
+				utxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto];
+				if (resetUtxosResponse.error === false && getNextAvailableAddressResponse.error === false && Array.isArray(utxos)) {
 					const blacklistedUtxos = this.props.wallet.wallets[selectedWallet].blacklistedUtxos[selectedCrypto];
-					await this.props.updateBalance({
+					this.props.updateBalance({
 						utxos,
 						blacklistedUtxos,
 						selectedCrypto,
 						selectedWallet,
 						wallet: selectedWallet
 					});
-				} catch (e) {
-					console.log(e);
 				}
-			}
+			} catch (e) {}
 			
 			//Subscribe to received transactions for the next available address
-			if (!skipSubscribeActions) this.subscribeAddress();
+			if (!skipSubscribeActions) {
+				this.subscribeAddress("address");
+				this.subscribeAddress("changeAddress");
+			}
 			//Cease the loading state.
 			InteractionManager.runAfterInteractions(() => {
 				if (this.state.loadingTransactions !== false) this.setState({loadingTransactions: false});
@@ -771,13 +771,13 @@ export default class App extends Component {
 	};
 	
 	//Subscribe to received transactions for the next available address
-	subscribeAddress = async () => {
+	subscribeAddress = async (address = "address") => {
 		try {
 			const { selectedCrypto } = this.props.wallet;
-			const nextAvailableAddress = this.getNextAvailableAddress();
+			const nextAvailableAddress = this.getNextAvailableAddress()[address];
 			if (nextAvailableAddress === this.subscribedAddress) return;
 			this.subscribedAddress = nextAvailableAddress;
-			if (__DEV__) console.log(`Subscribed to address: ${nextAvailableAddress}`);
+			if (__DEV__) console.log(`Subscribed to ${address}: ${nextAvailableAddress}`);
 			const scriptHash = await electrum.getAddressScriptHash({
 				address: nextAvailableAddress,
 				coin: selectedCrypto
@@ -787,7 +787,7 @@ export default class App extends Component {
 					//Only refresh the wallet if a new transaction is detected.
 					if (Array.isArray(data.data)) {
 						vibrate("notificationSuccess"); //Vibrate to notify user.
-						this.refreshWallet({ reconnectToElectrum: true }); //Refresh wallet.
+						this.refreshWallet({ reconnectToElectrum: false }); //Refresh wallet.
 						//this.subscribeAddress();
 					}
 				} catch (e) {
@@ -1715,13 +1715,21 @@ export default class App extends Component {
 	
 	//Returns the next available empty address of the selected crypto.
 	getNextAvailableAddress = () => {
+		let address = "";
+		let changeAddress = "";
 		try {
 			const {selectedWallet, selectedCrypto} = this.props.wallet;
-			const addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
-			return this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto][addressIndex].address;
+			try {
+				const addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
+				address = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto][addressIndex].address;
+			} catch (e) {}
+			try {
+				const changeAddressIndex = this.props.wallet.wallets[selectedWallet].changeAddressIndex[selectedCrypto];
+				changeAddress = this.props.wallet.wallets[selectedWallet].changeAddresses[selectedCrypto][changeAddressIndex].address;
+			} catch (e) {}
+			return { address, changeAddress };
 		} catch (e) {
-			//console.log(e);
-			return "";
+			return { address, changeAddress };
 		}
 	};
 	
@@ -1987,7 +1995,7 @@ export default class App extends Component {
 									style={[styles.ReceiveTransaction, {opacity: this.state.receiveTransactionOpacity}]}
 								>
 									<ReceiveTransaction
-										address={this.getNextAvailableAddress()}
+										address={this.getNextAvailableAddress().address || ""}
 										selectedCrypto={this.props.wallet.selectedCrypto}
 										size={200}
 										exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]}
