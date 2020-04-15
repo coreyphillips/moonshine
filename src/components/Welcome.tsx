@@ -12,7 +12,9 @@ const updates = [
 	"Slight style updates to the RBF section of the transaction detail view.",
 	"Fixed BitId login functionality.",
 	"Blacklisted UTXO's are now labeled in the coin control modal.",
-	"Improved fee calculation when adding a transaction message."
+	"Improved fee calculation when adding a transaction message.",
+	"Fixed request payment bug when using BTC as the crypto unit.",
+	"Improved UX when importing mnemonic phrases."
 ];
 
 const _Welcome = ({ onClose = () => null, children = <View /> } = {}) => {

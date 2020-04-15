@@ -60,7 +60,7 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 		try {
 			//const regex = /^[a-z][a-z\s]*$/;
 			const re = /^[ a-z ]+$/;
-			return re.test(mnemonic);
+			return re.test(mnemonic.trim());
 		} catch (e) {return false;}
 	};
 
@@ -76,7 +76,7 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 			}
 		} catch (e) {}
 	};
-	
+
 	const updateSuggestedWords = (mnemonic = ""): void => {
 		try {
 			const lastWord = getLastWordInString(mnemonic);
@@ -115,6 +115,7 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 
 	const onBarCodeRead = async (data): Promise<void> => {
 		try {
+			data = data.trim();
 			if (bip39.validateMnemonic(data)) {
 				updateMnemonic(data);
 				updateCamera({display: false});
@@ -131,36 +132,36 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 	const _createNewWallet = (): void => {
 		try {
 			if (displayCamera) updateCamera({ display: false });
-			if (mnemonic === "" || !bip39.validateMnemonic(mnemonic)) {
+			if (mnemonic === "" || !bip39.validateMnemonic(mnemonic.trim())) {
 				alert("Invalid Mnemonic");
 				return;
 			}
-			createNewWallet({ mnemonic });
+			createNewWallet({ mnemonic: mnemonic.trim() });
 		} catch (e) {
 			console.log(e);
 		}
 	};
-	
+
 	const addWordToMnemonic = (word = ""): void => {
 		const lastIndex = mnemonic.lastIndexOf(" ");
 		let _mnemonic = mnemonic.substring(0, lastIndex);
-		_mnemonic = `${_mnemonic} ${word} `;
+		_mnemonic = _mnemonic ? `${_mnemonic} ${word} ` : `${word} `;
 		updateMnemonic(_mnemonic);
 	};
-	
+
 	const updateSelectedWordlist = (wordlist = "english"): void => {
 		updateMnemonic(""); //Clear text input of previous data.
 		setSelectedWordlist(wordlist);
 		setDisplayAvailableWordlists(false);
 	};
-	
+
 	const onCameraPress = () => {
 		try {
 			Keyboard.dismiss();
 			updateCamera({ display: true });
 		} catch (e) {}
 	};
-	
+
 	return (
 		<View style={styles.container}>
 			<View style={{ flex: 0.25 }}>
@@ -209,7 +210,7 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 					</TouchableOpacity>
 				</View>
 
-				{bip39.validateMnemonic(mnemonic) &&
+				{bip39.validateMnemonic(mnemonic.trim()) &&
 				<View style={styles.sendButton}>
 					<Button title="Import Phrase" onPress={_createNewWallet} />
 				</View>}
@@ -225,8 +226,8 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 			<Animated.View style={styles.xButton}>
 				<XButton style={{ borderColor: "transparent" }} onPress={onBack} />
 			</Animated.View>}
-			
-			
+
+
 			<DefaultModal
 				isVisible={displayAvailableWordlists}
 				onClose={() => setDisplayAvailableWordlists(false)}

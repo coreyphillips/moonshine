@@ -1623,6 +1623,7 @@ export default class App extends Component {
 	//Handles any BarCodeRead action.
 	onBarCodeRead = async (data) => {
 		try {
+			data = data.trim();
 			//Determine if we need to import a mnemonic phrase
 			if (bip39.validateMnemonic(data)) {
 				await this.updateItem({stateId: "displayCamera", opacityId: "cameraOpacity", display: false});

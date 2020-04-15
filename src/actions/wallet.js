@@ -237,9 +237,13 @@ const updateBalance = ({ wallet = "wallet0", utxos = [], blacklistedUtxos = [], 
 			
 			let confirmedBalance = 0;
 			let unconfirmedBalance = 0;
-			confirmedBalance = await Promise.all(utxos.reduce((sum, utxo) => {
-				try {if(!blacklistedUtxos.includes(utxo.tx_hash)) return utxo.value + sum; } catch (e) {}
-			}));
+			try {
+				confirmedBalance = utxos.reduce((total, utxo) => {
+				//Ensure we're not adding blacklisted utxo values.
+				if (!blacklistedUtxos.includes(utxo.tx_hash))  return total + utxo.value;
+				return total;
+			}, 0);
+			} catch (e) {}
 			/*
 			await Promise.all(utxos.map(async (utxo) => {
 				utxo.confirmations >= confirmations ? confirmedBalance+=utxo.value : unconfirmedBalance+=utxo.value;
