@@ -518,12 +518,12 @@ const walletHelpers = {
 		}
 	},
 	feeEstimate :{
-		electrum: async({ selectedCrypto = "bitcoin" } = {}) => {
-			return await electrum.getFeeEstimate({ coin: selectedCrypto });
+		electrum: async({ selectedCrypto = "bitcoin", blocksWillingToWait = 8 } = {}) => {
+			return await electrum.getFeeEstimate({ coin: selectedCrypto, blocksWillingToWait });
 			
 		},
-		default: async ({ service = "electrum", selectedCrypto = "bitcoin" } = {}) => {
-			return await walletHelpers.feeEstimate[service]({ selectedCrypto });
+		default: async ({ service = "electrum", selectedCrypto = "bitcoin", blocksWillingToWait = 8 } = {}) => {
+			return await walletHelpers.feeEstimate[service]({ selectedCrypto, blocksWillingToWait });
 		}
 	}
 };

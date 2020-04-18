@@ -37,18 +37,11 @@ export const getRecommendedFee = ({ coin = "bitcoin", transactionSize = 256 } = 
 		let recommendedFee = 6;
 		let maximumFee = 128;
 		try {
-			if (coin === "litecoin") {
-				//TODO: Random Litecoin Electrum servers appear to have difficulty with the feeEstimate method. Remove this condition once the issue is resolved.
-				const response = await fetch("https://bitcoinfees.earn.com/api/v1/fees/recommended");
-				const jsonResponse = await response.json();
-				recommendedFee = Math.round(jsonResponse.hourFee/DIVIDE_RECOMMENDED_FEE_BY);
-			} else {
-				const feeResponse = await walletHelpers.feeEstimate.default({ selectedCrypto: coin });
-				if (!feeResponse.data.error && feeResponse.data > 0) {
-					let feeInSats = bitcoinUnits(feeResponse.data, "BTC").to("satoshi").value();
-					feeInSats = Math.round(feeInSats / transactionSize);
-					try {recommendedFee = Math.round(feeInSats / DIVIDE_RECOMMENDED_FEE_BY);} catch (e) {}
-				}
+			const feeResponse = await walletHelpers.feeEstimate.default({ selectedCrypto: coin });
+			if (!feeResponse.data.error && feeResponse.data > 0) {
+				let feeInSats = bitcoinUnits(feeResponse.data, "BTC").to("satoshi").value();
+				feeInSats = Math.round(feeInSats / transactionSize);
+				try {recommendedFee = Math.round(feeInSats / DIVIDE_RECOMMENDED_FEE_BY);} catch (e) {}
 			}
 			try {
 				const suggestedMaximumFee = recommendedFee * MAX_FEE_MULTIPLIER;
