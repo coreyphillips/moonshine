@@ -33,6 +33,8 @@ import {
 	LinearGradient
 } from "../styles/components";
 import {themes} from "../styles/themes";
+import { MaterialCommunityIcons } from "../styles/components";
+import FeeEstimate from "./FeeEstimate";
 
 const {
 	Constants: {
@@ -81,6 +83,8 @@ class SendTransaction extends Component {
 			
 			displayCoinControlModal: false,
 			displayCoinControlButton: false,
+			
+			displayFeeEstimateModal: false,
 			
 			whiteListedUtxos: [], //UTXOS the user has chosen to use for this transaction via the coin control modal.
 			whiteListedUtxosBalance: 0,
@@ -829,6 +833,12 @@ class SendTransaction extends Component {
 		}
 	};
 	
+	toggleFeeEstimateModal = async () => {
+		try {
+			this.setState({ displayFeeEstimateModal: !this.state.displayFeeEstimateModal });
+		} catch (e) {}
+	};
+	
 	toggleCoinControlModal = async () => {
 		try {
 			//If the coin control modal is being toggled off.
@@ -901,7 +911,7 @@ class SendTransaction extends Component {
 
 		return (
 			<View style={styles.container}>
-				<View style={{ flex: 1, backgroundColor: "transparent" }}>
+				<View style={{ backgroundColor: "transparent" }}>
 					<Header
 						compress={true}
 						fontSize={45}
@@ -1023,7 +1033,8 @@ class SendTransaction extends Component {
 					</View>
 
 					<View style={[styles.row, { marginTop: 20, marginBottom: 1 }]}>
-						<View type="transparent" style={{ flex: 1.2 }}>
+						<View type="transparent" style={{ flex: 1.2, flexDirection: "row" }}>
+							<MaterialCommunityIcons onPress={this.toggleFeeEstimateModal} type="white" name="help-circle-outline" size={20} />
 							<Text style={styles.text}>Fee: {!this.state.cryptoBalance ? 0 :this.props.transaction.fee || this.props.transaction.recommendedFee}sat/B </Text>
 						</View>
 						<View type="transparent" style={{ flex: 1 }}>
@@ -1061,7 +1072,7 @@ class SendTransaction extends Component {
 					</TouchableOpacity>}
 				</View>
 
-				<View style={[styles.sendButtonContainer, { flex: Platform.OS === "ios" ? 0.45 : 0.45 }]}>
+				<View style={styles.sendButtonContainer}>
 					<View style={styles.sendButton}>
 						<Button
 							disabled={!this.state.cryptoBalance}
@@ -1073,6 +1084,23 @@ class SendTransaction extends Component {
 						/>
 					</View>
 				</View>
+				<View style={{ height: "8%", backgroundColor: "transparent" }} />
+				
+				<DefaultModal
+					type="ScrollView"
+					isVisible={this.state.displayFeeEstimateModal}
+					onClose={this.toggleFeeEstimateModal}
+				>
+					<FeeEstimate
+						selectedCrypto={selectedCrypto}
+						exchangeRate={Number(this.props.wallet.exchangeRate[selectedCrypto])}
+						transactionSize={this.props.transaction.transactionSize}
+						updateFee={this.updateFee}
+						onClose={this.toggleFeeEstimateModal}
+						cryptoUnit={this.props.settings.cryptoUnit}
+						fiatSymbol={this.props.settings.fiatSymbol}
+					/>
+				</DefaultModal>
 
 				<DefaultModal
 					type="View"
@@ -1316,7 +1344,8 @@ const styles = StyleSheet.create({
 		backgroundColor: "transparent"
 	},
 	sendButtonContainer: {
-		justifyContent: "flex-start",
+		flex: 1,
+		justifyContent: "space-around",
 		backgroundColor: "transparent"
 	},
 	sendButton: {
