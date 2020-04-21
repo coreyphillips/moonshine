@@ -16,7 +16,7 @@ interface DefaultModalComponent {
 	children: object
 }
 const _DefaultModal = ({ isVisible = false, onClose = () => null, style = {}, contentStyle = {}, type = "ScrollView", children = {} }: DefaultModalComponent) => {
-	
+
 	return (
 		<Modal
 			isVisible={isVisible}
@@ -26,7 +26,15 @@ const _DefaultModal = ({ isVisible = false, onClose = () => null, style = {}, co
 		>
 			<View type="background" borderColor="gray3" style={[styles.modalContainer, style]}>
 				{type === "ScrollView" &&
-				<ScrollView type="background" style={[styles.modalScrollView, { ...contentStyle }]}>
+				<ScrollView
+					type="background"
+					style={[styles.modalScrollView,
+						{ ...contentStyle }]}
+					showsVerticalScrollIndicator={false}
+					showsHorizontalScrollIndicator={false}
+					keyboardShouldPersistTaps={"handled"}
+					contentContainerStyle={{ flexGrow:1 }}
+				>
 					{children}
 				</ScrollView>}
 				{type !== "ScrollView" &&
