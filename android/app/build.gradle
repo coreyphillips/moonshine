@@ -1,6 +1,7 @@
 apply plugin: "com.android.application"
 
 import com.android.build.OutputFile
+import org.apache.tools.ant.taskdefs.condition.Os
 
 /**
  * The react.gradle file registers a task for each build variant (e.g. bundleDebugJsAndAssets
@@ -119,6 +120,31 @@ def jscFlavor = 'org.webkit:android-jsc:+'
  */
 def enableHermes = project.ext.react.get("enableHermes", false);
 
+def getPassword(String currentUser, String keyChain) {
+    def stdout = new ByteArrayOutputStream()
+    def stderr = new ByteArrayOutputStream()
+    exec {
+        commandLine 'security', 'find-generic-password', '-a', currentUser, '-s', keyChain, '-w'
+        standardOutput = stdout
+        errorOutput = stderr
+        ignoreExitValue true
+    }
+    //noinspection GroovyAssignabilityCheck
+    stdout.toString().trim();
+}
+/*
+To change/modify the release store file name (MYAPP_RELEASE_STORE_FILE) &
+release key alias (MYAPP_RELEASE_KEY_ALIAS) navigate to android/gradle.properties
+and update the variables accordingly.
+ */
+def releaseStoreFile = project.hasProperty('MYAPP_RELEASE_STORE_FILE') ? file(MYAPP_RELEASE_STORE_FILE) : file('debug.keystore');
+def pass = ""; //Add password here to override the default keychain password
+if(Os.isFamily(Os.FAMILY_MAC) && pass == "") {
+    def currentUser = System.getProperty("user.name");
+    def keyChainId = "moonshine_android_keystore";
+    pass = getPassword(currentUser, keyChainId);
+}
+
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
 
@@ -151,6 +177,19 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            if (pass != "") {
+                storeFile releaseStoreFile
+                storePassword pass
+                keyAlias MYAPP_RELEASE_KEY_ALIAS
+                keyPassword pass
+            } else {
+                storeFile file('debug.keystore')
+                storePassword 'android'
+                keyAlias 'androiddebugkey'
+                keyPassword 'android'
+            }
+        }
     }
     buildTypes {
         debug {
@@ -160,7 +199,7 @@ android {
             minifyEnabled enableProguardInReleaseBuilds
             shrinkResources true
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
         }
     }
     // applicationVariants are e.g. debug, release
