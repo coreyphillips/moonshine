@@ -137,7 +137,14 @@ To change/modify the release store file name (MYAPP_RELEASE_STORE_FILE) &
 release key alias (MYAPP_RELEASE_KEY_ALIAS) navigate to android/gradle.properties
 and update the variables accordingly.
  */
-def releaseStoreFile = project.hasProperty('MYAPP_RELEASE_STORE_FILE') ? file(MYAPP_RELEASE_STORE_FILE) : file('debug.keystore');
+
+def releaseStoreFileName = "kisswallet.keystore";
+def hasReleaseStoreFile = project.hasProperty(releaseStoreFileName);
+
+def releaseStoreFile = file('debug.keystore');
+if(hasReleaseStoreFile) {
+    releaseStoreFile =file(releaseStoreFileName)
+}
 def pass = ""; //Add password here to override the default keychain password
 if(Os.isFamily(Os.FAMILY_MAC) && pass == "") {
     def currentUser = System.getProperty("user.name");
@@ -178,7 +185,7 @@ android {
             keyPassword 'android'
         }
         release {
-            if (pass != "") {
+            if (pass != "" && hasReleaseStoreFile) {
                 storeFile releaseStoreFile
                 storePassword pass
                 keyAlias MYAPP_RELEASE_KEY_ALIAS
