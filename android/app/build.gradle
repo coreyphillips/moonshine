@@ -132,14 +132,10 @@ def getPassword(String currentUser, String keyChain) {
     //noinspection GroovyAssignabilityCheck
     stdout.toString().trim();
 }
-/*
-To change/modify the release store file name (MYAPP_RELEASE_STORE_FILE) &
-release key alias (MYAPP_RELEASE_KEY_ALIAS) navigate to android/gradle.properties
-and update the variables accordingly.
- */
 
+def releaseKeyAlias = "kisswallet";
 def releaseStoreFileName = "kisswallet.keystore";
-def hasReleaseStoreFile = project.hasProperty(releaseStoreFileName);
+def hasReleaseStoreFile = file(releaseStoreFileName).exists();
 
 def releaseStoreFile = file('debug.keystore');
 if(hasReleaseStoreFile) {
@@ -188,7 +184,7 @@ android {
             if (pass != "" && hasReleaseStoreFile) {
                 storeFile releaseStoreFile
                 storePassword pass
-                keyAlias MYAPP_RELEASE_KEY_ALIAS
+                keyAlias releaseKeyAlias
                 keyPassword pass
             } else {
                 storeFile file('debug.keystore')
