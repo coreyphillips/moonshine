@@ -848,7 +848,7 @@
 				DEVELOPMENT_TEAM = 344W3TSQCK;
 				INFOPLIST_FILE = moonshine/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 0.3.4;
+				MARKETING_VERSION = 0.3.5;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -870,7 +870,7 @@
 				DEVELOPMENT_TEAM = 344W3TSQCK;
 				INFOPLIST_FILE = moonshine/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 0.3.4;
+				MARKETING_VERSION = 0.3.5;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
