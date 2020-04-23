@@ -7,6 +7,7 @@ import { Text } from "../styles/components";
 const updates = [
 	"Upgraded to PSBT.",
 	"Removed slow or unresponsive Electrum servers from the default peer list.",
+	"Added a fee estimate model to the Send Transaction view.",
 	"Further optimized fees for Bech32 & Segwit-Compatible addresses.",
 	"Refresh the random peer list more frequently for more reliable connections.",
 	"Slight style updates to the RBF section of the transaction detail view.",
