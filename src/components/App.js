@@ -305,8 +305,7 @@ export default class App extends Component {
 				return true;
 			};
 			//Setup BackHandler for Android
-			BackHandler.addEventListener("hardwareBackPress", onBack);
-			//BackHandler.addEventListener("hardwareBackPress", this.state.displayPin || this.state.displayBiometrics ? null : this.state.optionSelected === "send" ? this.onSendPress : this.resetView);
+			if (Platform.OS === "android") BackHandler.addEventListener("hardwareBackPress", onBack);
 			//Start listener to detect if the app is in the background or foreground
 			AppState.addEventListener("change", this._handleAppStateChange);
 			//Setup Layout Animation for Android
@@ -1033,7 +1032,7 @@ export default class App extends Component {
 			//Stop Electrum Process
 			electrum.stop({coin: this.props.wallet.selectedCrypto});
 			//Remove Back Button Listener
-			BackHandler.removeEventListener("hardwareBackPress", this.resetView);
+			if (Platform.OS === "android") BackHandler.removeEventListener("hardwareBackPress");
 			//Start the listener that detects if the app is in the background or foreground
 			AppState.removeEventListener("change", this._handleAppStateChange);
 			//Clear/Remove Wallet Refresh Timer
