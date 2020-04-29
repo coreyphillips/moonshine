@@ -23,6 +23,7 @@ const _DefaultModal = ({ isVisible = false, onClose = () => null, style = {}, co
 			onBackdropPress={onClose}
 			backdropOpacity={0.1}
 			propagateSwipe={true}
+			onBackButtonPress={onClose}
 		>
 			<View type="background" borderColor="gray3" style={[styles.modalContainer, style]}>
 				{type === "ScrollView" &&
