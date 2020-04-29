@@ -9,7 +9,8 @@ import {
 	Platform,
 	InteractionManager,
 	Keyboard,
-	Easing
+	Easing,
+	BackHandler
 } from "react-native";
 import PropTypes from "prop-types";
 import Slider from "@react-native-community/slider";
@@ -147,6 +148,7 @@ class SendTransaction extends Component {
 				try {setupSendTransaction();} catch (e) {}
 			});
 		}
+		if (Platform.OS === "android") BackHandler.addEventListener("hardwareBackPress", this.onBack);
 	}
 
 	componentDidUpdate() {
@@ -156,6 +158,7 @@ class SendTransaction extends Component {
 	componentWillUnmount() {
 		InteractionManager.runAfterInteractions(() => {
 			try {this.props.resetTransaction();} catch (e) {}
+			if (Platform.OS === "android") BackHandler.removeEventListener("hardwareBackPress", this.onBack);
 		});
 	}
 
@@ -794,8 +797,16 @@ class SendTransaction extends Component {
 		}
 	};
 
-	onXButtonPress = async() => {
+	onBack = async() => {
 		try {
+			if (this.state.displayFeeEstimateModal) {
+				this.toggleFeeEstimateModal();
+				return;
+			}
+			if (this.state.displayCoinControlModal) {
+				this.toggleCoinControlModal();
+				return;
+			}
 			if (this.state.displayLoading) {
 				await this.setState({
 					loadingMessage: "",
@@ -804,9 +815,13 @@ class SendTransaction extends Component {
 					enableLoadingErrorIcon: false
 				});
 				await this.updateLoading({ display: false });
-			} else {
-				this.updateConfirmationModal({ display: false });
+				return;
 			}
+			if (this.state.displayConfirmationModal) {
+				this.updateConfirmationModal({ display: false });
+				return;
+			}
+			this.props.onClose();
 		} catch (e) {}
 	};
 
@@ -1089,14 +1104,14 @@ class SendTransaction extends Component {
 				<DefaultModal
 					type="ScrollView"
 					isVisible={this.state.displayFeeEstimateModal}
-					onClose={this.toggleFeeEstimateModal}
+					onClose={this.onBack}
 				>
 					<FeeEstimate
 						selectedCrypto={selectedCrypto}
 						exchangeRate={Number(this.props.wallet.exchangeRate[selectedCrypto])}
 						transactionSize={this.props.transaction.transactionSize}
 						updateFee={this.updateFee}
-						onClose={this.toggleFeeEstimateModal}
+						onClose={this.onBack}
 						cryptoUnit={this.props.settings.cryptoUnit}
 						fiatSymbol={this.props.settings.fiatSymbol}
 					/>
@@ -1105,7 +1120,7 @@ class SendTransaction extends Component {
 				<DefaultModal
 					type="View"
 					isVisible={this.state.displayCoinControlModal}
-					onClose={this.toggleCoinControlModal}
+					onClose={this.onBack}
 				>
 					<CoinControl
 						selectedCrypto={selectedCrypto}
@@ -1210,7 +1225,7 @@ class SendTransaction extends Component {
 						</LinearGradient>}
 						{this.state.displayXButton &&
 						<Animated.View style={styles.xButton}>
-							<XButton onPress={this.onXButtonPress} />
+							<XButton onPress={this.onBack} />
 						</Animated.View>}
 					</View>
 				</Modal>
