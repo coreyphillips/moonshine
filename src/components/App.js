@@ -541,7 +541,7 @@ export default class App extends Component {
 			//Subscribe to received transactions for the next available address
 			if (!skipSubscribeActions) {
 				this.subscribeAddress("address");
-				this.subscribeAddress("changeAddress");
+				this.subscribeAddress("changeAddress", false);
 			}
 			
 			//Update status of the user-facing loading message and progress bar
@@ -771,7 +771,7 @@ export default class App extends Component {
 	};
 	
 	//Subscribe to received transactions for the next available address
-	subscribeAddress = async (address = "address") => {
+	subscribeAddress = async (address = "address", vibrate = true) => {
 		try {
 			const { selectedCrypto } = this.props.wallet;
 			const nextAvailableAddress = this.getNextAvailableAddress()[address];
@@ -786,7 +786,7 @@ export default class App extends Component {
 				try {
 					//Only refresh the wallet if a new transaction is detected.
 					if (Array.isArray(data.data)) {
-						vibrate("notificationSuccess"); //Vibrate to notify user.
+						if (vibrate) vibrate("notificationSuccess"); //Vibrate to notify user.
 						this.refreshWallet({ reconnectToElectrum: false }); //Refresh wallet.
 						//this.subscribeAddress();
 					}
