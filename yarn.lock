@@ -5800,10 +5800,9 @@ nodejs-mobile-gyp@^0.3.1:
     tar "^4.4.8"
     which "1"
 
-nodejs-mobile-react-native@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/nodejs-mobile-react-native/-/nodejs-mobile-react-native-0.5.0.tgz#07eb85df258f33e9becdb15bdcf9202d37961664"
-  integrity sha512-vikgg8qGSwHUsjRxMNuZQnpouu36TjI2DaijMo2qGpWM/nDYy9zUGbLCT1Eu7b3QwOR8gbLbNmc5Po+kTBBFSA==
+"nodejs-mobile-react-native@https://github.com/coreyphillips/nodejs-mobile-react-native#v0.6.1":
+  version "0.6.0"
+  resolved "https://github.com/coreyphillips/nodejs-mobile-react-native#673948df3ca96a095d008c2385679cde4236acb2"
   dependencies:
     mkdirp "^0.5.1"
     ncp "^2.0.0"
