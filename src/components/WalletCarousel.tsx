@@ -38,11 +38,11 @@ interface WalletCarouselComponent {
 	displayTestnet: boolean
 }
 const _WalletCarousel = ({ wallet = { wallets: {}, selectedWallet: "wallet0", walletOrder: [] }, onCoinPress = () => null, updateWallet = () => null, deleteWallet = () => null, cryptoUnit = "satoshi", displayTestnet = true }: WalletCarouselComponent) => {
-	
+
 	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
-	
+
 	const [activeSlide, setActiveSlide] = useState(wallet.walletOrder.indexOf(wallet.selectedWallet));
-	
+
 	interface RenderItem {
 		walletId: string
 	}
@@ -64,7 +64,7 @@ const _WalletCarousel = ({ wallet = { wallets: {}, selectedWallet: "wallet0", wa
 			console.log(e);
 		}
 	};
-	
+
 	const updateActiveSlide = (index = 0) => setActiveSlide(index);
 	const walletOrder = wallet.walletOrder;
 	return (
@@ -83,8 +83,6 @@ const _WalletCarousel = ({ wallet = { wallets: {}, selectedWallet: "wallet0", wa
 					containerCustomStyle={styles.slider}
 					contentContainerCustomStyle={styles.sliderContentContainer}
 					onSnapToItem={index => updateActiveSlide(index)}
-					enableMomentum={true}
-					decelerationRate={0.9}
 				/>
 				<Pagination
 					dotsLength={walletOrder.length}
