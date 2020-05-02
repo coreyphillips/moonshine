@@ -7,7 +7,7 @@ import { Text } from "../styles/components";
 const updates = [
 	"Upgraded to PSBT.",
 	"Removed slow or unresponsive Electrum servers from the default peer list.",
-	"Added a fee estimate model to the Send Transaction view.",
+	"Added a fee estimate modal to the Send Transaction view.",
 	"Further optimized fees for Bech32 & Segwit-Compatible addresses.",
 	"Refresh the random peer list more frequently for more reliable connections.",
 	"Slight style updates to the RBF section of the transaction detail view.",
@@ -15,7 +15,8 @@ const updates = [
 	"Blacklisted UTXO's are now labeled in the coin control modal.",
 	"Improved fee calculation when adding a transaction message.",
 	"Fixed request payment bug when using BTC as the crypto unit.",
-	"Improved UX when importing mnemonic phrases."
+	"Improved UX when importing mnemonic phrases.",
+	"Fixed BackHandler issues on certain screens for Android devices."
 ];
 
 const _Welcome = ({ onClose = () => null, children = <View /> } = {}) => {
