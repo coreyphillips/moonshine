@@ -770,7 +770,7 @@ export default class App extends Component {
 	};
 	
 	//Subscribe to received transactions for the next available address
-	subscribeAddress = async (address = "address", vibrate = true) => {
+	subscribeAddress = async (address = "address", shouldVibrate = true) => {
 		try {
 			const { selectedCrypto } = this.props.wallet;
 			const nextAvailableAddress = this.getNextAvailableAddress()[address];
@@ -785,13 +785,10 @@ export default class App extends Component {
 				try {
 					//Only refresh the wallet if a new transaction is detected.
 					if (Array.isArray(data.data)) {
-						if (vibrate) vibrate("notificationSuccess"); //Vibrate to notify user.
+						if (shouldVibrate) vibrate("notificationSuccess"); //Vibrate to notify user.
 						this.refreshWallet({ reconnectToElectrum: false }); //Refresh wallet.
-						//this.subscribeAddress();
 					}
-				} catch (e) {
-					console.log(e);
-				}
+				} catch {}
 			};
 			electrum.subscribeAddress({
 				id: scriptHash.data,
@@ -799,7 +796,7 @@ export default class App extends Component {
 				coin: selectedCrypto,
 				onReceive
 			});
-		} catch (e) {console.log(e);}
+		} catch {}
 	};
 	
 	authenticateUserWithBiometrics = (forceRetry = false) => {

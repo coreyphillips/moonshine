@@ -1010,9 +1010,9 @@ const getByteCount = (inputs, outputs) => {
 				"P2PKH": 148 * 4,
 				"P2WPKH": 108 + (41 * 4),
 				"P2SH-P2WPKH": 108 + (64 * 4),
-				"bech32": 108 + (41 * 4),
-				"segwit": 108 + (64 * 4),
-				"legacy": 148 * 4
+				"bech32": (108 + (41 * 4)) + 1,
+				"segwit": (108 + (64 * 4)) + 1,
+				"legacy": (148 * 4) + 1
 			},
 			"outputs": {
 				"P2SH": 32 * 4,
@@ -1048,7 +1048,7 @@ const getByteCount = (inputs, outputs) => {
 				if (keyParts.length !== 2) throw new Error("invalid input: " + key);
 				var newKey = keyParts[0];
 				var mAndN = keyParts[1].split("-").map(function (item) {
-					return parseInt(item)
+					return parseInt(item);
 				});
 				
 				totalWeight += types.inputs[newKey] * inputs[key];
