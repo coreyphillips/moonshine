@@ -26,7 +26,7 @@ Recommended fees are always grossly overestimated.
 Until this is resolved, getRecommendedFee divides that estimation by 4.
  */
 export const getRecommendedFee = ({ coin = "bitcoin", transactionSize = 256 } = {}) => (dispatch) => {
-	const DIVIDE_RECOMMENDED_FEE_BY = 4;
+	const DIVIDE_RECOMMENDED_FEE_BY = 10;
 	const MAX_FEE_MULTIPLIER = 4;
 	return new Promise(async (resolve) => {
 
@@ -34,7 +34,7 @@ export const getRecommendedFee = ({ coin = "bitcoin", transactionSize = 256 } = 
 			resolve({ error: true, errorTitle, errorMsg });
 		};
 
-		let recommendedFee = 6;
+		let recommendedFee = 4;
 		let maximumFee = 128;
 		try {
 			const feeResponse = await walletHelpers.feeEstimate.default({ selectedCrypto: coin });
@@ -42,6 +42,7 @@ export const getRecommendedFee = ({ coin = "bitcoin", transactionSize = 256 } = 
 				let feeInSats = bitcoinUnits(feeResponse.data, "BTC").to("satoshi").value();
 				feeInSats = Math.round(feeInSats / transactionSize);
 				try {recommendedFee = Math.round(feeInSats / DIVIDE_RECOMMENDED_FEE_BY);} catch (e) {}
+				if (recommendedFee < 1) recommendedFee = 4;
 			}
 			try {
 				const suggestedMaximumFee = recommendedFee * MAX_FEE_MULTIPLIER;
