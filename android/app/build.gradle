@@ -160,7 +160,7 @@ android {
         applicationId "com.kisswallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 55
+        versionCode 56
         versionName "0.3.5"
         multiDexEnabled true
         missingDimensionStrategy 'react-native-camera', 'general'
