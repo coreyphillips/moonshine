@@ -139,13 +139,21 @@ def hasReleaseStoreFile = file(releaseStoreFileName).exists();
 
 def releaseStoreFile = file('debug.keystore');
 if(hasReleaseStoreFile) {
-    releaseStoreFile =file(releaseStoreFileName)
+    releaseStoreFile = file(releaseStoreFileName)
 }
 def pass = ""; //Add password here to override the default keychain password
-if(Os.isFamily(Os.FAMILY_MAC) && pass == "") {
+if(Os.isFamily(Os.FAMILY_MAC) && hasReleaseStoreFile && pass == "") {
     def currentUser = System.getProperty("user.name");
     def keyChainId = "moonshine_android_keystore";
     pass = getPassword(currentUser, keyChainId);
+}
+
+if (hasReleaseStoreFile && pass == "") {
+    println "Enter keystore password:"
+    pass = System.in.newReader().readLine()
+    if (pass == null) {
+        pass = ""
+    }
 }
 
 android {
@@ -160,7 +168,7 @@ android {
         applicationId "com.kisswallet"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 56
+        versionCode 57
         versionName "0.3.5"
         multiDexEnabled true
         missingDimensionStrategy 'react-native-camera', 'general'
