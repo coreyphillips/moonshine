@@ -16,7 +16,8 @@ const updates = [
 	"Improved fee calculation when adding a transaction message.",
 	"Fixed request payment bug when using BTC as the crypto unit.",
 	"Improved UX when importing mnemonic phrases.",
-	"Fixed BackHandler issues on certain screens for Android devices."
+	"Fixed BackHandler issues on certain screens for Android devices.",
+	"Fixed issue with keyboards that replace periods with a comma based on the device language preference."
 ];
 
 const _Welcome = ({ onClose = () => null, children = <View /> } = {}) => {
