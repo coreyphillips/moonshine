@@ -148,9 +148,9 @@ if(Os.isFamily(Os.FAMILY_MAC) && hasReleaseStoreFile && pass == "") {
     pass = getPassword(currentUser, keyChainId);
 }
 
-if (hasReleaseStoreFile && pass == "") {
+if ("assembleRelease" in gradle.startParameter.taskNames && hasReleaseStoreFile && pass == "") {
     println "Enter keystore password:"
-    pass = System.in.newReader().readLine()
+    pass = System.in.newReader().readLine().trim()
     if (pass == null) {
         pass = ""
     }
