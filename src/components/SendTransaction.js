@@ -409,6 +409,11 @@ class SendTransaction extends Component {
 		let fiatAmount = "";
 		let satoshiAmount = "";
 		
+		try {
+			//This attempts to account for device language preferences that replace a period with a comma.
+			//This addresses #47: https://github.com/coreyphillips/moonshine/issues/47
+			if (amount.charAt(amount.length - 1) === ",") amount = amount.replace(/.$/,".");
+		} catch {}
 		if (!isNaN(amount)) amount = await amount.toString();
 
 		//Remove all commas
