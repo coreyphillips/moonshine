@@ -21,16 +21,6 @@ As with any hot wallet, please ensure that you keep only a small, responsible am
 
 If you are looking for secure cold storage solutions please consider purchasing a [Trezor](https://wallet.trezor.io) or a [Ledger](https://www.ledger.com/)
 
-### Installation
-1. Clone Moonshine and Install Dependencies:
-   ```
-    git clone https://github.com/coreyphillips/moonshine
-    cd moonshine
-    yarn install
-    ```
-2. Start the project:
-    - iOS: `react-native run-ios`
-    - Android: `react-native run-android`
 ### Features
 * Bitcoin/Litecoin Mainnet & Testnet supported
 * Bech32 support
@@ -55,6 +45,36 @@ If you are looking for secure cold storage solutions please consider purchasing 
 
 For an up-to-date list of features that are in progress please refer to Moonshine's [issue page.](https://github.com/coreyphillips/moonshine/issues)
 If you do not see a feature that you want feel free to create a new issue requesting it or reach out at support@moonshinewallet.com and let me know.
+
+### Installation
+1. Clone Moonshine and Install Dependencies:
+   `git clone https://github.com/coreyphillips/moonshine && cd moonshine && yarn install`
+2. Start the project:
+    - iOS: `react-native run-ios`
+    - Android: `react-native run-android`
+
+### Create Your Own Build
+- `git clone https://github.com/coreyphillips/moonshine && cd moonshine && yarn install && yarn bundle`
+
+### Create a Reproducible Build
+This method requires docker to create a reproducible build and takes quite some time. However, it will allow you to verify against the most recently available build on Google Play.
+
+A few things to note though.
+First, this method only works if using the same version that is currently available on the Play Store.
+Second, you'll need to be sure that you're comparing the correct apk files depending on the device you're using (x86, x86_64, v7a, arm64-v8a).
+Third, make sure you're building with a clean, unmodified clone of moonshine by following the steps below. Modifying the code in any way will result in a failed apkdiff.py check.
+
+1. Clone and cd into the latest release:
+    - `basename $(curl -Ls -o /dev/null -w %{url_effective} https://github.com/coreyphillips/moonshine/releases/latest) | { IFS= read -r tag; git clone -b ${tag} https://github.com/coreyphillips/moonshine }`
+    - `cd moonshine`
+2. Run docker and create the build. Once built, the apks will be located in "moonshine/android/app/build/outputs/apk/release/":
+    - `docker run --rm --name moonshine-build -v ${PWD}:/pwd -w /pwd coreylphillips/react-native-android bash -c "source ~/.bash_profile && yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../android && ./gradlew clean && cd .. && yarn bundle"`
+3. Fetch the apk from Google Play using a service of your choice. I've listed a few below:
+    - https://github.com/rehmatworks/gplaydl
+    - https://github.com/onyxbits/raccoon4
+    - (Web-based) https://apkbucket.net/apk-downloader/
+4. Use [apkdiff.py](https://gist.github.com/coreyphillips/38c35623be4b6241cfe7623e301437b0) to compare the apk files. Example usage:
+    - `python apkdiff.py googleplay.apk local.apk` 
 
 ### Contributing
 
