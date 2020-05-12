@@ -412,6 +412,10 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 			
 			//Embed any OP_RETURN messages.
 			if (message !== "") {
+				const messageLength = message.length;
+				const lengthMin = 5;
+				//This is a patch for the following: https://github.com/coreyphillips/moonshine/issues/52
+				if (messageLength < lengthMin) message += " ".repeat(lengthMin- messageLength);
 				const data = Buffer.from(message, "utf8");
 				const embed = bitcoin.payments.embed({data: [data], network});
 				targets.push({ script: embed.output, value: 0 });
