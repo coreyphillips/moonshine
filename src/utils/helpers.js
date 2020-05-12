@@ -403,7 +403,7 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 		try {
 			const network = networks[selectedCrypto];
 			const rbfIsSupported = supportsRbf[selectedCrypto]; //Ensure the selected coin is not Litecoin.
-			const totalFee = getByteCount({[addressType]:utxos.length},{[addressType]:changeAddress ? 2 : 1}) * transactionFee;
+			const totalFee = getByteCount({[addressType]:utxos.length},{[addressType]:changeAddress ? 2 : 1}, message) * transactionFee;
 			addressType = addressType.toLowerCase();
 			
 			let targets = [{ address, value: amount }];
@@ -995,7 +995,7 @@ const getLastWordInString = (phrase = "") => {
 	getByteCount({'MULTISIG-P2SH:2-4':45},{'P2PKH':1}) Means "45 inputs of P2SH Multisig and 1 output of P2PKH"
 	getByteCount({'P2PKH':1,'MULTISIG-P2SH:2-3':2},{'P2PKH':2}) means "1 P2PKH input and 2 Multisig P2SH (2 of 3) inputs along with 2 P2PKH outputs"
 */
-const getByteCount = (inputs, outputs) => {
+const getByteCount = (inputs, outputs, message = "") => {
 	try {
 		let totalWeight = 0;
 		let hasWitness = false;
@@ -1073,7 +1073,13 @@ const getByteCount = (inputs, outputs) => {
 		totalWeight += varIntLength(inputCount) * 4;
 		totalWeight += varIntLength(outputCount) * 4;
 		
-		return Math.ceil(totalWeight / 4);
+		let messageByteCount = 0;
+		try {
+			messageByteCount = message.length;
+			//Multiply by 2 to help ensure Electrum servers will broadcast the tx.
+			messageByteCount = messageByteCount * 2;
+		} catch {}
+		return Math.ceil(totalWeight / 4)+messageByteCount;
 	} catch (e) { return 256; }
 };
 

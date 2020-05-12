@@ -193,8 +193,14 @@ class TransactionDetail extends PureComponent {
 			rbfValue = rbfValue ? rbfValue : this.state.rbfValue;
 			const hash = this.props.wallet.selectedTransaction.hash;
 			const rbfData = this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto][hash];
+			let message = "";
+			try {message = rbfData.message;} catch {}
 			const addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
-			const transactionSize = getByteCount({[addressType]:rbfData.utxos.length},{[addressType]:!rbfData.changeAddress ? 1 : 2});
+			const transactionSize = getByteCount(
+				{[addressType]:rbfData.utxos.length},
+				{[addressType]:!rbfData.changeAddress ? 1 : 2},
+				message
+			);
 			const currentBalance = Number(this.props.wallet.wallets[selectedWallet].confirmedBalance[selectedCrypto]);
 			
 			//Get original fee total
@@ -219,8 +225,11 @@ class TransactionDetail extends PureComponent {
 			const rbfData = this.props.wallet.wallets[selectedWallet].rbfData[selectedCrypto][hash];
 			const fiatSymbol = this.props.settings.fiatSymbol;
 			
+			let message = "";
+			try {message = rbfData.message;} catch {}
+			
 			const addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
-			const transactionSize = getByteCount({[addressType]:rbfData.utxos.length},{[addressType]:!rbfData.changeAddress ? 1 : 2});
+			const transactionSize = getByteCount({[addressType]:rbfData.utxos.length},{[addressType]:!rbfData.changeAddress ? 1 : 2}, message);
 			
 			//Get original fee per byte value
 			const initialFeePerByte = rbfData.transactionFee;
@@ -422,6 +431,9 @@ class TransactionDetail extends PureComponent {
 					newRbfData["hash"] = sendTransactionResult.data;
 					rbfData[newRbfData.hash] = newRbfData;
 					
+					let message = "";
+					try {message = rbfData.message;} catch {}
+					
 					//If cancelling a transaction (by including an address), do not store any new rbfData, remove it.
 					if (address) try {if (rbfData[newRbfData.hash]) delete rbfData[newRbfData.hash];} catch (e) {}
 					
@@ -439,7 +451,7 @@ class TransactionDetail extends PureComponent {
 					});
 					
 					const addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
-					const transactionSize = getByteCount({[addressType]:newRbfData.utxos.length},{[addressType]:!newRbfData.changeAddress ? 1 : 2});
+					const transactionSize = getByteCount({[addressType]:newRbfData.utxos.length},{[addressType]:!newRbfData.changeAddress ? 1 : 2}, message);
 					const totalFee = this.state.rbfValue * transactionSize;
 					
 					//Attempt to add the successful transaction to the transaction list

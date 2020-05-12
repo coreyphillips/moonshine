@@ -310,15 +310,13 @@ class SendTransaction extends Component {
 			try {
 				const { selectedCrypto, selectedWallet } = this.props.wallet;
 				let addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
-				transactionByteCount = getByteCount({[addressType]:this.getUtxoLength()},{[addressType]:this.state.spendMaxAmount ? 1 : 2});
+				transactionByteCount = getByteCount(
+					{[addressType]:this.getUtxoLength()},
+					{[addressType]:this.state.spendMaxAmount ? 1 : 2},
+					this.props.transaction.message
+				);
 			} catch (e) {}
-			let messageByteCount = 0;
-			try {
-				messageByteCount = this.props.transaction.message.length;
-				//Multiply by 2 to help ensure Electrum servers will broadcast the tx.
-				messageByteCount = messageByteCount * 2;
-			} catch (e) {}
-			return transactionByteCount+messageByteCount;
+			return transactionByteCount;
 		} catch (e) {
 			return 256;
 		}
@@ -333,7 +331,11 @@ class SendTransaction extends Component {
 			if (!walletBalance) return; //No need to continue if there's no balance
 			const { selectedCrypto, selectedWallet } = this.props.wallet;
 			const addressType = this.props.wallet.wallets[selectedWallet].addressType[selectedCrypto];
-			const transactionSize = getByteCount({[addressType]:this.getUtxoLength()},{[addressType]:!this.state.spendMaxAmount ? 1 : 2});
+			const transactionSize = getByteCount(
+				{[addressType]:this.getUtxoLength()},
+				{[addressType]:!this.state.spendMaxAmount ? 1 : 2},
+				this.props.transaction.message
+			);
 			
 			const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
 			let totalFee = this.getTotalFee(recommendedFee, transactionSize);
@@ -1040,11 +1042,12 @@ class SendTransaction extends Component {
 							placeholder="Anything entered here will be public"
 							style={[styles.textInput, { borderRadius: 5 }]}
 							selectionColor={colors.lightPurple}
-							onChangeText={message => {
+							onChangeText={async (message) => {
 								if (message.length <= MAX_MESSAGE_LENGTH) {
-									this.props.updateTransaction({message}); //Set message
+									await this.props.updateTransaction({message}); //Set message
 									const transactionSize = this.getTransactionByteCount(); //Get new tx size with updated message.
-									this.props.updateTransaction({ transactionSize }); //Set new tx size.
+									await this.props.updateTransaction({ transactionSize }); //Set new tx size.
+									this.updateFee(this.props.transaction.fee);
 								}
 							}}
 							value={this.props.transaction.message}
