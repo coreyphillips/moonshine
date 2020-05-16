@@ -37,10 +37,7 @@ const getExchangeRate = ({ selectedCoin = "bitcoin", selectedCurrency = "usd", s
 		};
 
 		const isConnected = await isOnline();
-		if (!isConnected) {
-			failure("Offline");
-			return;
-		}
+		if (!isConnected) return failure("Offline");
 
 		let exchangeRate = 0;
 		try {
@@ -165,6 +162,9 @@ const resetUtxos = ({wallet = "wallet0", addresses = [], changeAddresses = [], c
 			resolve({error: true, data});
 		};
 		try {
+			const isConnected = await isOnline();
+			if (isConnected === false) return failure();
+			
 			//Returns { error: false, data: { utxos, balance } }
 			const utxoResult = await walletHelpers.utxos.default({ addresses, changeAddresses, currentBlockHeight, selectedCrypto });
 			if (utxoResult.error === true) {
@@ -179,7 +179,7 @@ const resetUtxos = ({wallet = "wallet0", addresses = [], changeAddresses = [], c
 				return;
 			}
 			
-			if (utxoResult.error === false) {
+			if (isConnected && !utxoResult.error) {
 				dispatch({
 					type: actions.RESET_UTXOS,
 					payload: {
@@ -230,10 +230,7 @@ const updateBalance = ({ wallet = "wallet0", utxos = [], blacklistedUtxos = [], 
 		};
 		try {
 			const isConnected = await isOnline();
-			if (isConnected === false) {
-				failure();
-				return;
-			}
+			if (isConnected === false) return failure();
 			
 			let confirmedBalance = 0;
 			let unconfirmedBalance = 0;
@@ -359,10 +356,7 @@ const initialImportSync = ({ wallet = "wallet0", selectedCrypto = "bitcoin", cur
 		};
 		
 		const isConnected = await isOnline();
-		if (isConnected === false) {
-			failure("Offline");
-			return;
-		}
+		if (isConnected === false) return failure("Offline");
 		
 		try {
 			//The threshold dictates how many empty addresses the function should search for before resolving
@@ -473,10 +467,7 @@ const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAdd
 		};
 		
 		const isConnected = await isOnline();
-		if (isConnected === false) {
-			failure("Offline");
-			return;
-		}
+		if (isConnected === false) return failure("Offline");
 		
 		try {
 			//Make sure to dispatch and save new addresses if there are no addresses initially.
@@ -547,7 +538,7 @@ const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAdd
 				}
 			}
 			
-			if (allTransactions.length || addNewAddresses) {
+			if (isConnected && (allTransactions.length || addNewAddresses)) {
 				const payload = {
 					wallet,
 					selectedCrypto,
