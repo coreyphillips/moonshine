@@ -1,6 +1,6 @@
 {
   "name": "moonshine",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "description": "An open-source, non-custodial, Bitcoin/Litecoin Electrum wallet for iOS & Android.",
   "author": "Corey Phillips",
   "license": "MIT",
