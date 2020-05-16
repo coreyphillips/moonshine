@@ -124,7 +124,7 @@ const _FeeEstimate = (
 					<TouchableOpacity type="transparent" onPress={() => onFeePress(sats)} key={label}>
 						<Text style={[styles.text, { textAlign: "left", paddingTop: 5, ...systemWeights.semibold }]}>{label}</Text>
 						<View style={styles.row}>
-							<Text style={[styles.text, { flex: 1.2, textAlign: "left" }]}>{sats} {cryptoUnitLabel}/byte</Text>
+							<Text style={[styles.text, { flex: 1.2, textAlign: "left" }]}>{sats} {cryptoUnitLabel}/B</Text>
 							<Text style={[styles.text, { flex: 1 }]}>{sats*transactionSize} sats</Text>
 							<Text style={[styles.text, { flex: 1, textAlign: "right" }]}>{fiatSymbol}{fiat}</Text>
 						</View>
