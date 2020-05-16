@@ -5,19 +5,10 @@ import XButton from "./XButton";
 import { Text } from "../styles/components";
 
 const updates = [
-	"Upgraded to PSBT.",
-	"Removed slow or unresponsive Electrum servers from the default peer list.",
-	"Added a fee estimate modal to the Send Transaction view.",
-	"Further optimized fees for Bech32 & Segwit-Compatible addresses.",
-	"Refresh the random peer list more frequently for more reliable connections.",
-	"Slight style updates to the RBF section of the transaction detail view.",
-	"Fixed BitId login functionality.",
-	"Blacklisted UTXO's are now labeled in the coin control modal.",
-	"Improved fee calculation when adding a transaction message.",
-	"Fixed request payment bug when using BTC as the crypto unit.",
-	"Improved UX when importing mnemonic phrases.",
-	"Fixed BackHandler issues on certain screens for Android devices.",
-	"Fixed issue with keyboards that replace periods with a comma based on the device language preference."
+	"Fixed a bug (issue #52) that would result in an unreadable OP_RETURN message if the embedded data was less than 5 characters.",
+	`Updating messages when the "Max" button is selected now calculates and updates the tx fee accordingly.`,
+	"Messages are now stored temporarily when sending a tx to reduce any noticeable latency from the Electrum server.",
+	"Fixed a bug that would temporarily display a zero balance if the user disconnected from the internet or Electrum server while checking for transactions and updating their balance."
 ];
 
 const _Welcome = ({ onClose = () => null, children = <View /> } = {}) => {
