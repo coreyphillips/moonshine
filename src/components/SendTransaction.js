@@ -471,7 +471,7 @@ class SendTransaction extends Component {
 	getSendButtonCryptoLabel = () => {
 		try {
 			const { cryptoUnit } = this.props.settings;
-			const cryptoAcronym = this.coinData.acronym;
+			const cryptoAcronym = this.coinData().acronym;
 			//const cryptoUnitLabel = cryptoUnit === "satoshi" ? "sats" : cryptoUnit;
 			let cryptoValue = Number(this.props.transaction.amount);
 			//This prevents the view from displaying 0 BTC
@@ -1012,7 +1012,7 @@ class SendTransaction extends Component {
 									<FontAwesome name={"exchange"} size={15} />
 								</View>
 								<Text style={styles.amountText}>
-									{this.state.displayInCrypto ? `${this.coinData.acronym}` : "USD"}
+									{this.state.displayInCrypto ? `${this.coinData().acronym}` : "USD"}
 								</Text>
 							</View>
 						</TouchableOpacity>
@@ -1060,15 +1060,15 @@ class SendTransaction extends Component {
 						</TextInput>
 					</View>
 
-					<View style={[styles.row, { marginTop: 20, marginBottom: 1 }]}>
-						<View type="transparent" style={{ flex: 1.2, flexDirection: "row" }}>
+					<View style={[styles.row, { marginTop: 20, marginBottom: 1, justifyContent: "space-between" }]}>
+						<View type="transparent" style={{ flexDirection: "row" }}>
 							<MaterialCommunityIcons onPress={this.toggleFeeEstimateModal} type="white" name="help-circle-outline" size={20} />
-							<Text style={styles.text}>Fee: {!this.state.cryptoBalance ? 0 :this.props.transaction.fee || this.props.transaction.recommendedFee}${this.coinData.oshi}/B </Text>
+							<Text style={styles.text}>Fee: {!this.state.cryptoBalance ? 0 :this.props.transaction.fee || this.props.transaction.recommendedFee} {this.coinData().oshi}/B </Text>
 						</View>
-						<View type="transparent" style={{ flex: 1 }}>
+						<View type="transparent">
 							<Text style={[styles.text, { textAlign: "center" }]}>{this.props.settings.fiatSymbol}{fiatFeeLabel}</Text>
 						</View>
-						<View type="transparent" style={{ flex: 1 }}>
+						<View type="transparent">
 							<Text style={[styles.text, { textAlign: "center" }]}>{cryptoFeeLabel} sats</Text>
 						</View>
 					</View>
@@ -1170,12 +1170,12 @@ class SendTransaction extends Component {
 									<View style={{ flex: 1, backgroundColor: "transparent", marginVertical: 5, flexDirection: "row", justifyContent: "center" }}>
 										<View style={{ flex: 1, backgroundColor: "transparent", alignItems: "center" }}>
 											<Text style={styles.boldModalText}>Amount:</Text>
-											<Text style={styles.modalText}>{this.satsToUnit(this.props.transaction.amount)} {this.coinData.acronym}</Text>
+											<Text style={styles.modalText}>{this.satsToUnit(this.props.transaction.amount)} {this.coinData().acronym}</Text>
 											<Text style={styles.modalText}>{this.props.settings.fiatSymbol}{parseFloat(this.props.transaction.fiatAmount).toFixed(2)}</Text>
 										</View>
 										<View style={{ flex: 1, backgroundColor: "transparent", alignItems: "center" }}>
 											<Text style={styles.boldModalText}>Fee:</Text>
-											<Text style={styles.modalText}>{this.satsToUnit(cryptoFeeLabel)} {this.coinData.acronym}</Text>
+											<Text style={styles.modalText}>{this.satsToUnit(cryptoFeeLabel)} {this.coinData().acronym}</Text>
 											<Text style={styles.modalText}>{this.props.settings.fiatSymbol}{fiatFeeLabel}</Text>
 										</View>
 									</View>
@@ -1184,7 +1184,7 @@ class SendTransaction extends Component {
 								<View style={styles.modalMiddleContent}>
 									
 									<Text style={[styles.boldModalText, { fontSize: 24 }]}>Total:</Text>
-									<Text style={[styles.modalText, { fontSize: 20 }]}>{this.satsToUnit(Number(this.props.transaction.amount) + Number(cryptoFeeLabel))} {this.coinData.acronym}</Text>
+									<Text style={[styles.modalText, { fontSize: 20 }]}>{this.satsToUnit(Number(this.props.transaction.amount) + Number(cryptoFeeLabel))} {this.coinData().acronym}</Text>
 									<Text style={[styles.modalText, { fontSize: 20 }]}>{this.props.settings.fiatSymbol}{(Number(this.props.transaction.fiatAmount) + Number(fiatFeeLabel)).toFixed(2)}</Text>
 									
 									<Animated.View style={[styles.copiedContainer, { opacity: this.state.rawTxCopiedOpacity }]}>
