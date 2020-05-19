@@ -148,28 +148,31 @@ const getCoinData = ({ selectedCrypto = "bitcoin", cryptoUnit = "satoshi" }) => 
 		let acronym = "BTC";
 		let satoshi = "satoshi";
 		let oshi = "sats";
+		let blockTime = 10; //min
 		switch (selectedCrypto) {
 			case "bitcoin":
 				acronym = cryptoUnit === "satoshi" ? "sats" : "BTC";
 				oshi = "sats";
-				return { acronym, label: "Bitcoin", crypto: "BTC", satoshi, oshi };
+				return { acronym, label: "Bitcoin", crypto: "BTC", satoshi, oshi, blockTime };
 			case "bitcoinTestnet":
 				acronym = cryptoUnit === "satoshi" ? "sats" : "BTC";
 				oshi = "sats";
-				return { acronym, label: "Bitcoin Testnet", crypto: "BTC", satoshi, oshi };
+				return { acronym, label: "Bitcoin Testnet", crypto: "BTC", satoshi, oshi, blockTime };
 			case "litecoin":
 				satoshi = "litoshi";
 				oshi = "lits";
 				acronym = cryptoUnit === "satoshi" ? "lits" : "LTC";
-				return { acronym, label: "Litecoin", crypto: "LTC", satoshi, oshi };
+				blockTime = 2.5;
+				return { acronym, label: "Litecoin", crypto: "LTC", satoshi, oshi, blockTime };
 			case "litecoinTestnet":
 				satoshi = "litoshi";
 				oshi = "lits";
 				acronym = cryptoUnit === "satoshi" ? "lits" : "LTC";
-				return { acronym, label: "Litecoin Testnet", crypto: "LTC", satoshi, oshi };
+				blockTime = 2.5;
+				return { acronym, label: "Litecoin Testnet", crypto: "LTC", satoshi, oshi, blockTime };
 			default:
 				acronym = cryptoUnit === "satoshi" ? "sats" : "BTC";
-				return { acronym, label: "Bitcoin", crypto: "BTC", satoshi, oshi };
+				return { acronym, label: "Bitcoin", crypto: "BTC", satoshi, oshi, blockTime };
 		}
 	} catch (e) {
 		console.log(e);
