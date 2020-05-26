@@ -676,8 +676,8 @@ class SendTransaction extends Component {
 			//await pauseExecution();
 			const transaction = await this.createTransaction();
 			await this.setState({ loadingMessage: "Sending Transaction...", loadingProgress: 0.8 });
-			let message = "";
-			try {message = this.props.transaction.message;} catch {}
+			let messages = [];
+			try {if (this.props.transaction.message) messages.push(this.props.transaction.message);} catch {}
 			let sendTransactionResult = await this.props.sendTransaction({ txHex: transaction.data, selectedCrypto, sendTransactionFallback: this.props.settings.sendTransactionFallback });
 			
 			if (sendTransactionResult.error) {
@@ -706,7 +706,7 @@ class SendTransaction extends Component {
 						fee: totalFee,
 						hash: sendTransactionResult.data,
 						inputAmount: confirmedBalance,
-						messages: [message],
+						messages,
 						outputAmount: confirmedBalance - totalFee,
 						receivedAmount,
 						sentAmount, //amount + totalFee
