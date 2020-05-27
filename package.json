@@ -38,7 +38,7 @@
     "lottie-ios": "^3.1.5",
     "lottie-react-native": "^3.3.2",
     "moment": "^2.24.0",
-    "nodejs-mobile-react-native": "https://github.com/coreyphillips/nodejs-mobile-react-native#v0.6.1",
+    "nodejs-mobile-react-native": "^0.6.1",
     "process": "^0.11.10",
     "prop-types": "^15.7.2",
     "protobufjs": "^6.8.8",
