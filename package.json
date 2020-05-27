@@ -43,7 +43,7 @@
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-native": "0.61.1",
-    "react-native-camera": "3.8.0",
+    "react-native-camera": "^3.26.0",
     "react-native-crypto": "^2.2.0",
     "react-native-haptic-feedback": "^1.9.0",
     "react-native-keychain": "^4.0.5",

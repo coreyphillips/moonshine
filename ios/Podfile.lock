@@ -190,13 +190,13 @@ PODS:
     - React-cxxreact (= 0.61.1)
     - React-jsi (= 0.61.1)
   - React-jsinspector (0.61.1)
-  - react-native-camera (3.8.0):
+  - react-native-camera (3.26.0):
     - React
-    - react-native-camera/RCT (= 3.8.0)
-    - react-native-camera/RN (= 3.8.0)
-  - react-native-camera/RCT (3.8.0):
+    - react-native-camera/RCT (= 3.26.0)
+    - react-native-camera/RN (= 3.26.0)
+  - react-native-camera/RCT (3.26.0):
     - React
-  - react-native-camera/RN (3.8.0):
+  - react-native-camera/RN (3.26.0):
     - React
   - react-native-netinfo (5.9.2):
     - React
@@ -406,7 +406,7 @@ SPEC CHECKSUMS:
   React-jsi: 61ff417c95e6c3af50fb96399037e80752fb5ce7
   React-jsiexecutor: ee45274419eb95614bbbadb98e20684c5f29996e
   React-jsinspector: 574d597112f9ea3d1b717f6fb62aef764c70dd6f
-  react-native-camera: 21cf4ed26cf432ceb1fae959aa6924943fd6f714
+  react-native-camera: 2b74be8edc1103c4c46d1f4e5f41723d9ff052cc
   react-native-netinfo: cb74e17062b2af5a16a4b137f32495f241df1a8e
   react-native-randombytes: 3638d24759d67c68f6ccba60c52a7a8a8faa6a23
   react-native-slider: 12bd76d3d568c9c5500825db54123d44b48e4ad4
