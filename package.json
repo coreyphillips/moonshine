@@ -22,7 +22,7 @@
     "bundle": "react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.jsbundle --assets-dest android/app/build/intermediates/res/merged/release/ && cd android && ./gradlew assembleRelease --no-daemon"
   },
   "dependencies": {
-    "@react-native-community/async-storage": "^1.7.1",
+    "@react-native-community/async-storage": "^1.11.0",
     "@react-native-community/netinfo": "^5.0.1",
     "@react-native-community/slider": "^2.0.8",
     "assert": "^1.5.0",

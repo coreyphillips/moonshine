@@ -241,7 +241,7 @@ PODS:
     - React-cxxreact (= 0.61.1)
     - React-jsi (= 0.61.1)
     - ReactCommon/jscallinvoker (= 0.61.1)
-  - RNCAsyncStorage (1.7.1):
+  - RNCAsyncStorage (1.11.0):
     - React
   - RNKeychain (4.0.5):
     - React
@@ -421,7 +421,7 @@ SPEC CHECKSUMS:
   React-RCTText: 81b62b4e7f11531a5154e4daa5617670d5a2d5de
   React-RCTVibration: 8be61459e3749d1fb02cf414edd05b3007622882
   ReactCommon: 4fba5be89efdf0b5720e0adb3d8d7edf6e532db0
-  RNCAsyncStorage: 44395cb9c7c1523104c2b499eb426ef7aff82bca
+  RNCAsyncStorage: d059c3ee71738c39834a627476322a5a8cd5bf36
   RNKeychain: 840f8e6f13be0576202aefcdffd26a4f54bfe7b5
   RNReactNativeHapticFeedback: 2566b468cc8d0e7bb2f84b23adc0f4614594d071
   RNSVG: ce9d996113475209013317e48b05c21ee988d42e
