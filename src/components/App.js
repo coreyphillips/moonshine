@@ -50,8 +50,9 @@ import DefaultModal from "./DefaultModal";
 import Welcome from "./Welcome";
 import BackupPhrase from './BackupPhrase';
 import TransactionListHeader from "./TransactionListHeader";
+import { v4 as uuidv4 } from 'uuid';
 //import ElectrumTesting from "./ElectrumTesting";
-const uuidv4 = require("uuid/v4");
+
 const {UIManager} = NativeModules;
 const Url = require("url-parse");
 const {
