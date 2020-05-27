@@ -366,11 +366,11 @@ class SendTransaction extends Component {
 		try {
 			const selectedCrypto = this.props.wallet.selectedCrypto;
 			const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
-			let totalFee = this.getTotalFee(fee);
+			const transactionSize = this.getTransactionByteCount();
+			let totalFee = this.getTotalFee(fee, transactionSize);
 			totalFee = Number(totalFee);
 			let amount = Number(this.props.transaction.amount);
 			let walletBalance = Number(this.state.cryptoBalance);
-			const transactionSize = this.getTransactionByteCount();
 
 			if (this.state.spendMaxAmount) {
 				//Not enough funds to support this fee.
@@ -1052,7 +1052,7 @@ class SendTransaction extends Component {
 									await this.props.updateTransaction({message}); //Set message
 									const transactionSize = this.getTransactionByteCount(); //Get new tx size with updated message.
 									await this.props.updateTransaction({ transactionSize }); //Set new tx size.
-									this.updateFee(this.props.transaction.fee);
+									this.updateFee(this.props.transaction.fee || this.props.transaction.recommendedFee);
 								}
 							}}
 							value={this.props.transaction.message}
