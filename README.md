@@ -65,7 +65,7 @@ Second, you'll need to be sure that you're comparing the correct apk files depen
 Third, make sure you're building with a clean, unmodified clone of moonshine by following the steps below. Modifying the code in any way will result in a failed apkdiff.py check.
 
 1. Clone and cd into the latest release:
-    - `basename $(curl -Ls -o /dev/null -w %{url_effective} https://github.com/coreyphillips/moonshine/releases/latest) | { IFS= read -r tag; git clone -b ${tag} https://github.com/coreyphillips/moonshine }`
+    - `basename $(curl -Ls -o /dev/null -w %{url_effective} https://github.com/coreyphillips/moonshine/releases/latest) | { IFS= read -r tag; git clone -b ${tag} https://github.com/coreyphillips/moonshine; }`
     - `cd moonshine`
 2. Run docker and create the build. Once built, the apks will be located in "moonshine/android/app/build/outputs/apk/release/":
     - `docker run --rm --name moonshine-build -v ${PWD}:/pwd -w /pwd coreylphillips/react-native-android bash -c "source ~/.bash_profile && yarn install && cd nodejs-assets/nodejs-project && yarn install && cd ../../android && ./gradlew clean && cd .. && yarn bundle"`
