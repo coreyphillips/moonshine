@@ -27,7 +27,7 @@
     "@react-native-community/slider": "^3.0.0",
     "assert": "^1.5.0",
     "bip21": "^2.0.3",
-    "bip32": "^2.0.4",
+    "bip32": "^2.0.5",
     "bip39": "^3.0.2",
     "bitcoin-units": "^0.3.0",
     "bitcoinjs-lib": "^5.1.8",
