@@ -37,7 +37,7 @@
     "events": "^3.1.0",
     "lottie-ios": "^3.1.8",
     "lottie-react-native": "^3.4.0",
-    "moment": "^2.24.0",
+    "moment": "^2.26.0",
     "nodejs-mobile-react-native": "^0.6.1",
     "process": "^0.11.10",
     "prop-types": "^15.7.2",
