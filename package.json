@@ -24,7 +24,7 @@
   "dependencies": {
     "@react-native-community/async-storage": "^1.11.0",
     "@react-native-community/netinfo": "^5.9.2",
-    "@react-native-community/slider": "^2.0.8",
+    "@react-native-community/slider": "^3.0.0",
     "assert": "^1.5.0",
     "bip21": "^2.0.2",
     "bip32": "^2.0.4",
