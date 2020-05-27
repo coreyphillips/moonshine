@@ -1253,7 +1253,7 @@ class Settings extends PureComponent {
 					<View style={styles.helpRow}>
 						<Text type="text2" style={styles.helpTitle}>Donate:</Text>
 						<Text type="text2" style={styles.helpText}>
-							Tapping this will redirect you to the "Send Transaction" view with a pre-filled address to donate to. I built this app to learn and have fun. I never intend to monetize or turn a profit on this app so if you found it useful please consider donating.
+							Tapping this will redirect you to the &quot;Send Transaction&quot; view with a pre-filled address to donate to. I built this app to learn and have fun. I never intend to monetize or turn a profit on this app so if you found it useful please consider donating.
 						</Text>
 					</View>}
 					<View style={{ paddingVertical: "40%" }} />

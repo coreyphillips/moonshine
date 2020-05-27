@@ -1890,67 +1890,67 @@ export default class App extends Component {
 		//TODO: Remove nested SafeAreaView. Note: Removing it affects XButton position along with a few other items.
 		return (
 			<ThemeProvider theme={this.getTheme()}>
-			<SafeAreaView style={[styles.container, { backgroundColor: this.getTheme().PRIMARY_DARK }]}>
-			<SafeAreaView style={styles.container}>
-				<StatusBar backgroundColor={this.getTheme().PRIMARY_DARK} barStyle="light-content" animated={true} />
-				<Animated.View style={[styles.upperContent, {flex: this.state.upperContentFlex}]}>
-					<LinearGradient style={styles.linearGradient} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
+				<SafeAreaView style={[styles.container, { backgroundColor: this.getTheme().PRIMARY_DARK }]}>
+					<SafeAreaView style={styles.container}>
+						<StatusBar backgroundColor={this.getTheme().PRIMARY_DARK} barStyle="light-content" animated={true} />
+						<Animated.View style={[styles.upperContent, {flex: this.state.upperContentFlex}]}>
+							<LinearGradient style={styles.linearGradient} start={{x: 0.0, y: 0.0}} end={{x: 1.0, y: 1.0}}>
 						
-						<TouchableWithoutFeedback style={{flex: 1}} activeOpacity={1} onPress={this.dismissKeyboard}>
-							<View style={{flex: 1}}>
-								{this.state.displayPriceHeader &&
-								<Animated.View style={[styles.settingsContainer, {
+								<TouchableWithoutFeedback style={{flex: 1}} activeOpacity={1} onPress={this.dismissKeyboard}>
+									<View style={{flex: 1}}>
+										{this.state.displayPriceHeader &&
+										<Animated.View style={[styles.settingsContainer, {
 									opacity: this.state.priceHeaderOpacity,
 									zIndex: 200
 								}]}
-								>
-									<TouchableOpacity
+										>
+											<TouchableOpacity
 										style={{paddingTop: 10, paddingRight: 10, paddingLeft: 30, paddingBottom: 30}}
 										onPress={this.onSettingsPress}
-									>
-										<Ionicons name={"ios-cog"} size={30} color={colors.white} />
-									</TouchableOpacity>
-								</Animated.View>}
+											>
+												<Ionicons name={"ios-cog"} size={30} color={colors.white} />
+											</TouchableOpacity>
+										</Animated.View>}
 								
-								{this.state.displayBiometrics &&
-								<Animated.View style={[styles.settings, {opacity: this.state.biometricsOpacity}]}>
-									<Biometrics
+										{this.state.displayBiometrics &&
+										<Animated.View style={[styles.settings, {opacity: this.state.biometricsOpacity}]}>
+											<Biometrics
 										biometricTypeSupported={this.props.settings.biometricTypeSupported}
 										retryAuthentication={this.authenticateUserWithBiometrics}
-									/>
-								</Animated.View>}
+											/>
+										</Animated.View>}
 								
-								{this.state.displayPin &&
-								<Animated.View style={[styles.settings, {opacity: this.state.pinOpacity}]}>
-									<PinPad
+										{this.state.displayPin &&
+										<Animated.View style={[styles.settings, {opacity: this.state.pinOpacity}]}>
+											<PinPad
 										updateSettings={this.props.updateSettings}
 										wipeDevice={this.props.wipeDevice}
 										pinAttemptsRemaining={this.props.settings.pinAttemptsRemaining}
 										onSuccess={this.launchDefaultFuncs}
 										onFailure={this.onPinFailure}
-									/>
-								</Animated.View>}
+											/>
+										</Animated.View>}
 								
-								{this.state.displayLoading &&
-								<Loading
+										{this.state.displayLoading &&
+										<Loading
 									loadingOpacity={this.state.loadingOpacity}
 									loadingMessage={this.state.loadingMessage}
 									loadingProgress={this.state.loadingProgress}
 									width={width / 2}
 									animationName={this.state.loadingAnimationName}
-								/>}
+										/>}
 								
-								{this.state.displayCamera &&
-								<Animated.View style={[styles.camera, {opacity: this.state.cameraOpacity}]}>
-									<Camera
+										{this.state.displayCamera &&
+										<Animated.View style={[styles.camera, {opacity: this.state.cameraOpacity}]}>
+											<Camera
 										onClose={this.state.optionSelected === "send" ? this.onSendPress : this.resetView}
 										onBarCodeRead={this.onBarCodeRead}
-									/>
-								</Animated.View>}
+											/>
+										</Animated.View>}
 								
-								{this.state.displaySettings &&
-								<Animated.View style={[styles.settings, {opacity: this.state.settingsOpacity}]}>
-									<Settings
+										{this.state.displaySettings &&
+										<Animated.View style={[styles.settings, {opacity: this.state.settingsOpacity}]}>
+											<Settings
 										openSettingOnMount={this.getOpenSettingOnMount()}
 										createNewWallet={this.createNewWallet}
 										onBack={this.resetView}
@@ -1958,11 +1958,11 @@ export default class App extends Component {
 										onSendPress={this.onSendPress}
 										setExchangeRate={this.setExchangeRate}
 										forceAppUpdate={this.forceAppUpdate}
-									/>
-								</Animated.View>}
+											/>
+										</Animated.View>}
 								
-								<Animated.View style={[styles.priceHeader, {opacity: this.state.priceHeaderOpacity}]}>
-									<TouchableOpacity onPress={this.hasBackedUpWallet() ? this.onSelectCoinPress : this.toggleBackupPhrase} style={{
+										<Animated.View style={[styles.priceHeader, {opacity: this.state.priceHeaderOpacity}]}>
+											<TouchableOpacity onPress={this.hasBackedUpWallet() ? this.onSelectCoinPress : this.toggleBackupPhrase} style={{
 										position: "absolute",
 										top: 0,
 										paddingVertical: 5,
@@ -1972,10 +1972,10 @@ export default class App extends Component {
 										borderColor: this.hasBackedUpWallet() ? "transparent" : colors.white,
 										borderWidth: 1.5
 									}}
-									>
-										<Text style={styles.cryptoValue}>{this.hasBackedUpWallet() ? this.getWalletName() : `${this.getWalletName()} is not backed up.\nTap to backup now.`}</Text>
-									</TouchableOpacity>
-									<Header
+											>
+												<Text style={styles.cryptoValue}>{this.hasBackedUpWallet() ? this.getWalletName() : `${this.getWalletName()} is not backed up.\nTap to backup now.`}</Text>
+											</TouchableOpacity>
+											<Header
 										fiatValue={this.getFiatBalance()}
 										fiatSymbol={this.props.settings.fiatSymbol}
 										cryptoValue={this.getCryptoBalance()}
@@ -1985,63 +1985,63 @@ export default class App extends Component {
 										exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]}
 										isOnline={this.props.user.isOnline}
 										onSelectCoinPress={this.onSelectCoinPress}
-									/>
-								</Animated.View>
+											/>
+										</Animated.View>
 								
-								{this.state.displayReceiveTransaction &&
-								<Animated.View
+										{this.state.displayReceiveTransaction &&
+										<Animated.View
 									style={[styles.ReceiveTransaction, {opacity: this.state.receiveTransactionOpacity}]}
-								>
-									<ReceiveTransaction
+										>
+											<ReceiveTransaction
 										address={this.getNextAvailableAddress().address || ""}
 										selectedCrypto={this.props.wallet.selectedCrypto}
 										size={200}
 										exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]}
 										cryptoUnit={this.props.settings.cryptoUnit}
 										selectedCurrency={this.props.wallet.selectedCurrency}
-									/>
-								</Animated.View>}
+											/>
+										</Animated.View>}
 								
-								{this.state.displayTextInput &&
-								<Animated.View
+										{this.state.displayTextInput &&
+										<Animated.View
 									style={[styles.textFormContainer, {opacity: this.state.textInputOpacity}]}
-								>
+										>
 									
-									<SendTransaction
+											<SendTransaction
 										onCameraPress={this.onCameraPress}
 										refreshWallet={this.refreshWallet}
 										onClose={this.resetView}
-									/>
+											/>
 								
-								</Animated.View>}
+										</Animated.View>}
 								
-								{this.state.displaySweepPrivateKey &&
-								<Animated.View
+										{this.state.displaySweepPrivateKey &&
+										<Animated.View
 									style={[styles.textFormContainer, {opacity: this.state.sweepPrivateKeyOpacity}]}
-								>
+										>
 									
-									<SweepPrivateKey
+											<SweepPrivateKey
 										privateKey={this.state.privateKey}
 										refreshWallet={this.refreshWallet} onClose={this.resetView}
 										updateXButton={this.updateItem}
-									/>
+											/>
 								
-								</Animated.View>}
+										</Animated.View>}
 								
-								{this.state.displayCameraRow &&
-								<Animated.View style={[styles.cameraRow, {opacity: this.state.cameraRowOpacity}]}>
-									<CameraRow
+										{this.state.displayCameraRow &&
+										<Animated.View style={[styles.cameraRow, {opacity: this.state.cameraRowOpacity}]}>
+											<CameraRow
 										onSendPress={this.onSendPress}
 										onReceivePress={this.onReceivePress}
 										onCameraPress={this.onCameraPress}
-									/>
-								</Animated.View>}
-							</View>
-						</TouchableWithoutFeedback>
+											/>
+										</Animated.View>}
+									</View>
+								</TouchableWithoutFeedback>
 						
-						{this.state.displaySelectCoin &&
-						<Animated.View style={[styles.selectCoin, {opacity: this.state.selectCoinOpacity}]}>
-							<SelectCoin
+								{this.state.displaySelectCoin &&
+								<Animated.View style={[styles.selectCoin, {opacity: this.state.selectCoinOpacity}]}>
+									<SelectCoin
 								wallet={this.props.wallet}
 								onCoinPress={this.onCoinPress}
 								cryptoUnit={this.props.settings.cryptoUnit}
@@ -2049,27 +2049,27 @@ export default class App extends Component {
 								deleteWallet={this.props.deleteWallet}
 								createNewWallet={this.createNewWallet}
 								displayTestnet={this.props.settings.testnet}
-							/>
-						</Animated.View>}
+									/>
+								</Animated.View>}
 					
-					</LinearGradient>
-				</Animated.View>
+							</LinearGradient>
+						</Animated.View>
 				
-				<Animated.View style={[styles.lowerContent, {flex: this.state.lowerContentFlex, backgroundColor: this.getTheme().background }]}>
+						<Animated.View style={[styles.lowerContent, {flex: this.state.lowerContentFlex, backgroundColor: this.getTheme().background }]}>
 					
-					<View style={{flex: 1}}>
+							<View style={{flex: 1}}>
 						
-						<View style={{flex: 1}}>
-							<Animated.View style={{flex: 1, opacity: this.state.transactionListOpacity}}>
-								<TransactionListHeader
+								<View style={{flex: 1}}>
+									<Animated.View style={{flex: 1, opacity: this.state.transactionListOpacity}}>
+										<TransactionListHeader
 									loadingTransactions={this.state.loadingTransactions}
 									refreshWallet={this.refreshWallet}
 									displayTransactionList={this.state.displayTransactionList}
 									transactionsAreExpanded={this.state.transactionsAreExpanded}
 									resetView={this.resetView}
 									expandTransactions={this.expandTransactions}
-								/>
-								<TransactionList
+										/>
+										<TransactionList
 									exchangeRate={this.props.wallet.exchangeRate[this.props.wallet.selectedCrypto]}
 									blockHeight={this.props.wallet.blockHeight[this.props.wallet.selectedCrypto]}
 									blacklistedUtxos={this.getBlacklistedUtxos()}
@@ -2079,75 +2079,75 @@ export default class App extends Component {
 									cryptoUnit={this.props.settings.cryptoUnit}
 									onTransactionPress={this.onTransactionPress}
 									onRefresh={this.resetView}
-								/>
-							</Animated.View>
-						</View>
+										/>
+									</Animated.View>
+								</View>
 						
-						{this.state.displayTransactionDetail &&
-						<Animated.View
+								{this.state.displayTransactionDetail &&
+								<Animated.View
 							style={[styles.transactionDetail, {opacity: this.state.transactionDetailOpacity}]}
-						>
-							<TransactionDetail
+								>
+									<TransactionDetail
 								refreshWallet={this.refreshWallet}
 								onTransactionPress={this.onTransactionPress}
-							/>
-						</Animated.View>}
+									/>
+								</Animated.View>}
 					
-					</View>
+							</View>
 				
-				</Animated.View>
+						</Animated.View>
 				
-				{this.state.displayXButton &&
-				<Animated.View style={[styles.xButton, {opacity: this.state.xButtonOpacity}]}>
-					<XButton
+						{this.state.displayXButton &&
+						<Animated.View style={[styles.xButton, {opacity: this.state.xButtonOpacity}]}>
+							<XButton
 						style={{borderColor: this.state.displayTransactionList ? "transparent" : colors.white}}
 						onPress={this.resetView}
-					/>
-				</Animated.View>}
+							/>
+						</Animated.View>}
 				
-				<DefaultModal
+						<DefaultModal
 					isVisible={this.state.displayWelcomeModal}
 					onClose={this._closeWelcomeModal}
 					type="ScrollView"
 					style={styles.modal}
-				>
-					<Welcome onClose={this._closeWelcomeModal} />
-				</DefaultModal>
+						>
+							<Welcome onClose={this._closeWelcomeModal} />
+						</DefaultModal>
 
-				<DefaultModal
+						<DefaultModal
 					isVisible={this.state.displayBackupPhrase}
 					type="ScrollView"
-				>
-					<View style={{ flex: 1, justifyContent: "center" }}>
-						<BackupPhrase
+						>
+							<View style={{ flex: 1, justifyContent: "center" }}>
+								<BackupPhrase
 							phrase={this.state.backupPhrase}
-						/>
-						<XButton
+								/>
+								<XButton
 							style={{ alignSelf: "center", marginVertical: 20 }}
 							onPress={this.toggleBackupPhrase}
-						/>
-					</View>
-				</DefaultModal>
+								/>
+							</View>
+						</DefaultModal>
 				
-				<DefaultModal
+						<DefaultModal
 					isVisible={this.state.displayBitidModal}
 					onClose={this._closeBitidModal}
 					type="View"
 					style={styles.modal}
-				>
-					<View style={styles.centerContent}>
-						<Text style={styles.boldText}>Do you want to login to:</Text>
-						<Text style={[styles.text, { marginTop: 10, color: colors.purple }]}>{this.state.bitidData["host"]}</Text>
-					</View>
-					<View style={[styles.centerContent, { flexDirection: "row" }]}>
-						<Button textStyle={styles.text} gradient={true} style={styles.button} text="Cancel" onPress={this._closeBitidModal} />
-						<View style={{marginHorizontal: 10}} />
-						<Button textStyle={styles.text} gradient={true} style={styles.button} text="Login" onPress={this._loginWithBitid} />
-					</View>
-				</DefaultModal>
+						>
+							<View style={styles.centerContent}>
+								<Text style={styles.boldText}>Do you want to login to:</Text>
+								<Text style={[styles.text, { marginTop: 10, color: colors.purple }]}>{this.state.bitidData["host"]}</Text>
+							</View>
+							<View style={[styles.centerContent, { flexDirection: "row" }]}>
+								<Button textStyle={styles.text} gradient={true} style={styles.button} text="Cancel" onPress={this._closeBitidModal} />
+								<View style={{marginHorizontal: 10}} />
+								<Button textStyle={styles.text} gradient={true} style={styles.button} text="Login" onPress={this._loginWithBitid} />
+							</View>
+						</DefaultModal>
 				
-			</SafeAreaView>
-			</SafeAreaView>
+					</SafeAreaView>
+				</SafeAreaView>
 			</ThemeProvider>
 		);
 	}

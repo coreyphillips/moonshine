@@ -1,8 +1,4 @@
 import React from "react";
-import {
-	SafeAreaView,
-	StyleSheet
-} from "react-native";
 import App from "./src/components/App";
 import { createStore, applyMiddleware } from "redux";
 import reducers from "./src/reducers";
@@ -11,12 +7,6 @@ import logger from "redux-logger";
 import { PersistGate } from "redux-persist/integration/react";
 import LinearGradient from "react-native-linear-gradient";
 import AsyncStorage from "@react-native-community/async-storage";
-
-const {
-	Constants: {
-		colors
-	}
-} = require("./ProjectData.json");
 
 const Provider = require("react-redux").Provider;
 const { persistStore, persistReducer } = require("redux-persist");
