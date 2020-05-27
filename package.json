@@ -26,7 +26,7 @@
     "@react-native-community/netinfo": "^5.9.2",
     "@react-native-community/slider": "^3.0.0",
     "assert": "^1.5.0",
-    "bip21": "^2.0.2",
+    "bip21": "^2.0.3",
     "bip32": "^2.0.4",
     "bip39": "^3.0.2",
     "bitcoin-units": "^0.3.0",
