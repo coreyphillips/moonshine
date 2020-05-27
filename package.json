@@ -45,7 +45,7 @@
     "react-native": "0.61.1",
     "react-native-camera": "^3.26.0",
     "react-native-crypto": "^2.2.0",
-    "react-native-haptic-feedback": "^1.9.0",
+    "react-native-haptic-feedback": "^1.10.0",
     "react-native-keychain": "^4.0.5",
     "react-native-linear-gradient": "^2.5.6",
     "react-native-modal": "^11.5.3",
