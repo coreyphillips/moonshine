@@ -30,7 +30,7 @@
     "bip32": "^2.0.4",
     "bip39": "^3.0.2",
     "bitcoin-units": "^0.3.0",
-    "bitcoinjs-lib": "^5.1.7",
+    "bitcoinjs-lib": "^5.1.8",
     "bitcoinjs-message": "https://github.com/coreyphillips/bitcoinjs-message",
     "buffer": "^5.4.3",
     "crypto": "^1.0.1",
