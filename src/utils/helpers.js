@@ -342,12 +342,10 @@ const getAllTransactions = async ({ allAddresses = [], addresses = [], changeAdd
 };
 
 const isOnline = async () => {
-	let isConnected = true;
 	try {
 		const connectionInfo = await NetInfo.fetch();
-		if (connectionInfo.type === "none" || connectionInfo.type === "unknown") isConnected = false;
-	} catch (e) {}
-	return isConnected;
+		return connectionInfo.isConnected;
+	} catch {return false;}
 };
 
 //Remove any duplicates based off of matches from the provided value

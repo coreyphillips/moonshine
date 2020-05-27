@@ -1199,10 +1199,10 @@
     eslint-plugin-react-native "3.6.0"
     prettier "1.16.4"
 
-"@react-native-community/netinfo@^5.0.1":
-  version "5.0.1"
-  resolved "https://registry.yarnpkg.com/@react-native-community/netinfo/-/netinfo-5.0.1.tgz#e3486374d7319bf7f9027648fd6fb5715c0b168f"
-  integrity sha512-GgKlSeoLeEwZuKn1SOlk6GxrZAIgMQmncSOReUq3un5SRbBqlhzd42QV1aKSV9qo0rgevp2JqPpxT/Xxkfs4pg==
+"@react-native-community/netinfo@^5.9.2":
+  version "5.9.2"
+  resolved "https://registry.yarnpkg.com/@react-native-community/netinfo/-/netinfo-5.9.2.tgz#0e9df9717f292cd54fa9de322205b6263a1cb8e2"
+  integrity sha512-YPN6Qi9Sf64GlE3muLi4u4p4LaFP/65PTS0xssiGEaBAwSmZoUhzihhW1AptNe66ZQK9PxXfKIJDiLnYveK1aw==
 
 "@react-native-community/slider@^2.0.8":
   version "2.0.8"
