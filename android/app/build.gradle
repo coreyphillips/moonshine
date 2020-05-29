@@ -130,7 +130,7 @@ def getPassword(String currentUser, String keyChain) {
         ignoreExitValue true
     }
     //noinspection GroovyAssignabilityCheck
-    stdout.toString();
+    stdout.toString().trim();
 }
 
 def releaseKeyAlias = "kisswallet";
@@ -150,7 +150,7 @@ if(Os.isFamily(Os.FAMILY_MAC) && hasReleaseStoreFile && pass == "") {
 
 if ("assembleRelease" in gradle.startParameter.taskNames && hasReleaseStoreFile && pass == "") {
     println "Enter keystore password:"
-    pass = System.in.newReader().readLine()
+    pass = System.in.newReader().readLine().trim()
     if (pass == null) {
         pass = ""
     }
