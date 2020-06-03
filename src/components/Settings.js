@@ -769,7 +769,7 @@ class Settings extends PureComponent {
 	getPeerInfo = () => {
 		try {
 			return { host: this.props.settings.currentPeer.host, port: this.props.settings.currentPeer.port };
-		} catch (e) {
+		} catch {
 			return { host: "No peer connected", port: "" };
 		}
 	};
@@ -803,9 +803,7 @@ class Settings extends PureComponent {
 					//console.log(e);
 				}
 			}
-		} catch (e) {
-			//console.log(e);
-		}
+		} catch {}
 	};
 	
 	getExchangeRateSourceUrl = ({ selectedService = "coingecko"} = {}) => {
@@ -817,7 +815,7 @@ class Settings extends PureComponent {
 					return "coincap.io";
 				default: return "?";
 			}
-		} catch (e) {
+		} catch {
 			return "?";
 		}
 	};
@@ -833,7 +831,7 @@ class Settings extends PureComponent {
 		try {
 			try { if (this.props.wallet.wallets[this.props.wallet.selectedWallet].name.trim() !== "") return this.props.wallet.wallets[this.props.wallet.selectedWallet].name; } catch (e) {}
 			try { return `Wallet ${this.props.wallet.walletOrder.indexOf(this.props.wallet.selectedWallet)}`; } catch (e) {}
-		} catch (e) {
+		} catch {
 			return "?";
 		}
 	};
@@ -841,7 +839,7 @@ class Settings extends PureComponent {
 	hasBackedUpWallet = () => {
 		try {
 			return this.props.wallet.wallets[this.props.wallet.selectedWallet].hasBackedUpWallet;
-		} catch (e) {return false;}
+		} catch {return false;}
 	};
 	
 	updateFiatCurrency = async (currency = "usd", rollbackAttempt = false) => {
@@ -861,13 +859,13 @@ class Settings extends PureComponent {
 				this.updateFiatCurrency(previouslySelectedCurrency, true);
 				setTimeout(() => {alert(`We're having some trouble getting the exchange rate for ${currency.toUpperCase()}. ${capitalize(selectedService)} is either having some technical difficulties or ${currency.toUpperCase()} is no longer supported. Otherwise, please check your connection and try again`);}, 500);}
 			this.toggleFiatModal({ display: false });
-		} catch (e) {console.log(e);}
+		} catch {}
 	};
 	
 	requestHelp = () => {
 		try {
 			Linking.openURL("mailto:support@moonshinewallet.com?subject=Requesting Some Help").catch((e) => console.log(e));
-		} catch (e) {}
+		} catch {}
 	};
 	
 	donate = async () => {
@@ -877,13 +875,13 @@ class Settings extends PureComponent {
 			try {address = donationAddresses[selectedCrypto];} catch (e) {}
 			if (!address) return;
 			this.props.onSendPress({ address });
-		} catch (e) {}
+		} catch {}
 	};
 	
 	getSignMessageData = () => {
 		try {
 			return this.props.settings.signMessage;
-		} catch (e) {
+		} catch {
 			const signMessage = { message: "", signature: "", selectedAddressIndex: 0 };
 			this.props.updateSettings({ signMessage });
 			return signMessage;
@@ -893,7 +891,7 @@ class Settings extends PureComponent {
 	getVerifyMessageData = () => {
 		try {
 			return this.props.settings.verifyMessage;
-		} catch (e) {
+		} catch {
 			const verifyMessage = { address: "", message: "", signature: "" };
 			this.props.updateSettings({ verifyMessage });
 			return verifyMessage;
@@ -915,7 +913,7 @@ class Settings extends PureComponent {
 		try {
 			if (this.props.settings["darkMode"] === undefined) return false;
 			return this.props.settings["darkMode"];
-		} catch (e) {return false;}
+		} catch {return false;}
 	};
 	
 	render() {
