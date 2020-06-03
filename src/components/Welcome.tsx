@@ -5,11 +5,7 @@ import XButton from "./XButton";
 import { Text } from "../styles/components";
 
 const updates = [
-	"Fixed a bug (issue #52) that would result in an unreadable OP_RETURN message if the embedded data was less than 5 characters.",
-	`Updating messages when the "Max" button is selected now calculates and updates the tx fee accordingly.`,
-	"Messages are now stored temporarily when sending a tx to reduce any noticeable latency from the Electrum server.",
-	"Fixed a bug that would temporarily display a zero balance if the user disconnected from the internet or Electrum server while checking for transactions and updating their balance.",
-	"Upgraded several of Moonshine's dependencies."
+	"Fixed a bug that would prevent the transaction list from updating it's exchange rate value when toggling fiat currencies in the Settings menu."
 ];
 
 const _Welcome = ({ onClose = () => null, children = <View /> } = {}) => {
