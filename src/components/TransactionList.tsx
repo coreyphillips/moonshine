@@ -34,7 +34,7 @@ const _DisplayItem = (
 		cryptoUnit = "satoshi",
 		isBlacklisted = false
 	}: DisplayItemComponent) => {
-	
+
 	try {
 		const hash = transaction.item.hash;
 		const timestamp = transaction.item.timestamp;
@@ -64,7 +64,7 @@ const _DisplayItem = (
 				/>
 			</View>
 		);
-		
+
 	} catch (e) {
 		console.log(e);
 	}
@@ -75,6 +75,7 @@ const DisplayItem = memo(
 	(prevProps, nextProps) => {
 		if (!prevProps || !nextProps) return true;
 		return prevProps.blockHeight === nextProps.blockHeight &&
+			prevProps.exchangeRate === nextProps.exchangeRate &&
 			prevProps.cryptoUnit === nextProps.cryptoUnit &&
 			prevProps.transaction.item.hash === nextProps.transaction.item.hash &&
 			prevProps.transaction.item.messages === nextProps.transaction.item.messages &&
@@ -122,7 +123,7 @@ const _TransactionList = (
 		onRefresh,
 		onTransactionPress = () => null
 	}: TransactionListComponent) => {
-	
+
 	//Returns all transactions for the selected crypto.
 	const getTransactions = () => {
 		try {
@@ -143,7 +144,7 @@ const _TransactionList = (
 			return false;
 		}
 	};
-	
+
 	return (
 		<View style={styles.container}>
 			{!hasTransactions() &&
@@ -208,11 +209,6 @@ const styles = StyleSheet.create({
 	transaction: {
 		flex: 1
 	},
-	boldText: {
-		...systemWeights.bold,
-		fontSize: 20,
-		textAlign: "center"
-	},
 	text: {
 		...systemWeights.regular,
 		fontSize: 18,
@@ -233,6 +229,7 @@ const TransactionList = memo(
 		if (!prevProps || !nextProps) return true;
 		return prevProps === nextProps &&
 			prevProps.blockHeight === nextProps.blockHeight &&
+			prevProps.exchangeRate === nextProps.exchangeRate &&
 			prevProps.cryptoUnit === nextProps.cryptoUnit &&
 			prevProps.transactions === nextProps.transactions &&
 			prevProps.blacklistedUtxos === nextProps.blacklistedUtxos &&
