@@ -39,14 +39,15 @@ this.subscribeHeader = {};
 this.subscribeAddress = {};
 this.subscribedAddresses = [];
 this.notifiedAddresses = [];
-const bitcoin = require("bitcoinjs-lib");
+
 const {
 	networks
 } = require("./networks");
+const {
+	getScriptHash
+} = require("./helpers");
 
-const getFuncName = () => {
-	return getFuncName.caller.name;
-};
+const getFuncName = () => getFuncName.caller.name;
 
 const setupListener = async ({ id = "", method = "", resolve = () => null }) => {
 	try {
@@ -73,7 +74,7 @@ const start = async ({ id = Math.random(), coin = "", peers = [], customPeers = 
 	const method = "connectToPeer";
 	//Spin up the nodejs thread
 	//await nodejs.start("main.js");
-	
+
 	return new Promise(async (resolve) => {
 		try {
 			if (!coin) resolve({error: true, data: {}});
@@ -81,7 +82,7 @@ const start = async ({ id = Math.random(), coin = "", peers = [], customPeers = 
 			try {
 				clearInterval(this.electrumKeepAlive);
 			} catch (e) {}
-			
+
 			//Setup the listener for electrum messages
 			this.connectToPeer[id] = (async (msg) => {
 				try {
@@ -135,14 +136,14 @@ const stop = async ({ coin = "" } = {}) => {
 			resolve({ error: true, data: e });
 		}
 	});
-	
+
 };
 
 const setupSubscribeHeader = async ({ id = "", method = "", onReceive = () => null } = {}) => {
 	try {
 		//Remove any previous listener
 		await nodejs.channel.removeListener("message", this[method][id]);
-		
+
 		this[method][id] = ((msg) => {
 			msg = JSON.parse(msg);
 			if (msg.method === method && msg.id === id && Array.isArray(msg.data)) {
@@ -172,7 +173,7 @@ const setupSubscribeAddress = async ({ address = "", id = "", method = "", onRec
 	try {
 		//Remove any previous listener
 		//await nodejs.channel.removeListener("message", this[method][id]);
-		
+
 		this[method][id] = ((msg) => {
 			msg = JSON.parse(msg);
 			if (msg.method === method && msg.id === id && Array.isArray(msg.data) && this.notifiedAddresses.includes(address) === false) {
@@ -286,7 +287,7 @@ const getAddressBalance = ({ address = "", id = Math.random(), coin = "" } = {})
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
 			resolve({ error: true, method, data: e });
@@ -297,10 +298,7 @@ const getAddressBalance = ({ address = "", id = Math.random(), coin = "" } = {})
 const getAddressScriptHash = ({ address = "", coin = "" } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
-			const script = bitcoin.address.toOutputScript(address, networks[coin]);
-			let hash = bitcoin.crypto.sha256(script);
-			const reversedHash = new Buffer(hash.reverse());
-			const scriptHash = reversedHash.toString("hex");
+			const scriptHash = getScriptHash(address, networks[coin]);
 			resolve({ error: false, data: scriptHash });
 		} catch (e) {
 			resolve({ error: true, data: e });
@@ -328,20 +326,17 @@ const getAddressScriptHashesBalance = ({ addresses = [], id = Math.random(), coi
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			let scriptHashes = [];
 			await Promise.all(addresses.map(({ address, path }) => {
 				try {
-					const script = bitcoin.address.toOutputScript(address, networks[coin]);
-					let hash = bitcoin.crypto.sha256(script);
-					const reversedHash = new Buffer(hash.reverse());
-					const scriptHash = reversedHash.toString("hex");
+					const scriptHash = getScriptHash(address, networks[coin]);
 					scriptHashes.push({ scriptHash, address, path });
 				} catch (e) {
 					console.log(e);
 				}
 			}));
-			
+
 			nodejs.channel.send(JSON.stringify({ method, scriptHashes, coin, id }));
 		} catch (e) {
 			resolve({ error: true, method, data: e });
@@ -354,12 +349,7 @@ const getAddressScriptHashHistory = ({ address = "", id = Math.random(), coin = 
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
-			const script = bitcoin.address.toOutputScript(address, networks[coin]);
-			let hash = bitcoin.crypto.sha256(script);
-			const reversedHash = new Buffer(hash.reverse());
-			const scriptHash = reversedHash.toString("hex");
-			
+			const scriptHash = getScriptHash(address, networks[coin]);
 			nodejs.channel.send(JSON.stringify({ method, scriptHash, coin, id }));
 		} catch (e) {
 			resolve({ error: true, method, data: e });
@@ -372,20 +362,17 @@ const getAddressScriptHashesHistory = ({ addresses = [], id = Math.random(), coi
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			let scriptHashes = [];
 			await Promise.all(addresses.map(({ address, path }) => {
 				try {
-					const script = bitcoin.address.toOutputScript(address, networks[coin]);
-					let hash = bitcoin.crypto.sha256(script);
-					const reversedHash = new Buffer(hash.reverse());
-					const scriptHash = reversedHash.toString("hex");
+					const scriptHash = getScriptHash(address, networks[coin]);
 					scriptHashes.push({ scriptHash, address, path });
 				} catch (e) {
 					console.log(e);
 				}
 			}));
-			
+
 			nodejs.channel.send(JSON.stringify({ method, scriptHashes, id, coin }));
 		} catch (e) {
 			resolve({ error: true, method, data: e, coin });
@@ -398,12 +385,7 @@ const listUnspentAddressScriptHash = ({ address = "", id = Math.random(), coin =
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
-			const script = bitcoin.address.toOutputScript(address, networks[coin]);
-			let hash = bitcoin.crypto.sha256(script);
-			const reversedHash = new Buffer(hash.reverse());
-			const scriptHash = reversedHash.toString("hex");
-			
+			const scriptHash = getScriptHash(address, networks[coin]);
 			nodejs.channel.send(JSON.stringify({ method, scriptHash, coin, id }));
 		} catch (e) {
 			resolve({ error: true, method, data: e });
@@ -416,19 +398,16 @@ const listUnspentAddressScriptHashes = ({ addresses = [], id = Math.random(), co
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			const scriptHashes = [];
 			await Promise.all(addresses.map(({ address = "", path = "" } = {}) => {
 				try {
 					if (!address || !path) return;
-					const script = bitcoin.address.toOutputScript(address, networks[coin]);
-					let hash = bitcoin.crypto.sha256(script);
-					const reversedHash = new Buffer(hash.reverse());
-					const scriptHash = reversedHash.toString("hex");
+					const scriptHash = getScriptHash(address, networks[coin]);
 					scriptHashes.push({ scriptHash, address, path });
 				} catch (e) {}
 			}));
-			
+
 			nodejs.channel.send(JSON.stringify({ method, scriptHashes, coin, id }));
 		} catch (e) {
 			resolve({ error: true, method, data: e });
@@ -441,12 +420,7 @@ const getAddressScriptHashMempool = ({ address = "", id = Math.random(), coin = 
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
-			const script = bitcoin.address.toOutputScript(address, networks[coin]);
-			let hash = bitcoin.crypto.sha256(script);
-			const reversedHash = new Buffer(hash.reverse());
-			const scriptHash = reversedHash.toString("hex");
-			
+			const scriptHash = getScriptHash(address, networks[coin]);
 			nodejs.channel.send(JSON.stringify({ method, scriptHash, coin, id }));
 		} catch (e) {
 			resolve({ error: true, method, data: e });
@@ -459,18 +433,15 @@ const getAddressScriptHashesMempool = ({ addresses = [], id = Math.random(), coi
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			const scriptHashes = [];
 			await Promise.all(addresses.map(({ address, path }) => {
 				try {
-					const script = bitcoin.address.toOutputScript(address, networks[coin]);
-					let hash = bitcoin.crypto.sha256(script);
-					const reversedHash = new Buffer(hash.reverse());
-					const scriptHash = reversedHash.toString("hex");
+					const scriptHash = getScriptHash(address, networks[coin]);
 					scriptHashes.push({ scriptHash, address, path });
 				} catch (e) {}
 			}));
-			
+
 			nodejs.channel.send(JSON.stringify({ method, scriptHashes, coin, id }));
 		} catch (e) {
 			resolve({ error: true, method, data: e });
@@ -483,7 +454,7 @@ const getMempool = ({ address = "", id = Math.random(), coin = "" } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
 			resolve({ error: true, method, data: e });
@@ -496,7 +467,7 @@ const listUnspentAddress = ({ address = "", id = Math.random(), coin = "" } = {}
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
 			resolve({ error: true, method, data: e });
@@ -509,7 +480,7 @@ const getFeeEstimate = ({ blocksWillingToWait = 8, id = Math.random(), coin = ""
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ id, method, blocksWillingToWait, coin }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -522,7 +493,7 @@ const getAddressHistory = ({ address = "", id = Math.random(), coin = "" } = {})
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -535,7 +506,7 @@ const getTransactionHex = ({ txId = "", id = Math.random(), coin = "" } = {}) =>
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, txId, coin, id }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -548,7 +519,7 @@ const getDonationAddress = ({ id = Math.random(), coin = "" } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method: "getDonationAddress", coin, id }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -561,7 +532,7 @@ const getPeers = ({ id = Math.random(), coin = "" } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, coin, id }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -574,7 +545,7 @@ const getAvailablePeers = ({ id = Math.random(), coin } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, coin, id }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -599,7 +570,7 @@ const getNewBlockHeightSubscribe = ({ id = Math.random(), coin = "" } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, coin, id }));
 		} catch (e) {
 			resolve({ error: true, method, data: e });
@@ -649,7 +620,7 @@ const getTransactionMerkle = ({ id = Math.random(), txHash = "", height = "", co
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, id, txHash, height, coin }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -662,7 +633,7 @@ const getTransaction = ({ id = Math.random(), txHash = "", coin = "" } = {}) => 
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, id, txHash, coin }));
 		} catch (e) {
 			resolve({ id, method, error: true, data: e });
@@ -688,7 +659,7 @@ const getAddressUtxo = ({ id = Math.random(), txHash = "", index = "", coin = ""
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, id, txHash, index, coin }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -701,7 +672,7 @@ const broadcastTransaction = ({ id = Math.random(), rawTx = "", coin = "" } = {}
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, id, rawTx, coin }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -714,7 +685,7 @@ const getBlockChunk = ({ id = Math.random(), index = "", coin = "" } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, id, index, coin }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -727,7 +698,7 @@ const getBlockHeader = ({ id = Math.random(), height = "", coin = "" } = {}) => 
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, id, height, coin }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -740,7 +711,7 @@ const getHeader = ({ id = Math.random(), height = "", coin = "" } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, id, height, coin }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -753,7 +724,7 @@ const getBanner = ({ id = Math.random(), coin = "" } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, id, coin }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -766,7 +737,7 @@ const pingServer = ({ id = Math.random() } = {}) => {
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, id }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });
@@ -779,7 +750,7 @@ const getAddressProof = ({ address = "", id = Math.random(), coin = "" } = {}) =
 	return new Promise(async (resolve) => {
 		try {
 			await setupListener({ id, method, resolve });
-			
+
 			nodejs.channel.send(JSON.stringify({ method, address, coin, id }));
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });

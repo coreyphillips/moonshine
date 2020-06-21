@@ -403,11 +403,11 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 			const rbfIsSupported = supportsRbf[selectedCrypto]; //Ensure the selected coin is not Litecoin.
 			const totalFee = getByteCount({[addressType]:utxos.length},{[addressType]:changeAddress ? 2 : 1}, message) * transactionFee;
 			addressType = addressType.toLowerCase();
-			
+
 			let targets = [{ address, value: amount }];
 			//Change address and amount to send back to wallet.
 			if (changeAddress) targets.push({ address: changeAddress, value: confirmedBalance - (amount + totalFee) });
-			
+
 			//Embed any OP_RETURN messages.
 			if (message !== "") {
 				const messageLength = message.length;
@@ -418,15 +418,15 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 				const embed = bitcoin.payments.embed({data: [data], network});
 				targets.push({ script: embed.output, value: 0 });
 			}
-			
+
 			//Setup rbfData (Replace-By-Fee Data) for later use.
 			let rbfData = undefined;
 			if (rbfIsSupported) rbfData = { address, transactionFee, amount, confirmedBalance, utxos, blacklistedUtxos, changeAddress, wallet, selectedCrypto, message, addressType };
-			
+
 			//Fetch Keypair
 			const keychainResult = await getKeychainValue({ key: wallet });
 			if (keychainResult.error === true) return;
-			
+
 			//Attempt to acquire the bip39Passphrase if available
 			let bip39Passphrase = "";
 			try {
@@ -434,7 +434,7 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 				const bip39PassphraseResult = await getKeychainValue({ key });
 				if (bip39PassphraseResult.error === false && bip39PassphraseResult.data.password) bip39Passphrase = bip39PassphraseResult.data.password;
 			} catch (e) {}
-			
+
 			const mnemonic = keychainResult.data.password;
 			const seed = await bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
 			const root = bip32.fromSeed(seed, network);
@@ -448,7 +448,7 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 					if (blacklistedUtxos.includes(utxo.tx_hash)) continue;
 					const path = utxo.path;
 					const keyPair = root.derivePath(path);
-					
+
 					if (addressType === "bech32") {
 						const p2wpkh = bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network });
 						psbt.addInput({
@@ -460,7 +460,7 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 							}
 						});
 					}
-					
+
 					if (addressType === "segwit") {
 						const p2wpkh =  bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network });
 						const p2sh = bitcoin.payments.p2sh({ redeem: p2wpkh, network });
@@ -474,7 +474,7 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 							redeemScript: p2sh.redeem.output
 						});
 					}
-					
+
 					if (addressType === "legacy") {
 						const transaction = await getTransaction({ txHash: utxo.txid, coin: selectedCrypto });
 						const nonWitnessUtxo = Buffer.from(transaction.data.hex, "hex");
@@ -488,10 +488,10 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 					console.log(e);
 				}
 			}
-			
+
 			//Set RBF if supported and prompted via rbf in Settings.
 			try { if (rbfIsSupported && setRbf) setReplaceByFee({ psbt, setRbf }); } catch (e) {}
-			
+
 			//Shuffle and add outputs.
 			try {targets = shuffleArray(targets);} catch (e) {}
 			await Promise.all(
@@ -586,7 +586,7 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 				const bip39PassphraseResult = await getKeychainValue({ key });
 				if (bip39PassphraseResult.error === false && bip39PassphraseResult.data.password) bip39Passphrase = bip39PassphraseResult.data.password;
 			} catch (e) {}
-			
+
 			const mnemonic = keychainResult.data.password;
 			const seed = await bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
 			const root = bip32.fromSeed(seed, network);
@@ -836,11 +836,11 @@ const signMessage = async ({ message = "", addressType = "bech32", path = "m/84'
 		if (message === "") return { error: true, data: "No message to sign." };
 		const network = networks[selectedCrypto];
 		const messagePrefix = network.messagePrefix;
-		
+
 		//Fetch Keypair
 		const keychainResult = await getKeychainValue({ key: selectedWallet });
 		if (keychainResult.error === true) return;
-		
+
 		//Attempt to acquire the bip39Passphrase if available
 		let bip39Passphrase = "";
 		try {
@@ -848,17 +848,17 @@ const signMessage = async ({ message = "", addressType = "bech32", path = "m/84'
 			const bip39PassphraseResult = await getKeychainValue({ key });
 			if (bip39PassphraseResult.error === false && bip39PassphraseResult.data.password) bip39Passphrase = bip39PassphraseResult.data.password;
 		} catch (e) {}
-		
+
 		const mnemonic = keychainResult.data.password;
 		const seed = await bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
 		const root = bip32.fromSeed(seed, network);
 		const keyPair = root.derivePath(path);
 		const privateKey = keyPair.privateKey;
-		
+
 		let sigOptions = { extraEntropy: randomBytes(32) };
 		if (addressType === "bech32") sigOptions["segwitType"] = "p2wpkh" ;
 		if (addressType === "segwit") sigOptions["segwitType"] = "p2sh(p2wpkh)" ;
-		
+
 		let signature = "";
 		if (addressType === "legacy") {
 			signature = bitcoinMessage.signElectrum(message, privateKey, keyPair, messagePrefix);
@@ -866,7 +866,7 @@ const signMessage = async ({ message = "", addressType = "bech32", path = "m/84'
 			signature = bitcoinMessage.signElectrum(message, privateKey, keyPair.compressed, messagePrefix, sigOptions);
 		}
 		signature = signature.toString("base64");
-		
+
 		const address = await getAddress(keyPair, network, addressType);
 		const isVerified = verifyMessage({ message, address, signature, selectedCrypto });
 		if (isVerified === true) return { error: false, data: { address, message, signature } };
@@ -1026,14 +1026,14 @@ const getByteCount = (inputs, outputs, message = "") => {
 				"legacy": 34 * 4 + 1
 			}
 		};
-		
+
 		const checkUInt53 = (n) => {
 			if (n < 0 || n > Number.MAX_SAFE_INTEGER || n % 1 !== 0) throw new RangeError("value out of range");
 		};
-		
+
 		const varIntLength = (number) => {
 			checkUInt53(number);
-			
+
 			return (
 				number < 0xfd ? 1
 					: number <= 0xffff ? 3
@@ -1041,7 +1041,7 @@ const getByteCount = (inputs, outputs, message = "") => {
 						: 9
 			);
 		};
-		
+
 		Object.keys(inputs).forEach(function (key) {
 			checkUInt53(inputs[key]);
 			if (key.slice(0, 8) === "MULTISIG") {
@@ -1052,7 +1052,7 @@ const getByteCount = (inputs, outputs, message = "") => {
 				var mAndN = keyParts[1].split("-").map(function (item) {
 					return parseInt(item);
 				});
-				
+
 				totalWeight += types.inputs[newKey] * inputs[key];
 				var multiplyer = (newKey === "MULTISIG-P2SH") ? 4 : 1;
 				totalWeight += ((73 * mAndN[0]) + (34 * mAndN[1])) * multiplyer * inputs[key];
@@ -1062,19 +1062,19 @@ const getByteCount = (inputs, outputs, message = "") => {
 			inputCount += inputs[key];
 			if (key.indexOf("W") >= 0) hasWitness = true;
 		});
-		
+
 		Object.keys(outputs).forEach(function (key) {
 			checkUInt53(outputs[key]);
 			totalWeight += types.outputs[key] * outputs[key];
 			outputCount += outputs[key];
 		});
-		
+
 		if (hasWitness) totalWeight += 2;
-		
+
 		totalWeight += 8 * 4;
 		totalWeight += varIntLength(inputCount) * 4;
 		totalWeight += varIntLength(outputCount) * 4;
-		
+
 		let messageByteCount = 0;
 		try {
 			messageByteCount = message.length;
@@ -1083,6 +1083,13 @@ const getByteCount = (inputs, outputs, message = "") => {
 		} catch {}
 		return Math.ceil(totalWeight / 4)+messageByteCount;
 	} catch (e) { return 256; }
+};
+
+const getScriptHash = (address = "", network = networks["bitcoin"]) => {
+	const script = bitcoin.address.toOutputScript(address, network);
+	let hash = bitcoin.crypto.sha256(script);
+	const reversedHash = new Buffer(hash.reverse());
+	return reversedHash.toString("hex");
 };
 
 module.exports = {
@@ -1133,5 +1140,6 @@ module.exports = {
 	fiatToCrypto,
 	satsToBtc,
 	getLastWordInString,
-	getByteCount
+	getByteCount,
+	getScriptHash
 };
