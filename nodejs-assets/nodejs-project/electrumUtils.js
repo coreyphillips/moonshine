@@ -1,6 +1,13 @@
 const rn_bridge = require("rn-bridge");
 const ElectrumClient = require("electrum-client");
 const api = require("./api");
+const defaultPeers = require("./peers.json");
+
+const getDefaultPeers = (coin, protocol) => {
+	return defaultPeers[coin].map(peer => {
+		try {return { ...peer, protocol };} catch (e) {}
+	});
+};
 
 const disconnectFromPeer = async ({ id, coin }) => {
 	const failure = (data = {}) => {
@@ -13,7 +20,7 @@ const disconnectFromPeer = async ({ id, coin }) => {
 			rn_bridge.channel.send(JSON.stringify({ error: false, data: { message: "No peer to disconnect from.", coin }, id, method: "disconnectFromPeer" }));
 			return;
 		}
-		
+
 		//Attempt to disconnect from peer...
 		//await api.mainClient[api.coin].close();
 		api.mainClient[api.coin] = false;
@@ -38,11 +45,11 @@ const subscribeHeader = async ({ coin, id } = {}) => {
 const subscribeAddress = async ({ coin, id, address = "" } = {}) => {
 	try {
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		
+
 		await api.mainClient[coin].subscribe.on('blockchain.scripthash.subscribe', (data) => {
 			rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "subscribeAddress", data }));
 		});
-		
+
 		const response = await api.mainClient[coin].blockchainScripthash_subscribe(address);
 		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "subscribeAddress", data: response}));
 	} catch (e) {
@@ -94,9 +101,9 @@ const connectToPeer = async ({ id, peers = [], customPeers = [], coin = "bitcoin
 };
 
 const connectToRandomPeer = async (coin, peers = [], protocol = "ssl") => {
-	//Peers can be found in /node_modules/electrum-host-parse/fixtures/peers.json.
+	//Peers can be found in peers.json.
 	//Additional Peers can be located here in servers.json & servers_testnet.json for reference: https://github.com/spesmilo/electrum/tree/master/electrum
-	
+
 	let hasPeers = false;
 	try { hasPeers = (Array.isArray(peers) && peers.length) || (Array.isArray(api.peers[coin]) && api.peers[coin].length) } catch (e) {}
 	if (hasPeers) {
@@ -109,9 +116,7 @@ const connectToRandomPeer = async (coin, peers = [], protocol = "ssl") => {
 		}
 	} else {
 		//Use the default peer list for a connection if no other peers were passed down and no saved peer list is present.
-		peers = require("electrum-host-parse").getDefaultPeers(coin).filter(v => {
-			try {return v[protocol];} catch (e) {}
-		});
+		peers = getDefaultPeers(coin, protocol);
 	}
 	const initialPeerLength = peers.length; //Acquire length of our default peers.
 	//Attempt to connect to a random default peer. Continue to iterate through default peers at random if unable to connect.
@@ -126,13 +131,13 @@ const connectToRandomPeer = async (coin, peers = [], protocol = "ssl") => {
 			}
 			const connectionResponse = await api.mainClient[coin].connect();
 			if (connectionResponse.error === false) {
-				
+
 				//Ensure the server is responsive beyond a successful connection response
 				let pingResponse = false;
 				try {
 					pingResponse = await api.mainClient[coin].server_ping();
 				} catch (e) {}
-				
+
 				if (connectionResponse.data && pingResponse === null) {
 					api.peer[coin] = {
 						port: connectionResponse.data.port,
@@ -176,7 +181,7 @@ Server responds with its supported version of the protocol (higher number at ser
  */
 const getVersion = async ({ id = "1", v1 = "3.2.3", v2 = "1.4", coin = "" } = {}) => {
 	/*
-	//Peers can be found in /node_modules/electrum-host-parse/fixtures/peers.json.
+	//Peers can be found in peers.json.
 	//Additional Peers can be located here for reference: https://github.com/spesmilo/electrum/blob/afa1a4d22a31d23d088c6670e1588eed32f7114d/lib/network.py#L57
 	*/
 	let peerData = "";
@@ -247,13 +252,10 @@ const getPeers = async ({ id = "", method = "getPeers", coin = "" } = {}) => {
 const getAvailablePeers = async ({ id = "", method = "getAvailablePeers", coin = "", protocol = "ssl" } = {}) => {
 	try {
 		if (coin != api.coin) return;
-		//Peers can be found in /node_modules/electrum-host-parse/fixtures/peers.json.
-		//Other useful peers: BitcoinSegwitTestnet, Litecoin, LitecoinTestnet
+		//Peers can be found in peers.json.
 		//Additional Peers can be located here for reference:
 		//(electrum/lib/network.py) https://github.com/spesmilo/electrum/blob/afa1a4d22a31d23d088c6670e1588eed32f7114d/lib/network.py#L57
-		const peers = require("electrum-host-parse").getDefaultPeers(api.coin).filter(v => {
-			try { return v[protocol];} catch (e) {}
-		});
+		const peers = getDefaultPeers(coin, protocol);
 		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: peers}));
 	} catch (e) {
 		console.log(e);
@@ -373,7 +375,7 @@ const getAddressScriptHashesMempool = async ({ scriptHashes = [], id = "", metho
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		
+
 		const response = await api.mainClient[api.coin].blockchainScripthashes_getMempool(scriptHashes);
 		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
 	} catch (e) {
