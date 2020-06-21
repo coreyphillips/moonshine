@@ -1,10 +1,9 @@
 const rn_bridge = require("rn-bridge");
 const ElectrumClient = require("electrum-client");
 const api = require("./api");
-const defaultPeers = require("./peers.json");
 
 const getDefaultPeers = (coin, protocol) => {
-	return defaultPeers[coin].map(peer => {
+	return require("./peers.json")[coin].map(peer => {
 		try {return { ...peer, protocol };} catch (e) {}
 	});
 };
