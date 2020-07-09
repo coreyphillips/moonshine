@@ -436,7 +436,7 @@ const createTransaction = ({ address = "", transactionFee = 2, amount = 0, confi
 			} catch (e) {}
 
 			const mnemonic = keychainResult.data.password;
-			const seed = await bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
+			const seed = bip39.mnemonicToSeedSync(mnemonic, bip39Passphrase);
 			const root = bip32.fromSeed(seed, network);
 			const psbt = new bitcoin.Psbt({ network });
 
@@ -588,7 +588,7 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 			} catch (e) {}
 
 			const mnemonic = keychainResult.data.password;
-			const seed = await bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
+			const seed = bip39.mnemonicToSeedSync(mnemonic, bip39Passphrase);
 			const root = bip32.fromSeed(seed, network);
 			let addresses = [];
 			let changeAddresses = [];
@@ -850,7 +850,7 @@ const signMessage = async ({ message = "", addressType = "bech32", path = "m/84'
 		} catch (e) {}
 
 		const mnemonic = keychainResult.data.password;
-		const seed = await bip39.mnemonicToSeed(mnemonic, bip39Passphrase);
+		const seed = bip39.mnemonicToSeedSync(mnemonic, bip39Passphrase);
 		const root = bip32.fromSeed(seed, network);
 		const keyPair = root.derivePath(path);
 		const privateKey = keyPair.privateKey;
