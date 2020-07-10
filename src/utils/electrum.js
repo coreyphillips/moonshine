@@ -1,6 +1,8 @@
 import nodejs from "nodejs-mobile-react-native";
 import "../../shim";
 
+const bitcoin = require("bitcoinjs-lib");
+
 this.electrumKeepAlive = () => null;
 this.getAddressBalance = {};
 this.getAddressScriptHashBalance = {};
@@ -43,11 +45,15 @@ this.notifiedAddresses = [];
 const {
 	networks
 } = require("./networks");
-const {
-	getScriptHash
-} = require("./helpers");
 
 const getFuncName = () => getFuncName.caller.name;
+
+const getScriptHash = (address = "", network = networks["bitcoin"]) => {
+	const script = bitcoin.address.toOutputScript(address, network);
+	let hash = bitcoin.crypto.sha256(script);
+	const reversedHash = new Buffer(hash.reverse());
+	return reversedHash.toString("hex");
+};
 
 const setupListener = async ({ id = "", method = "", resolve = () => null }) => {
 	try {

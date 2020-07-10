@@ -1085,13 +1085,6 @@ const getByteCount = (inputs, outputs, message = "") => {
 	} catch (e) { return 256; }
 };
 
-const getScriptHash = (address = "", network = networks["bitcoin"]) => {
-	const script = bitcoin.address.toOutputScript(address, network);
-	let hash = bitcoin.crypto.sha256(script);
-	const reversedHash = new Buffer(hash.reverse());
-	return reversedHash.toString("hex");
-};
-
 module.exports = {
 	getItem,
 	setItem,
@@ -1140,6 +1133,5 @@ module.exports = {
 	fiatToCrypto,
 	satsToBtc,
 	getLastWordInString,
-	getByteCount,
-	getScriptHash
+	getByteCount
 };
