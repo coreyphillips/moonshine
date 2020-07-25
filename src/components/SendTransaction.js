@@ -39,7 +39,8 @@ import FeeEstimate from "./FeeEstimate";
 
 const {
 	Constants: {
-		colors
+		colors,
+		currencies
 	}
 } = require("../../ProjectData.json");
 
@@ -927,6 +928,13 @@ class SendTransaction extends Component {
 		return getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit });
 	};
 	
+	getSelectedCurrency = () => {
+		try {
+			const selectedCurrency = this.props.wallet.selectedCurrency.toLowerCase();
+			return currencies[selectedCurrency];
+		} catch {return currencies["usd"];}
+	}
+	
 	shouldComponentUpdate(nextProps, nextState) {
 		try {return nextProps.transaction !== this.props.transaction || nextState !== this.state;} catch (e) {return false;}
 	}
@@ -1012,7 +1020,7 @@ class SendTransaction extends Component {
 									<FontAwesome name={"exchange"} size={15} />
 								</View>
 								<Text style={styles.amountText}>
-									{this.state.displayInCrypto ? `${this.coinData().acronym}` : "USD"}
+									{this.state.displayInCrypto ? `${this.coinData().acronym}` : this.getSelectedCurrency().unit}
 								</Text>
 							</View>
 						</TouchableOpacity>
