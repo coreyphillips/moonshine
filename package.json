@@ -57,7 +57,7 @@
     "react-native-touch-id": "^4.4.1",
     "react-native-typography": "^1.4.1",
     "react-native-v8": "0.61.1-patch.0",
-    "react-native-vector-icons": "^6.6.0",
+    "react-native-vector-icons": "6.6.0",
     "react-redux": "^7.2.0",
     "readable-stream": "^3.4.0",
     "redux": "^4.0.5",
