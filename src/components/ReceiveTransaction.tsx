@@ -65,13 +65,14 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", selectedCurrency = "u
 	const [fiatAmount, setFiatAmount] = useState(amount || `${currencies[selectedCurrency].symbol}0`); //Represented and formatted based on selectedFiat (USD)
 	const [cryptoAmount, setCryptoAmount] = useState(amount || "0"); //Represented and formatted based on cryptoUnit (sats/bitcoin)
 
+	let _uri = "";
+	try {_uri = formatUri({selectedCrypto, address, amount: requestedAmount, label});} catch (e) {}
+	const [uri, setUri] = useState(_uri);
+
 	const [displaySpecifyAmount, setDisplaySpecifyAmount] = useState(false); //Determines whether the specifyAmount modal is displayed
 	const [displayInCrypto, setDisplayInCrypto] = useState(true); //Determines whether the specifyAmount modal is updating fiat or BTC/LTC
 
 	const acronym = getCoinData({ selectedCrypto, cryptoUnit }).acronym;
-
-	let uri = "";
-	try {uri = formatUri({selectedCrypto, address, amount: requestedAmount, label});} catch (e) {}
 
 	if (!address) return <View />;
 
@@ -86,7 +87,12 @@ const _ReceiveTransaction = ({ selectedCrypto = "bitcoin", selectedCurrency = "u
 
 	//Toggle the request modal
 	const toggleSpecifyAmount = () => {
-		if (displaySpecifyAmount) setFiatAmount(fiatAmount.replace(/^[.\s]+|[.\s]+$/g, ""));
+		if (displaySpecifyAmount) {
+			let _uri = "";
+			try {_uri = formatUri({selectedCrypto, address, amount: requestedAmount, label});} catch (e) {}
+			setUri(_uri);
+			setFiatAmount(fiatAmount.replace(/^[.\s]+|[.\s]+$/g, ""));
+		}
 		try {setDisplaySpecifyAmount(!displaySpecifyAmount);} catch(e) {}
 	};
 
