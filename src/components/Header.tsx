@@ -69,9 +69,9 @@ const _Header = ({compress = false, fiatSymbol = "$", selectedCrypto = "bitcoin"
 			}
 		}
 	} catch (e) {}
-	
+
 	const _onSelectCoinPress = () => onSelectCoinPress();
-	
+
 	return (
 		<TouchableOpacity style={styles.container} activeOpacity={activeOpacity} onPress={_onSelectCoinPress}>
 			{walletName !== "" &&
@@ -107,8 +107,10 @@ _Header.propTypes = {
 	selectedWallet: PropTypes.string,
 	onSelectCoinPress: PropTypes.func,
 	isOnline: PropTypes.bool,
-	exchangeRate: PropTypes.string || PropTypes.number,
-	displayWalletName: PropTypes.bool,
+	exchangeRate: PropTypes.oneOfType([
+		PropTypes.string,
+		PropTypes.number
+	]),
 	selectedCryptoStyle: PropTypes.object,
 	activeOpacity: PropTypes.number,
 	fontSize: PropTypes.number

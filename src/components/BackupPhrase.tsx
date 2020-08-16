@@ -23,7 +23,7 @@ const _BackupPhrase = ({ phrase = [{ id: 0, word: "" }], onPress = () => null }:
 		p1 = phrase.slice(0, halfway);
 		p2 = phrase.slice(halfway, phrase.length);
 	} catch (e) {}
-	
+
 	try {
 		return (
 			<TouchableOpacity type="background" onPress={onPress} activeOpacity={1} style={styles.container}>
@@ -41,7 +41,7 @@ const _BackupPhrase = ({ phrase = [{ id: 0, word: "" }], onPress = () => null }:
 };
 
 _BackupPhrase.propTypes = {
-	onPress: PropTypes.func.isRequired,
+	onPress: PropTypes.func,
 	phrase: PropTypes.array.isRequired
 };
 
