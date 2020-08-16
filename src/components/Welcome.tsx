@@ -5,7 +5,11 @@ import XButton from "./XButton";
 import { Text } from "../styles/components";
 
 const updates = [
-	"Fixed a bug that would prevent the transaction list from updating it's exchange rate value when toggling fiat currencies in the Settings menu."
+	"Upgraded to the latest version of React Native.",
+	"Upgraded several dependencies.",
+	"Fixed a bug that would prevent the transaction list from updating it's exchange rate value when toggling fiat currencies in the Settings menu.",
+	`Fixed a bug that would prevent the qrcode from updating on the "Receive Transaction" view after specifying an amount.`,
+	`The input amount text field will now display the correct fiat unit/symbol in the "Send Transaction" view.`
 ];
 
 const _Welcome = ({ onClose = () => null, children = <View /> } = {}) => {
