@@ -164,35 +164,12 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 
 	return (
 		<View style={styles.container}>
-			<View style={{ flex: 0.25 }}>
-				<View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-					<TouchableOpacity type="transparent" onPress={() => setDisplayAvailableWordlists(true)}>
-						<Text type="white" style={[styles.title, { marginTop: 10 }]}>
-							Selected Wordlist: {availableWordlists[selectedWordlist].title}
-						</Text>
-					</TouchableOpacity>
-					<FlatList
-						showsHorizontalScrollIndicator={false}
-						keyboardShouldPersistTaps={"handled"}
-						horizontal={true}
-						data={suggestedWords}
-						extraData={suggestedWords}
-						keyExtractor={(word) => word}
-						renderItem={({ item: word }): any => {
-							try {
-								return (
-									<TouchableOpacity activeOpacity={0} style={styles.scrollView}>
-										<TouchableOpacity type="transparent" onPress={() => addWordToMnemonic(word)} style={styles.button}>
-											<Text key={word} style={{ color: colors.white, textAlign: "center" }}>{word}</Text>
-										</TouchableOpacity>
-									</TouchableOpacity>
-								);
-							} catch (e) {console.log(e);}
-						}}
-					/>
-				</View>
-			</View>
 			<View style={{ flex: 1, alignItems: "center" }}>
+				<TouchableOpacity style={{ paddingVertical: 20 }} type="transparent" onPress={() => setDisplayAvailableWordlists(true)}>
+					<Text type="white" style={[styles.title, { marginTop: 10 }]}>
+						Selected Wordlist: {availableWordlists[selectedWordlist].title}
+					</Text>
+				</TouchableOpacity>
 				<TextInput
 					placeholder="Please enter your mnemonic phrase here with each word seperated by a space... Ex: (project globe magnet)"
 					style={styles.textInput}
@@ -214,6 +191,27 @@ const _ImportPhrase = ({ createNewWallet = () => null, onBack = () => null }: Im
 				<View style={styles.sendButton}>
 					<Button title="Import Phrase" onPress={_createNewWallet} />
 				</View>}
+
+				<FlatList
+					style={{ paddingVertical: 20 }}
+					showsHorizontalScrollIndicator={false}
+					keyboardShouldPersistTaps={"handled"}
+					horizontal={true}
+					data={suggestedWords}
+					extraData={suggestedWords}
+					keyExtractor={(word) => word}
+					renderItem={({ item: word }): any => {
+						try {
+							return (
+								<TouchableOpacity activeOpacity={0} style={styles.scrollView}>
+									<TouchableOpacity type="transparent" onPress={() => addWordToMnemonic(word)} style={styles.button}>
+										<Text key={word} style={{ color: colors.white, textAlign: "center" }}>{word}</Text>
+									</TouchableOpacity>
+								</TouchableOpacity>
+							);
+						} catch (e) {console.log(e);}
+					}}
+				/>
 			</View>
 
 			{displayCamera &&
@@ -325,10 +323,6 @@ const styles = StyleSheet.create({
 		marginHorizontal: 5
 	},
 	scrollView: {
-		alignSelf: "center",
-		alignItems: "center",
-		justifyContent: "center",
-		height: "100%",
 		backgroundColor: "transparent"
 	}
 });
