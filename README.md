@@ -1,4 +1,4 @@
-<img align="left" width="80" height="80" src="./src/assets/main_icon.png" alt="Moonshine Icon">
+<img align="left" width="80" height="80" src="src/assets/logo/main_icon.png" alt="Moonshine Icon">
 
 # Moonshine
 Moonshine is available on [iOS](https://apps.apple.com/us/app/moonshine-wallet/id1449385577?ls=1) & [Android](https://play.google.com/store/apps/details?id=com.kisswallet)

@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* moonshineTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* moonshineTests.m */; };
 		043A544824E8B7150092448F /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 043A544724E8B7150092448F /* logo.png */; };
-		043A544B24E8BBFF0092448F /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 043A544924E8BBFF0092448F /* LaunchScreen.xib */; };
+		043A545424E996A90092448F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 043A545324E996A90092448F /* LaunchScreen.storyboard */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
@@ -63,7 +63,7 @@
 		043A543524E8AEA20092448F /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = SimpleLineIcons.ttf; sourceTree = "<group>"; };
 		043A543624E8AEA20092448F /* MaterialIcons.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = MaterialIcons.ttf; sourceTree = "<group>"; };
 		043A544724E8B7150092448F /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = logo.png; path = moonshine/logo.png; sourceTree = "<group>"; };
-		043A544A24E8BBFF0092448F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = moonshine/Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		043A545324E996A90092448F /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Moonshine.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Moonshine.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = moonshine/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = moonshine/AppDelegate.m; sourceTree = "<group>"; };
@@ -166,7 +166,7 @@
 		13B07FAE1A68108700A75B9A /* moonshine */ = {
 			isa = PBXGroup;
 			children = (
-				043A544924E8BBFF0092448F /* LaunchScreen.xib */,
+				043A545324E996A90092448F /* LaunchScreen.storyboard */,
 				043A544724E8B7150092448F /* logo.png */,
 				008F07F21AC5B25A0029DE68 /* main.jsbundle */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
@@ -390,7 +390,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				043A544824E8B7150092448F /* logo.png in Resources */,
-				043A544B24E8BBFF0092448F /* LaunchScreen.xib in Resources */,
+				043A545424E996A90092448F /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -795,17 +795,6 @@
 		};
 /* End PBXTargetDependency section */
 
-/* Begin PBXVariantGroup section */
-		043A544924E8BBFF0092448F /* LaunchScreen.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				043A544A24E8BBFF0092448F /* Base */,
-			);
-			name = LaunchScreen.xib;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
-
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -863,7 +852,7 @@
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = moonshine/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 0.3.7;
+				MARKETING_VERSION = 0.3.8;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -887,7 +876,7 @@
 				DEVELOPMENT_TEAM = 344W3TSQCK;
 				INFOPLIST_FILE = moonshine/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 0.3.7;
+				MARKETING_VERSION = 0.3.8;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

@@ -4,4 +4,5 @@
     <color name="purple">#631e9a</color>
     <color name="darkPurple">#57158f</color>
     <color name="primary_dark">#631e9a</color>
+    <color name="bootsplash_background">#631e9a</color>
 </resources>

@@ -15,7 +15,7 @@ const _Welcome = ({ onClose = () => null, children = <View /> } = {}) => {
 		<View style={styles.container}>
 			<Image
 				style={styles.icon}
-				source={require("../assets/main_icon.png")}
+				source={require("../assets/logo/main_icon.png")}
 			/>
 			<Text style={styles.header}>Welcome!</Text>
 			<View style={{ width: "85%" }}>
