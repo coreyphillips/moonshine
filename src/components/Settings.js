@@ -39,6 +39,9 @@ const {
 		currencies
 	}
 } = require("../../ProjectData.json");
+const {
+	version
+} = require("../../package.json");
 
 const {
 	resetKeychainValue,
@@ -868,6 +871,12 @@ class Settings extends PureComponent {
 		} catch {}
 	};
 	
+	visitWebsite = () => {
+		try {
+			Linking.openURL("https://moonshinewallet.com").catch((e) => console.log(e));
+		} catch {}
+	};
+	
 	donate = async () => {
 		try {
 			const { selectedCrypto } = this.props.wallet;
@@ -1132,6 +1141,14 @@ class Settings extends PureComponent {
 								valueStyle={{ fontSize: 14, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
+							
+							<SettingGeneral
+								value={'Visit The Website\nmoonshinewallet.com'}
+								col1Image={<MaterialCommunityIcons name="web" size={50} />}
+								onPress={this.visitWebsite}
+								valueStyle={{ fontSize: 14, textAlign: "center", fontWeight: "bold" }}
+								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
+							/>
 
 							{Platform.OS === "ios" &&
 							<SettingGeneral
@@ -1141,6 +1158,8 @@ class Settings extends PureComponent {
 								valueStyle={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>}
+							
+							<Text style={[styles.title, { color: colors.white, textAlign: "center" }]}>{`Version: ${version}`}</Text>
 
 							<View style={{ paddingVertical: 70 }} />
 						</TouchableOpacity>
