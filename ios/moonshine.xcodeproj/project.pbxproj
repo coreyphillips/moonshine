@@ -818,7 +818,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/moonshine.app/moonshine";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Moonshine.app/Moonshine";
 			};
 			name = Debug;
 		};
@@ -840,7 +840,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/moonshine.app/moonshine";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Moonshine.app/Moonshine";
 			};
 			name = Release;
 		};
@@ -850,7 +850,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 344W3TSQCK;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = moonshine/Info.plist;
@@ -875,7 +875,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CURRENT_PROJECT_VERSION = 0;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 344W3TSQCK;
 				INFOPLIST_FILE = moonshine/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
