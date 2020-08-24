@@ -27,7 +27,7 @@ allprojects {
         }
         maven {
             // prebuilt libv8.so
-            url("$rootDir/../node_modules/v8-android-jit/dist")
+            url("$rootDir/../node_modules/v8-android-jit-nointl/dist")
         }
         maven {
             // Android JSC is installed from npm

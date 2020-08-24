@@ -8803,10 +8803,10 @@ uuid@^8.3.0:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.0.tgz#ab738085ca22dc9a8c92725e459b1d507df5d6ea"
   integrity sha512-fX6Z5o4m6XsXBdli9g7DtWgAx+osMsRRZFKma1mIUsLCz6vRvv+pz5VNbyu9UEDzpMWulZfvpgb/cmDXVulYFQ==
 
-v8-android-jit@^8.84.0:
+v8-android-jit-nointl@^8.84.0:
   version "8.84.0"
-  resolved "https://registry.yarnpkg.com/v8-android-jit/-/v8-android-jit-8.84.0.tgz#84c84a83515b2a817240fd0caff7a83c7863fc7a"
-  integrity sha512-UI/P9p7idh2tWr9qFzVJgjl3qeZ+sO2IThIUE37VtfZn30s0Bg5EieC9lol0zm5ocgBSqXP01uh7Qu0PtOmRbw==
+  resolved "https://registry.yarnpkg.com/v8-android-jit-nointl/-/v8-android-jit-nointl-8.84.0.tgz#ff51491b5ccbc5f7e98a57bf3496e6db6cc0fc5f"
+  integrity sha512-7vHDgY1LvDpDeJsKaIgiWgC404zzt5KCpPWBCIjxNuRZivGqi5J7ssjw+7+q2LUdQovePtJ1w6gSTMLHYCG1xA==
 
 v8-android@~8.84.0:
   version "8.84.0"
