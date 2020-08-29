@@ -85,7 +85,7 @@ const connectToPeer = async ({ id, peers = [], customPeers = [], coin = "bitcoin
 		if (customPeersLength > 0) {
 			const {port = "", host = "", protocol = "ssl"} = customPeers[0];
 			api.mainClient[coin] = new ElectrumClient(port, host, protocol);
-			const connectionResponse = await api.mainClient[coin].connect();
+			const connectionResponse = await promiseTimeout(1000, api.mainClient[coin].connect());
 			if (!connectionResponse.error) api.peer[coin] = { port: connectionResponse.data.port, host: connectionResponse.data.host, protocol };
 			rn_bridge.channel.send(JSON.stringify({ id, error: connectionResponse.error, method: "connectToPeer", data: connectionResponse.data, customPeers, coin }));
 		} else {
@@ -98,6 +98,23 @@ const connectToPeer = async ({ id, peers = [], customPeers = [], coin = "bitcoin
 		rn_bridge.channel.send(JSON.stringify({ id, error: true, method: "connectToPeer", data: e, customPeers, coin }));
 	}
 };
+
+const promiseTimeout = (ms, promise) => {
+	let id;
+	let timeout = new Promise((resolve) => {
+		id = setTimeout(() => {
+			resolve({ error: true, data: "Timed Out." })
+		}, ms)
+	})
+	
+	return Promise.race([
+		promise,
+		timeout
+	]).then((result) => {
+		clearTimeout(id);
+		return result
+	})
+}
 
 const connectToRandomPeer = async (coin, peers = [], protocol = "ssl") => {
 	//Peers can be found in peers.json.
@@ -128,14 +145,13 @@ const connectToRandomPeer = async (coin, peers = [], protocol = "ssl") => {
 			} else {
 				api.mainClient[coin] = new ElectrumClient(peer[protocol], peer.host, protocol);
 			}
-			const connectionResponse = await api.mainClient[coin].connect();
+			const connectionResponse = await promiseTimeout(1000, api.mainClient[coin].connect());
 			if (connectionResponse.error === false) {
-
 				//Ensure the server is responsive beyond a successful connection response
 				let pingResponse = false;
 				try {
-					pingResponse = await api.mainClient[coin].server_ping();
-				} catch (e) {}
+					pingResponse = await promiseTimeout(1000, api.mainClient[coin].server_ping());
+				} catch {}
 
 				if (connectionResponse.data && pingResponse === null) {
 					api.peer[coin] = {
@@ -167,8 +183,7 @@ const connectToRandomPeer = async (coin, peers = [], protocol = "ssl") => {
 				};
 				peers.splice(randomIndex, 1);
 			}
-		} catch (e) {
-		}
+		} catch {}
 	}
 	return { error: true, method: "connectToRandomPeer", data: "Unable to connect to any peer." };
 };

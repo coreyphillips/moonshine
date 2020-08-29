@@ -1,5 +1,6 @@
 {
   "bitcoin": [
+    {"host": "bitcoin.lukechilds.co", "ssl": 50002, "tcp": 50001},
     {"host": "electrumx.nmdps", "ssl": 50002, "tcp": 50001},
     {"host": "oneweek.duckdns.org", "ssl": 50002, "tcp": 50001},
     {"host": "electrum.vom-stausee.de", "ssl": 50002, "tcp": 50001},
