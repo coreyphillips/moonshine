@@ -106,7 +106,7 @@ const promiseTimeout = (ms, promise) => {
 			resolve({ error: true, data: "Timed Out." })
 		}, ms)
 	})
-	
+
 	return Promise.race([
 		promise,
 		timeout
@@ -224,13 +224,19 @@ const getBanner = async ({ id = "", coin = "" } = {}) => {
 };
 
 const pingServer = async ({ id = Math.random() } = {}) => {
+	const failure = (e = "") => rn_bridge.channel.send(JSON.stringify({ id, error: true, method: "pingServer", data: e }));
 	try {
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].server_ping();
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "pingServer", data: response}));
+		let pingResponse = false;
+		try {pingResponse = await promiseTimeout(1000, api.mainClient[coin].server_ping());} catch {}
+
+		if (pingResponse === null) {
+			rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "pingServer", data: pingResponse}));
+		} else {
+			failure();
+		}
 	} catch (e) {
-		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, method: "pingServer", data: e }));
+		failure(e);
 	}
 };
 
