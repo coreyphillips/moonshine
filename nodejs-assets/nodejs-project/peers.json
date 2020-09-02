@@ -21,7 +21,10 @@
     {"host": "testnet.hsmiths.com", "ssl": 53012, "tcp": 53011},
     {"host": "testnet1.bauerj.eu", "ssl": 50002, "tcp": 50001},
     {"host": "tn.not.fyi", "ssl": 55002, "tcp": 55001},
-    {"host": "testnet.qtornado.com", "ssl": 51002, "tcp": 51001}
+    {"host": "bitcoin.cluelessperson.com", "ssl": 51002, "tcp": 51001},
+    {"host": "electrum.blockstream.info", "ssl": 60002, "tcp": 60001},
+    {"host": "testnet.aranguren.org", "ssl": 51002, "tcp": 51001},
+    {"host": "blockstream.info", "ssl": 993, "tcp": 143}
   ],
   "litecoin": [
     {"host": "electrum-ltc.bysh.me", "ssl": 50002, "tcp": 50001},
