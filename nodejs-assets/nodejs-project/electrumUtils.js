@@ -1,10 +1,32 @@
 const rn_bridge = require("rn-bridge");
 const ElectrumClient = require("electrum-client");
-const api = require("./api");
+let api = {
+	coin: "bitcoin",
+	mainClient: {
+		bitcoin: false,
+		litecoin: false,
+		bitcoinTestnet: false,
+		litecoinTestnet: false
+	},
+	peer: {
+		bitcoin: {},
+		litecoin: {},
+		bitcoinTestnet: {},
+		litecoinTestnet: {}
+	},
+	peers: {
+		bitcoin: [],
+		litecoin: [],
+		bitcoinTestnet: [],
+		litecoinTestnet: []
+	}
+}
 
 const getDefaultPeers = (coin, protocol) => {
 	return require("./peers.json")[coin].map(peer => {
-		try {return { ...peer, protocol };} catch (e) {}
+		try {
+			return { ...peer, protocol };
+		} catch {}
 	});
 };
 
@@ -16,7 +38,12 @@ const disconnectFromPeer = async ({ id, coin }) => {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) {
 			//No peer to disconnect from...
-			rn_bridge.channel.send(JSON.stringify({ error: false, data: { message: "No peer to disconnect from.", coin }, id, method: "disconnectFromPeer" }));
+			rn_bridge.channel.send(JSON.stringify({
+				error: false,
+				data: { message: "No peer to disconnect from.", coin },
+				id,
+				method: "disconnectFromPeer"
+			}));
 			return;
 		}
 
@@ -24,7 +51,7 @@ const disconnectFromPeer = async ({ id, coin }) => {
 		//await api.mainClient[api.coin].close();
 		api.mainClient[api.coin] = false;
 		api.coin = "";
-		rn_bridge.channel.send(JSON.stringify({error: false, id, method: "disconnectFromPeer", coin}));
+		rn_bridge.channel.send(JSON.stringify({ error: false, id, method: "disconnectFromPeer", coin }));
 	} catch (e) {
 		failure(e);
 	}
@@ -34,10 +61,10 @@ const subscribeHeader = async ({ coin, id } = {}) => {
 	try {
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
 		api.mainClient[coin].subscribe.on('blockchain.headers.subscribe', (data) => {
-			rn_bridge.channel.send(JSON.stringify({id, error: false, method: "subscribeHeader", data, coin}));
+			rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "subscribeHeader", data, coin }));
 		});
 	} catch (e) {
-		rn_bridge.channel.send(JSON.stringify({id, error: true, method: "subscribeHeader", data: e, coin}));
+		rn_bridge.channel.send(JSON.stringify({ id, error: true, method: "subscribeHeader", data: e, coin }));
 	}
 };
 
@@ -50,7 +77,7 @@ const subscribeAddress = async ({ coin, id, address = "" } = {}) => {
 		});
 
 		const response = await api.mainClient[coin].blockchainScripthash_subscribe(address);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "subscribeAddress", data: response}));
+		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "subscribeAddress", data: response }));
 	} catch (e) {
 		rn_bridge.channel.send(JSON.stringify({ id, error: true, method: "subscribeAddress", data: e }));
 	}
@@ -65,12 +92,18 @@ const unSubscribeAddress = async ({ id, coin, scriptHashes = [] } = {}) => {
 				try {
 					const response = await api.mainClient[coin].blockchainScripthash_unsubscribe(scriptHash);
 					responses.push(response);
-				} catch (e) {}
+				} catch {}
 			})
 		);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "unSubscribeAddress", data: responses}));
+		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "unSubscribeAddress", data: responses }));
 	} catch (e) {
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, method: "unSubscribeAddress", data: e, scriptHashes }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			method: "unSubscribeAddress",
+			data: e,
+			scriptHashes
+		}));
 	}
 };
 
@@ -80,22 +113,47 @@ const connectToPeer = async ({ id, peers = [], customPeers = [], coin = "bitcoin
 		let customPeersLength = 0;
 		try {
 			customPeersLength = customPeers.length
-		} catch (e) {}
+		} catch {}
 		//Attempt to connect to specified peer
 		if (customPeersLength > 0) {
-			const {port = "", host = "", protocol = "ssl"} = customPeers[0];
+			const { port = "", host = "", protocol = "ssl" } = customPeers[0];
 			api.mainClient[coin] = new ElectrumClient(port, host, protocol);
-			const connectionResponse = await promiseTimeout(1000, api.mainClient[coin].connect());
-			if (!connectionResponse.error) api.peer[coin] = { port: connectionResponse.data.port, host: connectionResponse.data.host, protocol };
-			rn_bridge.channel.send(JSON.stringify({ id, error: connectionResponse.error, method: "connectToPeer", data: connectionResponse.data, customPeers, coin }));
+			const { error: connectionResponseError, data: connectionResponse } = await promiseTimeout(1000, api.mainClient[coin].connect());
+			if (!connectionResponseError) api.peer[coin] = {
+				port: connectionResponse.data.port,
+				host: connectionResponse.data.host,
+				protocol
+			};
+			rn_bridge.channel.send(JSON.stringify({
+				id,
+				error: connectionResponse.error,
+				method: "connectToPeer",
+				data: connectionResponse.data,
+				customPeers,
+				coin
+			}));
 		} else {
 			//Attempt to connect to random peer if none specified
 			const connectionResponse = await connectToRandomPeer(coin, peers);
 			if (connectionResponse.coin !== api.coin) return;
-			rn_bridge.channel.send(JSON.stringify({ id, error: connectionResponse.error, method: "connectToPeer", data: connectionResponse.data, customPeers, coin }));
+			rn_bridge.channel.send(JSON.stringify({
+				id,
+				error: connectionResponse.error,
+				method: "connectToPeer",
+				data: connectionResponse.data,
+				customPeers,
+				coin
+			}));
 		}
 	} catch (e) {
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, method: "connectToPeer", data: e, customPeers, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			method: "connectToPeer",
+			data: e,
+			customPeers,
+			coin
+		}));
 	}
 };
 
@@ -112,7 +170,7 @@ const promiseTimeout = (ms, promise) => {
 		timeout
 	]).then((result) => {
 		clearTimeout(id);
-		return result
+		return { error: false, data: result };
 	})
 }
 
@@ -121,7 +179,9 @@ const connectToRandomPeer = async (coin, peers = [], protocol = "ssl") => {
 	//Additional Peers can be located here in servers.json & servers_testnet.json for reference: https://github.com/spesmilo/electrum/tree/master/electrum
 
 	let hasPeers = false;
-	try { hasPeers = (Array.isArray(peers) && peers.length) || (Array.isArray(api.peers[coin]) && api.peers[coin].length) } catch (e) {}
+	try {
+		hasPeers = (Array.isArray(peers) && peers.length) || (Array.isArray(api.peers[coin]) && api.peers[coin].length)
+	} catch {}
 	if (hasPeers) {
 		if (Array.isArray(peers) && peers.length) {
 			//Update peer list
@@ -145,15 +205,15 @@ const connectToRandomPeer = async (coin, peers = [], protocol = "ssl") => {
 			} else {
 				api.mainClient[coin] = new ElectrumClient(peer[protocol], peer.host, protocol);
 			}
-			const connectionResponse = await promiseTimeout(1000, api.mainClient[coin].connect());
-			if (connectionResponse.error === false) {
+			const { error: connectionResponseError, data: connectionResponse } = await promiseTimeout(getTimeout(), api.mainClient[coin].connect());
+			if (connectionResponseError === false) {
 				//Ensure the server is responsive beyond a successful connection response
-				let pingResponse = false;
+				let pingResponse = { error: true, data: "" };
 				try {
 					pingResponse = await promiseTimeout(1000, api.mainClient[coin].server_ping());
 				} catch {}
 
-				if (connectionResponse.data && pingResponse === null) {
+				if (connectionResponse.data && !pingResponse.error) {
 					api.peer[coin] = {
 						port: connectionResponse.data.port,
 						host: connectionResponse.data.host,
@@ -203,7 +263,14 @@ const getVersion = async ({ id = "1", v1 = "3.2.3", v2 = "1.4", coin = "" } = {}
 	if (coin !== api.coin) peerData = await connectToRandomPeer(coin, api.peers[api.coin]);
 	try {
 		const response = await api.mainClient[coin].server_version(v1, v2);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "getVersion", data: response, peerData, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: false,
+			method: "getVersion",
+			data: response,
+			peerData,
+			coin
+		}));
 	} catch (e) {
 		console.log("bad connection:", JSON.stringify(e));
 		console.log("trying again");
@@ -216,22 +283,33 @@ const getBanner = async ({ id = "", coin = "" } = {}) => {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
 		const response = await api.mainClient[api.coin].server_banner();
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "getBanner", data: response}));
+		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "getBanner", data: response }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method: "getBanner", data: e }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method: "getBanner",
+			data: e
+		}));
 	}
 };
 
 const pingServer = async ({ id = Math.random() } = {}) => {
-	const failure = (e = "") => rn_bridge.channel.send(JSON.stringify({ id, error: true, method: "pingServer", data: e }));
+	const failure = (e = "") => rn_bridge.channel.send(JSON.stringify({
+		id,
+		error: true,
+		method: "pingServer",
+		data: e
+	}));
 	try {
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		let pingResponse = false;
-		try {pingResponse = await promiseTimeout(1000, api.mainClient[coin].server_ping());} catch {}
-
-		if (pingResponse === null) {
-			rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "pingServer", data: pingResponse}));
+		let pingResponse = { error: true, data: "" };
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].server_ping());
+		if (!pingResponse.error) {
+			rn_bridge.channel.send(JSON.stringify({ id, error, method: "pingServer", data }));
 		} else {
 			failure();
 		}
@@ -244,10 +322,17 @@ const getDonationAddress = async ({ id = "", coin = "" } = {}) => {
 	try {
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
 		const response = await api.mainClient[api.coin].serverDonation_address();
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "getDonationAddress", data: response}));
+		rn_bridge.channel.send(JSON.stringify({ id, error: false, method: "getDonationAddress", data: response }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method: "getDonationAddress", data: e }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method: "getDonationAddress",
+			data: e
+		}));
 	}
 };
 
@@ -261,11 +346,19 @@ const getPeers = async ({ id = "", method = "getPeers", coin = "" } = {}) => {
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].serverPeers_subscribe();
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin}));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].serverPeers_subscribe());
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: null, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: null,
+			coin
+		}));
 	}
 };
 
@@ -276,10 +369,18 @@ const getAvailablePeers = async ({ id = "", method = "getAvailablePeers", coin =
 		//Additional Peers can be located here for reference:
 		//(electrum/lib/network.py) https://github.com/spesmilo/electrum/blob/afa1a4d22a31d23d088c6670e1588eed32f7114d/lib/network.py#L57
 		const peers = getDefaultPeers(coin, protocol);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: peers}));
+		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: peers }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -291,11 +392,19 @@ const getNewBlockHeightSubscribe = async ({ id = "", method = "getNewBlockHeight
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainNumblocks_subscribe();
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin}));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainNumblocks_subscribe());
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -306,8 +415,8 @@ const getNewBlockHeadersSubscribe = async ({ id = "", method = "getNewBlockHeade
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(coin, api.peers[api.coin]);
-		const response = await api.mainClient[coin].blockchainHeaders_subscribe();
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin}));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[coin].blockchainHeaders_subscribe());
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
 		rn_bridge.channel.send(JSON.stringify({ id, error: true, method, data: null, coin }));
@@ -323,11 +432,19 @@ const getHashOfAddressChangesSubscribe = async ({ address = "", id = "", method 
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainAddress_subscribe(address);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin}));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainAddress_subscribe(address));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: null, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: null,
+			coin
+		}));
 	}
 };
 
@@ -338,11 +455,19 @@ const getAddressHistory = async ({ address = "", id = "", method = "getAddressHi
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainAddress_gethistory(address);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin}));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainAddress_gethistory(address));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -353,11 +478,19 @@ const getAddressScriptHashHistory = async ({ scriptHash = "", id = "", method = 
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainScripthash_getHistory(scriptHash);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainScripthash_getHistory(scriptHash));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -368,11 +501,20 @@ const getAddressScriptHashesHistory = async ({ scriptHashes = [], id = "", metho
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainScripthashes_getHistory(scriptHashes);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const timeout = getTimeout(scriptHashes);
+		const { error, data } = await promiseTimeout(timeout, api.mainClient[api.coin].blockchainScripthashes_getHistory(scriptHashes));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: e, method, data: [], coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: e,
+			method,
+			data: [],
+			coin
+		}));
 	}
 };
 
@@ -383,11 +525,19 @@ const getAddressScriptHashMempool = async ({ scriptHash = "", id = "", method = 
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainScripthash_getMempool(scriptHash);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainScripthash_getMempool(scriptHash));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: e, method, data: [], coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: e,
+			method,
+			data: [],
+			coin
+		}));
 	}
 };
 
@@ -395,12 +545,20 @@ const getAddressScriptHashesMempool = async ({ scriptHashes = [], id = "", metho
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-
-		const response = await api.mainClient[api.coin].blockchainScripthashes_getMempool(scriptHashes);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const timeout = getTimeout(scriptHashes);
+		const { error, data } = await promiseTimeout(timeout, api.mainClient[api.coin].blockchainScripthashes_getMempool(scriptHashes));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -408,11 +566,19 @@ const getMempool = async ({ address = "", id = "", method = "getMempool", coin =
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainAddress_getMempool(address);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainAddress_getMempool(address));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -420,11 +586,19 @@ const getAddressBalance = async ({ address = "", id = "", method = "getAddressBa
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainAddress_getBalance(address);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainAddress_getBalance(address));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -432,11 +606,19 @@ const getAddressScriptHashBalance = async ({ scriptHash = "", id = "", method = 
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainScripthash_getBalance(scriptHash);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, scriptHash, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainScripthash_getBalance(scriptHash));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, scriptHash, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -444,11 +626,20 @@ const getAddressScriptHashesBalance = async ({ scriptHashes = [], id = "", metho
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainScripthashes_getBalance(scriptHashes);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const timeout = getTimeout(scriptHashes);
+		const { error, data } = await promiseTimeout(timeout, api.mainClient[api.coin].blockchainScripthashes_getBalance(scriptHashes));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -456,11 +647,19 @@ const getAddressProof = async ({ address = "", id = "", method = "getAddressProo
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainAddress_getProof(address);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainAddress_getProof(address));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -468,11 +667,19 @@ const listUnspentAddress = async ({ address = "", id = "", method = "listUnspent
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainAddress_listunspent(address);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainAddress_listunspent(address));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -480,11 +687,19 @@ const listUnspentAddressScriptHash = async ({ scriptHash = "", id = "", method =
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainScripthash_listunspent(scriptHash);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainScripthash_listunspent(scriptHash));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -492,11 +707,20 @@ const listUnspentAddressScriptHashes = async ({ scriptHashes = [], id = "", meth
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainScripthashes_listunspent(scriptHashes);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const timeout = getTimeout(scriptHashes);
+		const { error, data } = await promiseTimeout(timeout, api.mainClient[coin].blockchainScripthashes_listunspent(scriptHashes));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -504,11 +728,19 @@ const getAddressUtxo = async ({ txHash = "", index = "", id = "", method = "getA
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainUtxo_getAddress(txHash, index);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainUtxo_getAddress(txHash, index));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -516,11 +748,19 @@ const getBlockHeader = async ({ height = "", id = "", method = "getBlockHeader",
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainBlock_getHeader(height);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainBlock_getHeader(height));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -529,11 +769,19 @@ const getHeader = async ({ height = "", id = "", method = "getHeader", coin = ""
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainBlock_getBlockHeader(height);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainBlock_getBlockHeader(height));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -541,11 +789,19 @@ const getBlockChunk = async ({ index = "", id = "", method = "getBlockChunk", co
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainBlock_getChunk(index);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainBlock_getChunk(index));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -556,8 +812,8 @@ Returns transaction id, or an error if the transaction is invalid for any reason
 const broadcastTransaction = async ({ rawTx = "", id = "", method = "broadcastTransaction", coin = "" } = {}) => {
 	try {
 		if (api.mainClient[coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[coin].blockchainTransaction_broadcast(rawTx);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(5000, api.mainClient[coin].blockchainTransaction_broadcast(rawTx));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
 		rn_bridge.channel.send(JSON.stringify({ id, error: true, method, data: e, coin }));
@@ -568,11 +824,19 @@ const getTransactionMerkle = async ({ txHash = "", height = "", id = "", method 
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainTransaction_getMerkle(txHash, height);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainTransaction_getMerkle(txHash, height));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -585,12 +849,19 @@ const getTransactionHex = async ({ txId = "", id = "", method = "getTransactionH
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainTransaction_get(txId);
-		//const decodedTx = await TxDecoder(response, bitcoin.networks.bitcoin);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].blockchainTransaction_get(txId));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
@@ -610,24 +881,42 @@ const getTransaction = async ({ txHash = "", id = "", method = "getTransaction",
 	};
 	try {
 		if (coin != api.coin) failure();
-		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainTransaction_get(txHash, true);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		if (api.mainClient[coin] === false) await connectToRandomPeer(coin, api.peers[api.coin]);
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[coin].blockchainTransaction_get(txHash, true));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
 		rn_bridge.channel.send(JSON.stringify({ id, error: true, method, data: e, coin }));
 	}
 };
 
+const getTimeout = (arr = []) => {
+	const timeout = 3000;
+	try {
+		return arr.length > 1 ? (timeout/2) * arr.length : timeout;
+	} catch {
+		return timeout;
+	}
+}
+
 const getTransactions = async ({ id = "", txHashes = [], coin = "", method = "getTransactions" } = {}) => {
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const response = await api.mainClient[api.coin].blockchainTransactions_get(txHashes, true);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin }));
+		const timeout = getTimeout(txHashes);
+		const { error, data } = await promiseTimeout(timeout, api.mainClient[coin].blockchainTransactions_get(txHashes, true));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "Error", errorMsg: e, method, data: [], coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "Error",
+			errorMsg: e,
+			method,
+			data: [],
+			coin
+		}));
 	}
 };
 
@@ -640,11 +929,19 @@ const getFeeEstimate = async ({ blocksWillingToWait = 8, id = "", method = "getF
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[coin] === false) await connectToRandomPeer(coin, api.peers[coin]);
-		const response = await api.mainClient[coin].blockchainEstimatefee(blocksWillingToWait);
-		rn_bridge.channel.send(JSON.stringify({ id, error: false, method, data: response, coin}));
+		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[coin].blockchainEstimatefee(blocksWillingToWait));
+		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
 		console.log(e);
-		rn_bridge.channel.send(JSON.stringify({ id, error: true, errorTitle: "", errorMsg: "", method, data: e, coin }));
+		rn_bridge.channel.send(JSON.stringify({
+			id,
+			error: true,
+			errorTitle: "",
+			errorMsg: "",
+			method,
+			data: e,
+			coin
+		}));
 	}
 };
 
