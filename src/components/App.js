@@ -192,19 +192,11 @@ export default class App extends Component {
 				return;
 			}
 
-			this.updateItem({
-				stateId: "displaySelectCoin",
-				opacityId: "selectCoinOpacity",
-				display: false,
-				duration: 200,
-			});
-
 			const network = getNetworkType(coin);
 			await this.props.updateWallet({ selectedCrypto: coin, network, selectedWallet: walletId });
 
 			if (this.props.wallet.wallets[walletId].addresses[coin].length > 0) {
 				//This condition occurs when the user selects a coin that already has generated addresses from the "SelectCoin" view.
-				this.updateItem({ stateId: "displayLoading", opacityId: "loadingOpacity", display: false });
 				this.resetView();
 			} else {
 				//This condition occurs when the user selects a coin that does not have any addresses from the "SelectCoin" view.
@@ -221,7 +213,11 @@ export default class App extends Component {
 						loadingAnimationName: coin,
 					});
 				}
-				this.updateItem({ stateId: "displayLoading", opacityId: "loadingOpacity", display: true });
+
+				await this.updateItems([
+					{ stateId: "displaySelectCoin", opacityId: "selectCoinOpacity", display: false, duration: 200 },
+					{ stateId: "displayLoading", opacityId: "loadingOpacity", display: true }
+					]);
 				InteractionManager.runAfterInteractions(async () => {
 					await this.refreshWallet({ reconnectToElectrum: !sameCoin });
 					this.resetView();
