@@ -1,10 +1,10 @@
 import React, { useState, memo } from "react";
 import {
 	StyleSheet,
-	Animated,
-	Clipboard, Share,
-	Easing
+	Clipboard,
+	Share
 } from "react-native";
+import Animated, { Easing } from "react-native-reanimated";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
 import Button from "./Button";
@@ -37,7 +37,7 @@ const _ShareButtons = (
 		textContainerStyle = {}
 	}: ShareButtonsComponent) => {
 	const [textOpacity] = useState(new Animated.Value(0));
-	
+
 	const onSharePress = (): void => {
 		try {
 			Share.share({
@@ -51,7 +51,7 @@ const _ShareButtons = (
 			console.log(e);
 		}
 	};
-	
+
 	const onCopyPress = () => {
 		let duration = 1500;
 		try {
@@ -82,7 +82,7 @@ const _ShareButtons = (
 			alert("Unable to copy item to clipboard. Please try again or check your phone's permissions.");
 		}
 	};
-	
+
 	return (
 		<View type="transparent">
 			<View type="card2" borderColor="text" style={[styles.textContainer, textContainerStyle ]}>
@@ -94,7 +94,7 @@ const _ShareButtons = (
 						</View>
 					</CopiedLinearGradient>
 				</Animated.View>
-			
+
 			</View>
 			<View style={styles.row}>
 				<Button style={styles.button} text="Share" onPress={onSharePress} disabled={!text || disabled} />

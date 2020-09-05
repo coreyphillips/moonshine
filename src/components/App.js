@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import {
 	View,
-	Animated,
+	Animated as RNAnimated,
 	AppState,
 	BackHandler,
 	Dimensions,
@@ -15,9 +15,9 @@ import {
 	StyleSheet,
 	TouchableOpacity,
 	TouchableWithoutFeedback,
-	Easing,
 	Linking,
 } from "react-native";
+import Animated, { Easing } from "react-native-reanimated";
 import { ThemeProvider } from "styled-components/native";
 import { LinearGradient, Text } from "../styles/components";
 import { themes } from "../styles/themes";
@@ -1050,7 +1050,7 @@ export default class App extends Component {
 	updateFlex = ({ upperContentFlex = 1, lowerContentFlex = 1, duration = 250 } = {}) => {
 		return new Promise(async (resolve) => {
 			try {
-				Animated.parallel([
+				RNAnimated.parallel([
 					Animated.timing(
 						this.state.upperContentFlex,
 						{
@@ -1134,7 +1134,7 @@ export default class App extends Component {
 				if (Object.entries(itemsToDisplay).length !== 0 && itemsToDisplay.constructor === Object) this.setState(itemsToDisplay);
 
 				//Start Animations.
-				Animated.parallel(animations).start(async () => {
+				RNAnimated.parallel(animations).start(async () => {
 					//Perform any other action after the update has been completed.
 
 					//Hide necessary items

@@ -2,13 +2,12 @@ import React, { PureComponent } from "react";
 import {
 	StyleSheet,
 	View,
-	Animated,
 	LayoutAnimation,
 	Dimensions,
 	Platform,
-	InteractionManager,
-	Easing
+	InteractionManager
 } from "react-native";
+import Animated, { Easing } from "react-native-reanimated";
 import PropTypes from "prop-types";
 import Slider from "@react-native-community/slider";
 import { systemWeights } from "react-native-typography";

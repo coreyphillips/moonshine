@@ -1,11 +1,12 @@
 import React, {memo, useState} from 'react';
-import {Animated, StyleSheet, View, Easing} from 'react-native';
+import {StyleSheet, View} from 'react-native';
+import Animated, {Easing} from "react-native-reanimated";
 import PropTypes from "prop-types";
 import XButton from "./XButton";
 import Button from "./Button";
 import {systemWeights} from "react-native-typography";
 import LottieView from "lottie-react-native";
-import { Text, TextInput } from "../styles/components";
+import {Text, TextInput} from "../styles/components";
 
 const {
 	Constants: {
@@ -26,6 +27,7 @@ interface ImportPhraseComponent {
 	selectedCrypto: string,
 	updateSettings: Function
 }
+
 const _VerifyMessage = (
 	{
 		onBack = () => null,
@@ -39,7 +41,7 @@ const _VerifyMessage = (
 	}: ImportPhraseComponent) => {
 	const [dataIsValid, setDataIsValid] = useState(false);
 	const [animationOpacity] = useState(new Animated.Value(0));
-	
+
 	const getAnimation = () => {
 		try {
 			if (dataIsValid) {
@@ -51,9 +53,9 @@ const _VerifyMessage = (
 			return require(`../assets/lottie/incorrect.json`);
 		}
 	};
-	
+
 	const _verifyMessage = () => {
-		const isValid = verifyMessage({ ...verifyMessageData, selectedCrypto });
+		const isValid = verifyMessage({...verifyMessageData, selectedCrypto});
 		setDataIsValid(isValid);
 		Animated.timing(
 			animationOpacity,
@@ -68,12 +70,12 @@ const _VerifyMessage = (
 			this.animation.play();
 		});
 	};
-	
+
 	return (
 		<View style={styles.container}>
 			<View style={styles.contentContainer}>
 				<View style={styles.textInputContainer}>
-					
+
 					<Text type="white" style={styles.text}>Address:</Text>
 					<TextInput
 						placeholder="Address"
@@ -82,16 +84,22 @@ const _VerifyMessage = (
 						autoCapitalize="none"
 						autoCompleteType="off"
 						autoCorrect={false}
-						onChangeText={async (address) => updateSettings({ verifyMessage: { ...verifyMessageData, address }})}
+						onChangeText={async (address) => updateSettings({
+							verifyMessage: {
+								...verifyMessageData,
+								address
+							}
+						})}
 						value={verifyMessageData.address}
 						multiline={false}
 						returnKeyType="next"
 						onSubmitEditing={() => {
 							// @ts-ignore
-							this.secondTextInput.focus(); }}
+							this.secondTextInput.focus();
+						}}
 						blurOnSubmit={false}
 					/>
-					
+
 					<Text type="white" style={styles.text}>Message:</Text>
 					<TextInput
 						placeholder="Message"
@@ -100,7 +108,12 @@ const _VerifyMessage = (
 						autoCapitalize="none"
 						autoCompleteType="off"
 						autoCorrect={false}
-						onChangeText={async (message) => updateSettings({ verifyMessage: { ...verifyMessageData, message }})}
+						onChangeText={async (message) => updateSettings({
+							verifyMessage: {
+								...verifyMessageData,
+								message
+							}
+						})}
 						value={verifyMessageData.message}
 						multiline={true}
 						ref={(input) => {
@@ -108,7 +121,7 @@ const _VerifyMessage = (
 							this.secondTextInput = input;
 						}}
 					/>
-					
+
 					<Text type="white" style={styles.text}>Signature:</Text>
 					<TextInput
 						placeholder="Signature"
@@ -117,13 +130,20 @@ const _VerifyMessage = (
 						autoCapitalize="none"
 						autoCompleteType="off"
 						autoCorrect={false}
-						onChangeText={async (signature) => updateSettings({ verifyMessage: { ...verifyMessageData, signature } })}
+						onChangeText={async (signature) => updateSettings({
+							verifyMessage: {
+								...verifyMessageData,
+								signature
+							}
+						})}
 						value={verifyMessageData.signature}
 						multiline={true}
 					/>
-					
+
 					<Animated.View style={[styles.animation, {opacity: animationOpacity}]}>
-						<Text type="white" style={styles.text}>{dataIsValid ? "Valid Signature!" : "Invalid Signature"}</Text>
+						<Text type="white" style={styles.text}>
+							{dataIsValid ? "Valid Signature!" : "Invalid Signature"}
+						</Text>
 						<LottieView
 							ref={animation => {
 								// @ts-ignore
@@ -132,20 +152,24 @@ const _VerifyMessage = (
 							source={getAnimation()}
 							autoPlay={false}
 							loop={false}
-							style={{ width: 100, height: 100 }}
+							style={{width: 100, height: 100}}
 						/>
 					</Animated.View>
 				</View>
-				
-				<View style={{ paddingVertical: 10 }} />
+
+				<View style={{paddingVertical: 10}}/>
 				<Animated.View style={styles.sendButton}>
-					<Button title="Verify Message" onPress={_verifyMessage} disabled={!verifyMessageData.address || !verifyMessageData.message || !verifyMessageData.signature} />
+					<Button
+						title="Verify Message"
+						onPress={_verifyMessage}
+						disabled={!verifyMessageData.address || !verifyMessageData.message || !verifyMessageData.signature}
+					/>
 				</Animated.View>
-				
+
 			</View>
-			
+
 			<Animated.View style={styles.xButton}>
-				<XButton style={{borderColor: "transparent"}} onPress={onBack} />
+				<XButton style={{borderColor: "transparent"}} onPress={onBack}/>
 			</Animated.View>
 		</View>
 	);
@@ -227,7 +251,9 @@ const VerifyMessage = memo(
 			return prevProps.verifyMessageData.address === nextProps.verifyMessageData.address &&
 				prevProps.verifyMessageData.message === nextProps.verifyMessageData.message &&
 				prevProps.verifyMessageData.signature === nextProps.verifyMessageData.signature;
-		} catch (e) { return false; }
+		} catch (e) {
+			return false;
+		}
 	}
 );
 export default VerifyMessage;

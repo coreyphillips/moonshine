@@ -1,11 +1,11 @@
 import React, {useEffect, memo} from "react";
-import {Animated, Image, StyleSheet, Text, View, LayoutAnimation, Platform} from "react-native";
+import {Image, StyleSheet, Text, View, LayoutAnimation, Platform} from "react-native";
 import PropTypes from "prop-types";
 import ProgressBar from "./ProgressBar";
 import { systemWeights } from "react-native-typography";
 import EvilIcon from "react-native-vector-icons/EvilIcons";
 import LottieView from "lottie-react-native";
-
+import Animated from "react-native-reanimated";
 const {
 	Constants: {
 		colors
@@ -56,9 +56,9 @@ interface LoadingComponent {
 	textStyle: object
 }
 const _Loading = ({loadingOpacity = 0, loadingMessage = "Loading State", loadingProgress = 0, animationName = "", enableProgressBar = true, enableSpinner = true, enableErrorIcon = false, enableSuccessIcon = false, width = 200, style = {}, textStyle = {}}: LoadingComponent) => {
-	
+
 	if (Platform.OS === "ios") useEffect(() => LayoutAnimation.easeInEaseOut());
-	
+
 	const Icon = () => {
 		if (availableCoins.includes(animationName)) {
 			return (
@@ -77,10 +77,10 @@ const _Loading = ({loadingOpacity = 0, loadingMessage = "Loading State", loading
 			/>
 		);
 	};
-	
+
 	return (
 		<Animated.View style={[styles.container, { ...style, opacity: loadingOpacity }]}>
-			
+
 			<View style={styles.content}>
 				{enableSpinner && !enableErrorIcon && !enableSuccessIcon &&
 				Icon()}
@@ -93,11 +93,11 @@ const _Loading = ({loadingOpacity = 0, loadingMessage = "Loading State", loading
 				{enableProgressBar &&
 				<ProgressBar progress={loadingProgress} height={7} width={width} />}
 			</View>
-			
+
 			<View style={styles.messageContainer}>
 				<Text style={[styles.boldText, { ...textStyle }]}>{loadingMessage}</Text>
 			</View>
-			
+
 		</Animated.View>
 	);
 };

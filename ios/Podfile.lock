@@ -328,6 +328,8 @@ PODS:
     - React
   - RNReactNativeHapticFeedback (1.10.0):
     - React
+  - RNReanimated (1.13.0):
+    - React
   - RNSVG (12.1.0):
     - React
   - RNVectorIcons (7.0.0):
@@ -398,6 +400,7 @@ DEPENDENCIES:
   - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
+  - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNVectorIcons (from `../node_modules/react-native-vector-icons`)
   - TouchID (from `../node_modules/react-native-touch-id`)
@@ -495,6 +498,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keychain"
   RNReactNativeHapticFeedback:
     :path: "../node_modules/react-native-haptic-feedback"
+  RNReanimated:
+    :path: "../node_modules/react-native-reanimated"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   RNVectorIcons:
@@ -554,6 +559,7 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: 2a692bcb9b69b76a2f1a95f33db057129700af64
   RNKeychain: db956c02a018f7dd3a0ea8a6cf3087bc1894bf2b
   RNReactNativeHapticFeedback: 22c5ecf474428766c6b148f96f2ff6155cd7225e
+  RNReanimated: 89f5e0a04d1dd52fbf27e7e7030d8f80a646a3fc
   RNSVG: ce9d996113475209013317e48b05c21ee988d42e
   RNVectorIcons: da6fe858f5a65d7bbc3379540a889b0b12aa5976
   TouchID: ba4c656d849cceabc2e4eef722dea5e55959ecf4
@@ -562,4 +568,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 19523aa669bfdf03d35c4a0392bf9af14c16e4da
 
-COCOAPODS: 1.9.3
+COCOAPODS: 1.9.1

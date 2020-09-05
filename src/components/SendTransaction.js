@@ -2,16 +2,15 @@ import React, { Component } from "react";
 import {
 	StyleSheet,
 	TouchableOpacity,
-	Animated,
 	Clipboard,
 	LayoutAnimation,
 	Dimensions,
 	Platform,
 	InteractionManager,
 	Keyboard,
-	Easing,
 	BackHandler
 } from "react-native";
+import Animated, { Easing } from "react-native-reanimated";
 import PropTypes from "prop-types";
 import Slider from "@react-native-community/slider";
 import { systemWeights } from "react-native-typography";
@@ -82,15 +81,15 @@ class SendTransaction extends Component {
 
 			displayConfirmationModal: false,
 			confirmationModalOpacity: new Animated.Value(0),
-			
+
 			displayCoinControlModal: false,
 			displayCoinControlButton: false,
-			
+
 			displayFeeEstimateModal: false,
-			
+
 			whiteListedUtxos: [], //UTXOS the user has chosen to use for this transaction via the coin control modal.
 			whiteListedUtxosBalance: 0,
-			
+
 			displayLoading: false,
 			loadingOpacity: new Animated.Value(0),
 			loadingMessage: "",
@@ -121,15 +120,15 @@ class SendTransaction extends Component {
 			//Determine if any utxos exist for the given coin and wallet to display and enable the coin control feature.
 			const displayCoinControlButton = utxoLength > 0;
 			this.setState({cryptoBalance, fiatBalance, displayCoinControlButton});
-			
+
 			//Set the transactionSize to accurately determine the transaction fee
 			const transactionSize = this.getTransactionByteCount();
 			this.props.updateTransaction({ transactionSize });
-			
+
 			//Set Maximum Fee (recommendedFee * 4) to prevent any user accidents.
 			//Set Recommended Fee as Starting Fee
 			this.calculateFees();
-			
+
 			try {
 				//If a transaction amount is already specified check that the user has enough funds and update the local amount accordingly.
 				if (this.props.transaction.amount) {
@@ -141,7 +140,7 @@ class SendTransaction extends Component {
 				}
 			} catch (e) {}
 		};
-		
+
 		if (Platform.OS === "ios") {
 			try {setupSendTransaction();} catch (e) {}
 		} else {
@@ -252,7 +251,7 @@ class SendTransaction extends Component {
 			console.log(e);
 		}
 	};
-	
+
 	getUtxoLength = () => {
 		try {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
@@ -304,7 +303,7 @@ class SendTransaction extends Component {
 			console.log(e);
 		}
 	};
-	
+
 	getTransactionByteCount = () => {
 		try {
 			let transactionByteCount = 0;
@@ -325,7 +324,7 @@ class SendTransaction extends Component {
 
 	onMaxPress = async () => {
 		try {
-			
+
 			//"spendMaxAmount" will not send funds back to a changeAddress and thus have one less output so we need to update the transactionSize accordingly.
 			const recommendedFee = this.props.transaction.fee || this.props.transaction.recommendedFee;
 			const walletBalance = this.state.cryptoBalance;
@@ -337,7 +336,7 @@ class SendTransaction extends Component {
 				{[addressType]:!this.state.spendMaxAmount ? 1 : 2},
 				this.props.transaction.message
 			);
-			
+
 			const exchangeRate = this.props.wallet.exchangeRate[selectedCrypto];
 			let totalFee = this.getTotalFee(recommendedFee, transactionSize);
 			let cryptoUnitAmount = 0;
@@ -354,9 +353,9 @@ class SendTransaction extends Component {
 				cryptoUnitAmount = bitcoinUnits(totalFee, "satoshi").to(this.props.settings.cryptoUnit).value();
 				this.props.updateTransaction({ fee: parseInt(recommendedFee/2), amount: totalFee, fiatAmount, transactionSize });
 			}
-			
+
 			if (this.state.cryptoUnitAmount !== cryptoUnitAmount) this.setState({ cryptoUnitAmount });
-			
+
 			await this.setState({ spendMaxAmount: !this.state.spendMaxAmount });
 		} catch (e) {
 			console.log(e);
@@ -411,7 +410,7 @@ class SendTransaction extends Component {
 		const cryptoUnit = this.props.settings.cryptoUnit;
 		let fiatAmount = "";
 		let satoshiAmount = "";
-		
+
 		try {
 			//This attempts to account for device language preferences that replace a period with a comma.
 			//This addresses #47: https://github.com/coreyphillips/moonshine/issues/47
@@ -513,7 +512,7 @@ class SendTransaction extends Component {
 				const { selectedCrypto } = this.props.wallet;
 				const transactionSize = this.getTransactionByteCount();
 				const result = await this.props.getRecommendedFee({coin: selectedCrypto, transactionSize});
-				
+
 				//Ensure we have a valid recommendedFee
 				if (result.data.recommendedFee && !isNaN(Number(result.data.recommendedFee))) {
 					this.props.updateTransaction({ fee: Number(result.data.recommendedFee), transactionSize });
@@ -562,7 +561,7 @@ class SendTransaction extends Component {
 			alert("Please make sure you've added both an address and an amount to send.");
 			return;
 		}
-		
+
 		//Ensure the user has enough funds.
 		const fee = Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee);
 		const amount = Number(this.props.transaction.amount);
@@ -574,7 +573,7 @@ class SendTransaction extends Component {
 			alert(`It appears that\nyou do not have enough funds\nto cover the transaction.`);
 			return;
 		}
-		
+
 		const address = this.props.transaction.address;
 		//Validate Address.
 		if (!validateAddress(address, selectedCrypto).isValid) {
@@ -612,7 +611,7 @@ class SendTransaction extends Component {
 			const message = this.props.transaction.message;
 			const addressType = wallet.addressType[selectedCrypto];
 			const setRbf = this.props.settings.rbf && supportsRbf[selectedCrypto];
-			
+
 			let changeAddress = "";
 			//Create More Change Addresses as needed
 			//Only add a changeAddress if the user is not spending the max amount.
@@ -632,7 +631,7 @@ class SendTransaction extends Component {
 					changeAddress = wallet.changeAddresses[selectedCrypto][changeAddressIndex].address;
 				}
 			}
-			
+
 			//Coin Control: Temporarily add non-whitelisted utxo hashes to blacklistedUtxos for this transaction.
 			if (this.state.whiteListedUtxos.length) {
 				const tempBlacklistedUtxos = [];
@@ -652,7 +651,7 @@ class SendTransaction extends Component {
 				if (tempUtxos.length) utxos = tempUtxos;
 				if (tempBlacklistedUtxos.length) blacklistedUtxos = blacklistedUtxos.concat(tempBlacklistedUtxos);
 			}
-			
+
 			return await createTransaction({ address, transactionFee, amount, confirmedBalance, utxos, blacklistedUtxos, changeAddress, wallet: selectedWallet, selectedCrypto, message, addressType, setRbf });
 		} catch (e) {
 			console.log(e);
@@ -680,7 +679,7 @@ class SendTransaction extends Component {
 			let messages = [];
 			try {if (this.props.transaction.message) messages.push(this.props.transaction.message);} catch {}
 			let sendTransactionResult = await this.props.sendTransaction({ txHex: transaction.data, selectedCrypto, sendTransactionFallback: this.props.settings.sendTransactionFallback });
-			
+
 			if (sendTransactionResult.error) {
 				await this.setState({
 					loadingMessage: "There appears to have been an error sending your transaction. Please try again.",
@@ -714,9 +713,9 @@ class SendTransaction extends Component {
 						timestamp: moment().unix(),
 						type: "sent"
 					}];
-					
+
 					const transactionData = { wallet: selectedWallet, selectedCrypto, transaction: successfulTransaction };
-					
+
 					//Add txHash to rbfData
 					let rbfData = undefined;
 					//Ensure RBF is enabled in Settings and that the selected coin is not Litecoin.
@@ -727,7 +726,7 @@ class SendTransaction extends Component {
 					}
 					//Add Transaction to transaction stack
 					await this.props.addTransaction(transactionData);
-					
+
 					//Temporarily update the balance for the user to prevent a delay while electrum syncs the balance from the new transaction
 					try {
 						const newBalance = Number(wallet.confirmedBalance[selectedCrypto]) - sentAmount;
@@ -845,7 +844,7 @@ class SendTransaction extends Component {
 			}
 		} catch (e) {}
 	};
-	
+
 	getWalletName = () => {
 		try {
 			const selectedWallet = this.props.wallet.selectedWallet;
@@ -855,13 +854,13 @@ class SendTransaction extends Component {
 			return "?";
 		}
 	};
-	
+
 	toggleFeeEstimateModal = async () => {
 		try {
 			this.setState({ displayFeeEstimateModal: !this.state.displayFeeEstimateModal });
 		} catch (e) {}
 	};
-	
+
 	toggleCoinControlModal = async () => {
 		try {
 			//If the coin control modal is being toggled off.
@@ -871,27 +870,27 @@ class SendTransaction extends Component {
 				const whiteListedUtxosBalance = this.state.whiteListedUtxosBalance;
 				const spendMaxAmount = this.state.spendMaxAmount; //Determines if the "Max" button is enabled.
 				const totalAmount = cryptoUnitAmount+fee; //Total amount the user needs to be able to spend.
-				
+
 				if (cryptoUnitAmount > 0 && whiteListedUtxosBalance > 0) {
 					//If the user has previously entered a larger balance than what is now available, toggle the "Max" button on.
 					if (totalAmount >= whiteListedUtxosBalance) {
 						if (spendMaxAmount) await this.onMaxPress();
 						this.onMaxPress();
 					}
-					
+
 					//Toggle the "Max" button off if it is enabled and the whitelisted balance is greater than the inputted value.
 					//This is to prevent the user from accidentally sending more than they intended.
 					if (spendMaxAmount && totalAmount <= whiteListedUtxosBalance) this.onMaxPress();
 				}
-				
+
 				//Toggle the "Max" button off if it is enabled and there's no whitelisted balance.
 				if (spendMaxAmount && whiteListedUtxosBalance === 0) this.onMaxPress();
 			}
-			
+
 			this.setState({ displayCoinControlModal: !this.state.displayCoinControlModal });
 		} catch (e) {}
 	};
-	
+
 	onUtxoPress = async ({ tx_hash = "", value = 0} = {}) => {
 		try {
 			if (this.state.whiteListedUtxos.includes(tx_hash)) {
@@ -914,7 +913,7 @@ class SendTransaction extends Component {
 			this.setState({cryptoBalance, fiatBalance});
 		} catch (e) {}
 	};
-	
+
 	getTheme = () => {
 		try {
 			return this.props.settings.darkMode ? themes["dark"] : themes["light"];
@@ -922,19 +921,19 @@ class SendTransaction extends Component {
 			return themes["light"];
 		}
 	};
-	
+
 	coinData = () => {
 		const { selectedCrypto } = this.props.wallet;
 		return getCoinData({ selectedCrypto, cryptoUnit: this.props.settings.cryptoUnit });
 	};
-	
+
 	getSelectedCurrency = () => {
 		try {
 			const selectedCurrency = this.props.wallet.selectedCurrency.toLowerCase();
 			return currencies[selectedCurrency];
 		} catch {return currencies["usd"];}
 	}
-	
+
 	shouldComponentUpdate(nextProps, nextState) {
 		try {return nextProps.transaction !== this.props.transaction || nextState !== this.state;} catch (e) {return false;}
 	}
@@ -1091,7 +1090,7 @@ class SendTransaction extends Component {
 							value={!this.state.cryptoBalance ? 0 : Number(this.props.transaction.fee) || Number(this.props.transaction.recommendedFee)}
 						/>
 					</View>
-					
+
 					{this.state.displayCoinControlButton &&
 					<TouchableOpacity
 						onPress={this.toggleCoinControlModal}
@@ -1121,7 +1120,7 @@ class SendTransaction extends Component {
 					</View>
 				</View>
 				<View style={{ height: "8%", backgroundColor: "transparent" }} />
-				
+
 				<DefaultModal
 					type="ScrollView"
 					isVisible={this.state.displayFeeEstimateModal}
@@ -1155,7 +1154,7 @@ class SendTransaction extends Component {
 						fiatSymbol={this.props.settings.fiatSymbol}
 					/>
 				</DefaultModal>
-				
+
 				<Modal
 					backdropColor={this.getTheme().PRIMARY}
 					deviceHeight={height*-1}
@@ -1164,7 +1163,7 @@ class SendTransaction extends Component {
 					isVisible={this.state.displayConfirmationModal}
 				>
 					<View type="PRIMARY" style={styles.modalContainer}>
-						
+
 						<View style={styles.modalContent}>
 							<View style={{ flex: 1 }}>
 								<Text style={[styles.boldModalText, { fontSize: 24, textAlign: "center", marginBottom: 20 }]}>
@@ -1188,13 +1187,13 @@ class SendTransaction extends Component {
 										</View>
 									</View>
 								</View>
-								
+
 								<View style={styles.modalMiddleContent}>
-									
+
 									<Text style={[styles.boldModalText, { fontSize: 24 }]}>Total:</Text>
 									<Text style={[styles.modalText, { fontSize: 20 }]}>{this.satsToUnit(Number(this.props.transaction.amount) + Number(cryptoFeeLabel))} {this.coinData().acronym}</Text>
 									<Text style={[styles.modalText, { fontSize: 20 }]}>{this.props.settings.fiatSymbol}{(Number(this.props.transaction.fiatAmount) + Number(fiatFeeLabel)).toFixed(2)}</Text>
-									
+
 									<Animated.View style={[styles.copiedContainer, { opacity: this.state.rawTxCopiedOpacity }]}>
 										<View style={styles.copied}>
 											<Text style={styles.copiedText}>RawTx Copied!</Text>
@@ -1203,9 +1202,9 @@ class SendTransaction extends Component {
 											</Text>
 										</View>
 									</Animated.View>
-								
+
 								</View>
-								
+
 								<View style={styles.modalBottomContainer}>
 									<View style={styles.modalBottomContent}>
 										<Button

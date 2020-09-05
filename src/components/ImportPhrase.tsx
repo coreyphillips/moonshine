@@ -2,11 +2,10 @@ import React, {useState, memo} from 'react';
 import {
 	StyleSheet,
 	View,
-	Animated,
-	Easing,
 	FlatList,
 	Keyboard
 } from 'react-native';
+import Animated, { Easing } from "react-native-reanimated";
 import PropTypes from "prop-types";
 import Camera from "./Camera";
 import XButton from "./XButton";

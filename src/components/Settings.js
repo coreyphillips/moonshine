@@ -3,15 +3,15 @@ import {
 	StyleSheet,
 	TouchableOpacity,
 	View,
-	Animated,
+	Animated as RNAnimated,
 	LayoutAnimation,
 	ScrollView,
 	Platform,
-	Easing,
 	Linking,
 	FlatList,
 	Keyboard
 } from 'react-native';
+import Animated, { Easing } from "react-native-reanimated";
 import PropTypes from "prop-types";
 import { systemWeights } from "react-native-typography";
 import DefaultModal from "./DefaultModal";
@@ -144,44 +144,44 @@ class Settings extends PureComponent {
 		this.state = {
 			displaySettings: true,
 			settingsOpacity: new Animated.Value(1),
-			
+
 			displayPin: false,
 			pinOpacity: new Animated.Value(0),
-			
+
 			displayBackupPhrase: false,
 			backupPhraseOpacity: new Animated.Value(0),
 			backupPhrase: "",
-			
+
 			displayImportPhrase: false,
 			importPhraseOpacity: new Animated.Value(0),
-			
+
 			displayBroadcastTransaction: false,
 			broadcastTransactionOpacity: new Animated.Value(0),
-			
+
 			displaySignMessage: false,
 			signMessageOpacity: new Animated.Value(0),
-			
+
 			displayVerifyMessage: false,
 			verifyMessageOpacity: new Animated.Value(0),
-			
+
 			displayElectrumOptions: false,
 			electrumOptionsOpacity: new Animated.Value(0),
-			
+
 			rescanningWallet: false,
 			connectingToElectrum: false,
-			
+
 			displayGeneralHelp: false,
 			displayWalletHelp: false,
-			
+
 			displayFiatModal: false,
-			
+
 			bip39PassphraseIsSet: false,
 			bip39Passphrase: "",
-			
+
 			walletName: ""
 		};
 	}
-	
+
 	async componentDidMount() {
 		//Attempt to determine if the bip39Passphrase is set
 		try {
@@ -204,11 +204,11 @@ class Settings extends PureComponent {
 			if (this.props.openSettingOnMount === "signMessage") this.toggleSignMessage({ display: true });
 		} catch (e) {}
 	}
-	
+
 	componentDidUpdate() {
 		if (Platform.OS === "ios") LayoutAnimation.easeInEaseOut();
 	}
-	
+
 	_displayOption({ value = "", key = "", currentValue = "", onPress = () => null, optionsLength = 1 } = {}) {
 		let width = 90/(optionsLength).toFixed(0);
 		width = width.toString();
@@ -225,7 +225,7 @@ class Settings extends PureComponent {
 			</TouchableOpacity>
 		);
 	}
-	
+
 	updateItems = (items = []) => {
 		return new Promise(async (resolve) => {
 			try {
@@ -233,23 +233,23 @@ class Settings extends PureComponent {
 				let itemsToHide = {};
 				let animations = [];
 				let onCompleteFuncs = [];
-				
+
 				await Promise.all(items.map(async ({ stateId = "", opacityId = "", display = false, duration = 400, onComplete = null } = {}) => {
 					try {
 						//Return if the desired value is already set for the given stateId
 						if (this.state[stateId] === display) return;
-						
+
 						//Push all onComplete functions into an array to call once the animation completes
 						try {if (typeof onComplete === "function") onCompleteFuncs.push(onComplete);} catch (e) {}
 						try {
-							
+
 							//Set the items to display and hide in the appropriate object.
 							if (display) {
 								itemsToDisplay = {...itemsToDisplay, [stateId]: display};
 							} else {
 								itemsToHide = {...itemsToHide, [stateId]: display};
 							}
-							
+
 							//Construct and push each animation to the animations array.
 							animations.push(
 								Animated.timing(
@@ -268,23 +268,23 @@ class Settings extends PureComponent {
 				//Display necessary items
 				if (Object.entries(itemsToDisplay).length !== 0 && itemsToDisplay.constructor === Object) this.setState(itemsToDisplay);
 				//Start Animations.
-				Animated.parallel(animations).start(async() => {
+				RNAnimated.parallel(animations).start(async() => {
 					//Perform any other action after the update has been completed.
 					//Hide necessary items
 					if (Object.entries(itemsToHide).length !== 0 && itemsToHide.constructor === Object) this.setState(itemsToHide);
-					
+
 					//Call all onComplete functions
 					onCompleteFuncs.map((onComplete) => {try {onComplete();} catch (e) {}});
 					resolve({ error: false });
 				});
-				
+
 			} catch (e) {
 				console.log(e);
 				resolve({ error: true, data: e });
 			}
 		});
 	};
-	
+
 	toggleTestnet = async () => {
 		try {
 			this.props.updateSettings({ testnet: !this.props.settings.testnet });
@@ -292,7 +292,7 @@ class Settings extends PureComponent {
 			console.log(e);
 		}
 	};
-	
+
 	toggleRBF = async () => {
 		try {
 			this.props.updateSettings({ rbf: !this.props.settings.rbf });
@@ -300,7 +300,7 @@ class Settings extends PureComponent {
 			console.log(e);
 		}
 	};
-	
+
 	toggleSendTransactionFallback = async () => {
 		try {
 			this.props.updateSettings({ sendTransactionFallback: !this.props.settings.sendTransactionFallback });
@@ -308,7 +308,7 @@ class Settings extends PureComponent {
 			console.log(e);
 		}
 	};
-	
+
 	toggleTheme = async () => {
 		try {
 			this.props.forceAppUpdate();
@@ -317,7 +317,7 @@ class Settings extends PureComponent {
 			this.props.updateSettings({ darkMode: true });
 		}
 	};
-	
+
 	togglePin = async () => {
 		try {
 			if (this.props.settings.pin) {
@@ -332,17 +332,17 @@ class Settings extends PureComponent {
 					{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false },
 				];
 				this.updateItems(items);
-				
+
 			}
 		} catch (e) {
 			console.log(e);
 		}
 	};
-	
+
 	toggleSetting = (setting = "") => {
 		this.props.updateSettings({ [setting]: !this.props.settings[setting] });
 	};
-	
+
 	onPinSuccess = () => {
 		try {
 			//Hide the PinPad View
@@ -356,7 +356,7 @@ class Settings extends PureComponent {
 			console.log(e);
 		}
 	};
-	
+
 	onBack = () => {
 		try {
 			//If the user cancels out of the PinPad view
@@ -370,7 +370,7 @@ class Settings extends PureComponent {
 					{ stateId: "displaySettings", opacityId: "settingsOpacity", display: true },
 				];
 				this.updateItems(items);
-				
+
 				//Set pin to false in settings.
 				this.props.updateSettings({ pin: false });
 				return;
@@ -437,11 +437,11 @@ class Settings extends PureComponent {
 				this.toggleBroadcastTransaction({ display: false });
 				return;
 			}
-			
+
 			this.props.onBack();
 		} catch (e) {}
 	};
-	
+
 	getBackupWalletValue = () => {
 		try {
 			const selectedWallet = this.props.wallet.selectedWallet;
@@ -458,7 +458,7 @@ class Settings extends PureComponent {
 			return "Wallet has not\nbeen backed up.";
 		}
 	};
-	
+
 	toggleBackupPhrase = async ({ selectedWallet = "", display = false }) => {
 		try {
 			if (!selectedWallet) return;
@@ -491,7 +491,7 @@ class Settings extends PureComponent {
 			console.log(e);
 		}
 	};
-	
+
 	toggleImportPhrase = async ({ display = false }) => {
 		try {
 			const items = [
@@ -500,16 +500,16 @@ class Settings extends PureComponent {
 			];
 			this.updateItems(items);
 		} catch (e) {
-		
+
 		}
 	};
-	
+
 	toggleFiatModal = async ({ display = undefined } = {}) => {
 		try {
 			this.setState({ displayFiatModal: display !== undefined ? display : !this.state.displayFiatModal });
 		} catch (e) {}
 	};
-	
+
 	toggleBroadcastTransaction = async ({ display = false }) => {
 		try {
 			const items = [
@@ -518,10 +518,10 @@ class Settings extends PureComponent {
 			];
 			this.updateItems(items);
 		} catch (e) {
-		
+
 		}
 	};
-	
+
 	toggleSignMessage = async ({ display = false }) => {
 		try {
 			//Prevent user from accessing this view if addresses are still being generated.
@@ -534,17 +534,17 @@ class Settings extends PureComponent {
 				alert("Currently generating addresses for signing, one moment please.");
 				return;
 			}
-			
+
 			const items = [
 				{ stateId: "displaySignMessage", opacityId: "signMessageOpacity", display },
 				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: !display },
 			];
 			this.updateItems(items);
 		} catch (e) {
-		
+
 		}
 	};
-	
+
 	toggleVerifyMessage = async ({ display = false }) => {
 		try {
 			const items = [
@@ -553,10 +553,10 @@ class Settings extends PureComponent {
 			];
 			this.updateItems(items);
 		} catch (e) {
-		
+
 		}
 	};
-	
+
 	toggleElectrumOptions = async ({ display = false }) => {
 		try {
 			const items = [
@@ -568,7 +568,7 @@ class Settings extends PureComponent {
 			console.log(e);
 		}
 	};
-	
+
 	_resetWalletForPassphrase = async () => {
 		try {
 			const { selectedWallet } = this.props.wallet;
@@ -588,7 +588,7 @@ class Settings extends PureComponent {
 			});
 		} catch (e) {}
 	};
-	
+
 	addWalletName = async () => {
 		try {
 			const walletName = this.state.walletName;
@@ -607,7 +607,7 @@ class Settings extends PureComponent {
 			});
 		} catch (e) {Keyboard.dismiss();}
 	};
-	
+
 	addBip39Passphrase = async () => {
 		try {
 			const passphrase = this.state.bip39Passphrase;
@@ -621,7 +621,7 @@ class Settings extends PureComponent {
 			this.rescanWallet();
 		} catch (e) {Keyboard.dismiss();}
 	};
-	
+
 	removeBip39Passphrase = async () => {
 		try {
 			const wallet = this.props.wallet.selectedWallet;
@@ -634,7 +634,7 @@ class Settings extends PureComponent {
 			console.log(e);
 		}
 	};
-	
+
 	updateKeyDerivationPath = async ({ keyDerivationPath = "84", rescanWallet = true } = {}) => {
 		try {
 			await this.updateWallet({ data: [{ key: "keyDerivationPath", value: keyDerivationPath }] });
@@ -643,7 +643,7 @@ class Settings extends PureComponent {
 			console.log(e);
 		}
 	};
-	
+
 	updateAddressType = async ({ addressType = "bech32", rescanWallet = true } = {}) => {
 		try {
 			let keyDerivationPath = "84";
@@ -673,12 +673,12 @@ class Settings extends PureComponent {
 			console.log(e);
 		}
 	};
-	
+
 	updateWallet = async ({ data = [{ key: "", value: "" }] } = {}) => {
 		try {
 			if (!data) return;
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
-			
+
 			let newData = {};
 			await Promise.all(data.map(({ key = undefined, value = undefined } = {}) => {
 					if (key && value) newData[key] = {...this.props.wallet.wallets[selectedWallet][key], [selectedCrypto]: value};
@@ -697,7 +697,7 @@ class Settings extends PureComponent {
 			console.log(e);
 		}
 	};
-	
+
 	reconnectToPeer = async () => {
 		try {
 			const selectedCrypto = this.props.wallet.selectedCrypto;
@@ -716,7 +716,7 @@ class Settings extends PureComponent {
 			console.log(e);
 		}
 	};
-	
+
 	rescanWallet = async () => {
 		try {
 			await this.setState({ rescanningWallet: true });
@@ -768,7 +768,7 @@ class Settings extends PureComponent {
 			console.log(e);
 		}
 	};
-	
+
 	getPeerInfo = () => {
 		try {
 			return { host: this.props.settings.currentPeer.host, port: this.props.settings.currentPeer.port };
@@ -776,7 +776,7 @@ class Settings extends PureComponent {
 			return { host: "No peer connected", port: "" };
 		}
 	};
-	
+
 	updateCryptoUnit = (cryptoUnit = "satoshi") => {
 		try {
 			this.props.updateSettings({ cryptoUnit });
@@ -784,7 +784,7 @@ class Settings extends PureComponent {
 			console.log(e);
 		}
 	};
-	
+
 	updateExchangeRateService = async ({ selectedService = "coingecko" } = {}) => {
 		try {
 			await this.props.updateSettings({ selectedService });
@@ -797,7 +797,7 @@ class Settings extends PureComponent {
 						[selectedCrypto]: exchangeRate.data
 					}
 				});
-				
+
 				try {
 					const utxos = this.props.wallet.wallets[selectedWallet].utxos[selectedCrypto] || [];
 					const blacklistedUtxos = this.props.wallet.wallets[selectedWallet].blacklistedUtxos[selectedCrypto];
@@ -808,7 +808,7 @@ class Settings extends PureComponent {
 			}
 		} catch {}
 	};
-	
+
 	getExchangeRateSourceUrl = ({ selectedService = "coingecko"} = {}) => {
 		try {
 			switch (selectedService) {
@@ -822,14 +822,14 @@ class Settings extends PureComponent {
 			return "?";
 		}
 	};
-	
+
 	getBackupPhrase = () => {
 		const backupPhrase = this.state.backupPhrase.split(" ");
 		let phrase = [];
 		backupPhrase.forEach((word, i) => phrase.push({ id: i+1, word: backupPhrase[i] }));
 		return phrase;
 	};
-	
+
 	getWalletName = () => {
 		try {
 			try { if (this.props.wallet.wallets[this.props.wallet.selectedWallet].name.trim() !== "") return this.props.wallet.wallets[this.props.wallet.selectedWallet].name; } catch (e) {}
@@ -838,18 +838,18 @@ class Settings extends PureComponent {
 			return "?";
 		}
 	};
-	
+
 	hasBackedUpWallet = () => {
 		try {
 			return this.props.wallet.wallets[this.props.wallet.selectedWallet].hasBackedUpWallet;
 		} catch {return false;}
 	};
-	
+
 	updateFiatCurrency = async (currency = "usd", rollbackAttempt = false) => {
 		try {
 			//In the event the service no longer offers this pair and we need to roll back
 			const previouslySelectedCurrency = this.props.wallet.selectedCurrency;
-			
+
 			const selectedCurrency = currency.toLowerCase();
 			const selectedCrypto = this.props.wallet.selectedCrypto;
 			const selectedService = this.props.settings.selectedService;
@@ -864,19 +864,19 @@ class Settings extends PureComponent {
 			this.toggleFiatModal({ display: false });
 		} catch {}
 	};
-	
+
 	requestHelp = () => {
 		try {
 			Linking.openURL("mailto:support@moonshinewallet.com?subject=Requesting Some Help").catch((e) => console.log(e));
 		} catch {}
 	};
-	
+
 	visitWebsite = () => {
 		try {
 			Linking.openURL("https://moonshinewallet.com").catch((e) => console.log(e));
 		} catch {}
 	};
-	
+
 	donate = async () => {
 		try {
 			const { selectedCrypto } = this.props.wallet;
@@ -886,7 +886,7 @@ class Settings extends PureComponent {
 			this.props.onSendPress({ address });
 		} catch {}
 	};
-	
+
 	getSignMessageData = () => {
 		try {
 			return this.props.settings.signMessage;
@@ -896,7 +896,7 @@ class Settings extends PureComponent {
 			return signMessage;
 		}
 	};
-	
+
 	getVerifyMessageData = () => {
 		try {
 			return this.props.settings.verifyMessage;
@@ -906,25 +906,25 @@ class Settings extends PureComponent {
 			return verifyMessage;
 		}
 	};
-	
+
 	getExchangeRateOptions = () => {
 		return [
 			{value: "Coingecko", onPress: () => this.updateExchangeRateService({ selectedService: "coingecko" })},
 			{value: "CoinCap", onPress: () => this.updateExchangeRateService({selectedService: "coincap"})}
 			];
 	};
-	
+
 	getSelectedCurrency = () => {
 		try {return currencies[this.props.wallet.selectedCurrency].name;} catch (e) {return "usd";}
 	};
-	
+
 	isDarkMode = () => {
 		try {
 			if (this.props.settings["darkMode"] === undefined) return false;
 			return this.props.settings["darkMode"];
 		} catch {return false;}
 	};
-	
+
 	render() {
 		const { selectedWallet, selectedCrypto } = this.props.wallet;
 		const coinTypePath = defaultWalletShape.coinTypePath[selectedCrypto];
@@ -937,24 +937,24 @@ class Settings extends PureComponent {
 		const cryptoLabel = capitalize(selectedCrypto);
 		return (
 			<View style={styles.container}>
-				
+
 				<Animated.View style={{ flex: 1, opacity: this.state.settingsOpacity }}>
 					<ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} keyboardShouldPersistTaps={"handled"} contentContainerStyle={{flexGrow:1}} style={{ flex: 1, paddingTop: 20 }}>
 						<TouchableOpacity activeOpacity={1} onPress={Keyboard.dismiss} style={styles.container}>
-							
+
 							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
 								<View style={[styles.header, { marginBottom: 5 }]}>
-									
+
 									<Text style={[styles.title, { color: colors.white, fontWeight: "bold" }]}>General Settings</Text>
-									
+
 									<TouchableOpacity onPress={() => this.setState({ displayGeneralHelp: true })} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
 										<MaterialCommunityIcons type="white" name={"help-circle-outline"} size={26} color={colors.white} />
 									</TouchableOpacity>
-								
+
 								</View>
 								<View style={{ height: 1.5, backgroundColor: colors.white, width: "80%" }} />
 							</View>
-							
+
 							{this.props.settings.biometricsIsSupported &&
 								<SettingSwitch setting="biometrics" value={this.props.settings["biometrics"]} title={`Enable ${this.props.settings.biometricTypeSupported}`} onPress={() => this.toggleSetting("biometrics")} />
 							}
@@ -963,7 +963,7 @@ class Settings extends PureComponent {
 							<SettingSwitch setting="testnet" value={this.props.settings["testnet"]} title="Enable Testnet" onPress={this.toggleTestnet} />
 							<SettingSwitch setting="rbf" value={this.props.settings["rbf"]} title="Enable RBF" onPress={this.toggleRBF} />
 							<SettingSwitch setting="sendTransactionFallback" value={this.props.settings["sendTransactionFallback"]} title="Send Transaction Fallback" onPress={this.toggleSendTransactionFallback} />
-							
+
 							<SettingGeneral
 								value={`Selected Fiat Currency:\n${this.getSelectedCurrency()}`}
 								col1Image={<Fontisto name="money-symbol" style={{ paddingVertical: 2 }} size={50} />}
@@ -971,7 +971,7 @@ class Settings extends PureComponent {
 								valueStyle={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
-							
+
 							<MultiOptionRow
 								title="Exchange Rate Source"
 								subTitle={this.getExchangeRateSourceUrl({ selectedService: this.props.settings.selectedService})}
@@ -979,7 +979,7 @@ class Settings extends PureComponent {
 								currentValue={this.props.settings.selectedService}
 								options={this.getExchangeRateOptions()}
 							/>
-							
+
 							<MultiOptionRow
 								title="Crypto Units"
 								currentValue={this.props.settings.cryptoUnit}
@@ -988,7 +988,7 @@ class Settings extends PureComponent {
 									{key: "satoshi", value: coinDataLabel.satoshi, onPress: () => this.updateCryptoUnit("satoshi") }
 								]}
 							/>
-							
+
 							<SettingGeneral
 								title=""
 								value="Import Mnemonic Phrase"
@@ -997,7 +997,7 @@ class Settings extends PureComponent {
 								col2Style={{flex: 1.2, alignItems: "center", justifyContent: "center", paddingRight: 10}}
 								valueStyle={{fontSize: 16, textAlign: "center", fontWeight: "bold"}}
 							/>
-							
+
 							<SettingGeneral
 								title=""
 								value="Electrum Options"
@@ -1006,21 +1006,21 @@ class Settings extends PureComponent {
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", paddingRight: 10 }}
 								valueStyle={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 							/>
-							
+
 							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
 								<View style={styles.header}>
-									
+
 									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{this.getWalletName()}</Text>
-									
+
 									<TouchableOpacity onPress={() => this.setState({ displayWalletHelp: true })} style={{ marginLeft: 10, alignItems: "center", justifyContent: "center" }}>
 										<MaterialCommunityIcons type="white" name={"help-circle-outline"} size={26} color={colors.white} />
 									</TouchableOpacity>
-								
+
 								</View>
 								<View style={[styles.header, { marginBottom: 5 }]}>
-									
+
 									<Text style={[styles.title, { color: colors.white, fontWeight: "bold", textAlign: "center" }]}>{`${cryptoLabel} Settings`}</Text>
-								
+
 								</View>
 								<View style={{ height: 1.5, backgroundColor: colors.white, width: "80%" }} />
 							</View>
@@ -1033,7 +1033,7 @@ class Settings extends PureComponent {
 								secureTextEntry={false}
 								submitText="Add Name"
 							/>
-							
+
 							<HeaderRow
 								header="Connected To:"
 								value={`${this.getPeerInfo().host}:${this.getPeerInfo().port}`}
@@ -1042,7 +1042,7 @@ class Settings extends PureComponent {
 								col1Style={{ flex: 0 }}
 								col2Style={{ flex: 1, alignItems: "center", justifyContent: "flex-start", paddingHorizontal: 10, marginTop: 5 }}
 							/>
-							
+
 							<MultiOptionRow
 								title="Address Type"
 								subTitle={`Path: m/${keyDerivationPath}'/${coinTypePath}'/0'/0/0`}
@@ -1054,7 +1054,7 @@ class Settings extends PureComponent {
 								]}
 								loading={this.state.rescanningWallet}
 							/>
-							
+
 							{/*
 							<MultiOptionRow
 								title="Key Derivation Path"
@@ -1069,7 +1069,7 @@ class Settings extends PureComponent {
 								loading={this.state.rescanningWallet}
 							/>
 							*/}
-							
+
 							{!this.state.bip39PassphraseIsSet &&
 							<TextInputRow
 								title="BIP39 Passphrase"
@@ -1079,7 +1079,7 @@ class Settings extends PureComponent {
 								onPress={this.addBip39Passphrase}
 								submitText="Add Passphrase"
 							/>}
-							
+
 							{this.state.bip39PassphraseIsSet &&
 							<MultiOptionRow
 								title="BIP39 Passphrase"
@@ -1089,7 +1089,7 @@ class Settings extends PureComponent {
 									{value: "Remove Passphrase", onPress: this.removeBip39Passphrase }
 								]}
 							/>}
-							
+
 							<MultiOptionRow
 								title="Sign & Verify Messages"
 								currentValue={addressType}
@@ -1098,7 +1098,7 @@ class Settings extends PureComponent {
 									{value: "Verify", onPress: () => this.toggleVerifyMessage({ display: true }) }
 								]}
 							/>
-							
+
 							<SettingGeneral
 								title=""
 								value="Broadcast Transaction"
@@ -1107,7 +1107,7 @@ class Settings extends PureComponent {
 								col2Style={{flex: 1.2, alignItems: "center", justifyContent: "center", paddingRight: 10}}
 								valueStyle={{fontSize: 16, textAlign: "center", fontWeight: "bold"}}
 							/>
-							
+
 							<SettingGeneral
 								title="Backup Wallet"
 								value={this.getBackupWalletValue()}
@@ -1117,7 +1117,7 @@ class Settings extends PureComponent {
 								warning={!this.hasBackedUpWallet()}
 								valueStyle={{ fontSize: 16, textAlign: "center", fontWeight: this.hasBackedUpWallet() ? "normal" : "bold" }}
 							/>
-							
+
 							<SettingGeneral
 								value={`Rescan ${this.getWalletName()}\n${cryptoLabel} Wallet`}
 								col1Loading={this.state.rescanningWallet}
@@ -1126,14 +1126,14 @@ class Settings extends PureComponent {
 								valueStyle={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
-							
+
 							<View style={{ alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
 								<View style={[styles.header, { marginBottom: 5 }]}>
 									<Text style={[styles.title, { color: colors.white, fontWeight: "bold" }]}>Support</Text>
 								</View>
 								<View style={{ height: 1.5, backgroundColor: colors.white, width: "80%" }} />
 							</View>
-							
+
 							<SettingGeneral
 								value={`Need Some Help?\nsupport@moonshinewallet.com`}
 								col1Image={<FontAwesome name="support" size={50} />}
@@ -1141,7 +1141,7 @@ class Settings extends PureComponent {
 								valueStyle={{ fontSize: 14, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>
-							
+
 							<SettingGeneral
 								value={'Visit The Website\nmoonshinewallet.com'}
 								col1Image={<MaterialCommunityIcons name="web" size={50} />}
@@ -1158,21 +1158,21 @@ class Settings extends PureComponent {
 								valueStyle={{ fontSize: 16, textAlign: "center", fontWeight: "bold" }}
 								col2Style={{ flex: 1.2, alignItems: "center", justifyContent: "center", textAlign: "center" }}
 							/>}
-							
+
 							<Text style={[styles.title, { color: colors.white, textAlign: "center" }]}>{`Version: ${version}`}</Text>
 
 							<View style={{ paddingVertical: 70 }} />
 						</TouchableOpacity>
-					
+
 					</ScrollView>
 				</Animated.View>
-				
+
 				{this.state.displayPin &&
 					<Animated.View style={[styles.settingContainer, { opacity: this.state.pinOpacity }]}>
 						<PinPad onSuccess={this.onPinSuccess} pinSetup={true} updateSettings={this.props.updateSettings} />
 					</Animated.View>
 				}
-				
+
 				{this.state.displayBackupPhrase &&
 				<Animated.View style={[styles.settingContainer, { opacity: this.state.backupPhraseOpacity }]}>
 					<Text style={[styles.headerText, { position: "absolute", top: 20, left: 0, right: 0 }]}>{this.getWalletName()}</Text>
@@ -1182,13 +1182,13 @@ class Settings extends PureComponent {
 					/>
 				</Animated.View>
 				}
-				
+
 				{this.state.displayImportPhrase &&
 				<Animated.View style={[styles.settingContainer, { opacity: this.state.importPhraseOpacity, zIndex: 500 }]}>
 					<ImportPhrase onBack={this.onBack} createNewWallet={this.props.createNewWallet} />
 				</Animated.View>
 				}
-				
+
 				{this.state.displayBroadcastTransaction &&
 				<Animated.View style={[styles.settingContainer, { opacity: this.state.broadcastTransactionOpacity, zIndex: 500 }]}>
 					<BroadcastTransaction
@@ -1200,7 +1200,7 @@ class Settings extends PureComponent {
 					/>
 				</Animated.View>
 				}
-				
+
 				{this.state.displaySignMessage &&
 				<Animated.View style={[styles.settingContainer, { opacity: this.state.signMessageOpacity, zIndex: 500 }]}>
 					<SignMessage
@@ -1215,7 +1215,7 @@ class Settings extends PureComponent {
 					/>
 				</Animated.View>
 				}
-				
+
 				{this.state.displayVerifyMessage &&
 				<Animated.View style={[styles.settingContainer, { opacity: this.state.verifyMessageOpacity, zIndex: 500 }]}>
 					<VerifyMessage
@@ -1226,18 +1226,18 @@ class Settings extends PureComponent {
 					/>
 				</Animated.View>
 				}
-				
+
 				{this.state.displayElectrumOptions &&
 				<Animated.View style={[styles.settingContainer, { opacity: this.state.electrumOptionsOpacity, zIndex: 500 }]}>
 					<ElectrumOptions onBack={this.onBack} />
 				</Animated.View>
 				}
-				
+
 				{!this.state.displayImportPhrase &&
 				<Animated.View style={styles.xButton}>
 					<XButton style={{ borderColor: "transparent", zIndex: 1000 }} onPress={this.onBack} />
 				</Animated.View>}
-				
+
 				<DefaultModal
 					isVisible={this.state.displayGeneralHelp}
 					onClose={() => this.setState({ displayGeneralHelp: false })}
@@ -1255,7 +1255,7 @@ class Settings extends PureComponent {
 					))}
 					<View style={{ paddingVertical: "40%" }} />
 				</DefaultModal>
-				
+
 				<DefaultModal
 					isVisible={this.state.displayWalletHelp}
 					onClose={() => this.setState({ displayWalletHelp: false })}
@@ -1275,7 +1275,7 @@ class Settings extends PureComponent {
 					</View>}
 					<View style={{ paddingVertical: "40%" }} />
 				</DefaultModal>
-				
+
 				<DefaultModal
 					isVisible={this.state.displayFiatModal}
 					onClose={() => this.toggleFiatModal({ display: false })}
@@ -1300,7 +1300,7 @@ class Settings extends PureComponent {
 					/>
 					<View style={{ paddingVertical: "40%" }} />
 				</DefaultModal>
-			
+
 			</View>
 		);
 	}
