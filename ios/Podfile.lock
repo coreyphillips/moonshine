@@ -324,6 +324,8 @@ PODS:
     - React
   - RNCAsyncStorage (1.12.0):
     - React
+  - RNCClipboard (1.2.3):
+    - React
   - RNKeychain (6.2.0):
     - React
   - RNReactNativeHapticFeedback (1.10.0):
@@ -398,6 +400,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - RNBootSplash (from `../node_modules/react-native-bootsplash`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-community/async-storage`)"
+  - "RNCClipboard (from `../node_modules/@react-native-community/clipboard`)"
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -494,6 +497,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-bootsplash"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-community/async-storage"
+  RNCClipboard:
+    :path: "../node_modules/@react-native-community/clipboard"
   RNKeychain:
     :path: "../node_modules/react-native-keychain"
   RNReactNativeHapticFeedback:
@@ -557,6 +562,7 @@ SPEC CHECKSUMS:
   ReactCommon: a0a1edbebcac5e91338371b72ffc66aa822792ce
   RNBootSplash: b3836aa90c5bec690c6cd3c9ab355fcf98d0fe1d
   RNCAsyncStorage: 2a692bcb9b69b76a2f1a95f33db057129700af64
+  RNCClipboard: 48eaf27bea3de7c9a265529725434268d47a2ee9
   RNKeychain: b8e0711b959a19c5b057d1e970d3c83d159b6da5
   RNReactNativeHapticFeedback: 22c5ecf474428766c6b148f96f2ff6155cd7225e
   RNReanimated: dd8c286ab5dd4ba36d3a7fef8bff7e08711b5476

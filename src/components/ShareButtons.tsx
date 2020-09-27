@@ -2,13 +2,14 @@ import React, {useState, memo} from "react";
 import {
     StyleSheet,
     Animated,
-    Clipboard, Share,
+    Share,
     Easing
 } from "react-native";
 import PropTypes from "prop-types";
 import {systemWeights} from "react-native-typography";
 import Button from "./Button";
 import {Text, View, CopiedLinearGradient} from "../styles/components";
+import Clipboard from "@react-native-community/clipboard";
 
 const {
     Constants: {

@@ -24,6 +24,7 @@
   "dependencies": {
     "@react-native-community/async-storage": "^1.11.0",
     "@react-native-community/blur": "^3.6.0",
+    "@react-native-community/clipboard": "^1.2.3",
     "@react-native-community/netinfo": "^5.9.6",
     "@react-native-community/slider": "^3.0.3",
     "assert": "^2.0.0",

@@ -3,7 +3,6 @@ import {
 	StyleSheet,
 	TouchableOpacity,
 	Animated,
-	Clipboard,
 	LayoutAnimation,
 	Dimensions,
 	Platform,
@@ -16,6 +15,7 @@ import PropTypes from "prop-types";
 import Slider from "@react-native-community/slider";
 import { systemWeights } from "react-native-typography";
 import Modal from "react-native-modal";
+import Clipboard from "@react-native-community/clipboard";
 
 import Header from "./Header";
 import Button from "./Button";
