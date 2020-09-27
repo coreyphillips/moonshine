@@ -476,7 +476,7 @@ const getAddressScriptHashesHistory = async ({ scriptHashes = [], id = "", metho
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const timeout = getTimeout(scriptHashes);
+		const timeout = getTimeout({ arr: scriptHashes });
 		const { error, data } = await promiseTimeout(timeout, api.mainClient[api.coin].blockchainScripthashes_getHistory(scriptHashes));
 		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
@@ -520,7 +520,7 @@ const getAddressScriptHashesMempool = async ({ scriptHashes = [], id = "", metho
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const timeout = getTimeout(scriptHashes);
+		const timeout = getTimeout({ arr: scriptHashes });
 		const { error, data } = await promiseTimeout(timeout, api.mainClient[api.coin].blockchainScripthashes_getMempool(scriptHashes));
 		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
@@ -601,7 +601,7 @@ const getAddressScriptHashesBalance = async ({ scriptHashes = [], id = "", metho
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const timeout = getTimeout(scriptHashes);
+		const timeout = getTimeout({ arr: scriptHashes });
 		const { error, data } = await promiseTimeout(timeout, api.mainClient[api.coin].blockchainScripthashes_getBalance(scriptHashes));
 		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
@@ -682,7 +682,7 @@ const listUnspentAddressScriptHashes = async ({ scriptHashes = [], id = "", meth
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const timeout = getTimeout(scriptHashes);
+		const timeout = getTimeout({ arr: scriptHashes });
 		const { error, data } = await promiseTimeout(timeout, api.mainClient[coin].blockchainScripthashes_listunspent(scriptHashes));
 		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
@@ -865,10 +865,10 @@ const getTransaction = async ({ txHash = "", id = "", method = "getTransaction",
 	}
 };
 
-const getTimeout = (arr = []) => {
-	const timeout = 3000;
+const getTimeout = ({ arr = undefined, timeout = 3000 } = {}) => {
 	try {
-		return arr.length > 1 ? (timeout/2) * arr.length : timeout;
+		if (arr && Array.isArray(arr)) return arr.length * timeout;
+		return timeout;
 	} catch {
 		return timeout;
 	}
@@ -878,7 +878,7 @@ const getTransactions = async ({ id = "", txHashes = [], coin = "", method = "ge
 	try {
 		if (coin != api.coin) return;
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		const timeout = getTimeout(txHashes);
+		const timeout = getTimeout({ arr: txHashes });
 		const { error, data } = await promiseTimeout(timeout, api.mainClient[coin].blockchainTransactions_get(txHashes, true));
 		rn_bridge.channel.send(JSON.stringify({ id, error, method, data, coin }));
 	} catch (e) {
