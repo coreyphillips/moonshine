@@ -1,5 +1,5 @@
 import React, {memo, useState} from 'react';
-import {StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Animated, StyleSheet, TouchableOpacity, View, Easing} from 'react-native';
 import PropTypes from "prop-types";
 import XButton from "./XButton";
 import Button from "./Button";
@@ -7,7 +7,7 @@ import ShareButtons from "./ShareButtons";
 import {systemWeights} from "react-native-typography";
 import DefaultModal from "./DefaultModal";
 import { Text, TextInput } from "../styles/components";
-import Animated, { Easing } from "react-native-reanimated";
+
 const {
 	Constants: {
 		colors

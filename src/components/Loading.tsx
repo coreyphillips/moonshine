@@ -1,11 +1,11 @@
 import React, {useEffect, memo} from "react";
-import {Image, StyleSheet, Text, View, LayoutAnimation, Platform} from "react-native";
+import {Animated, Image, StyleSheet, Text, View, LayoutAnimation, Platform} from "react-native";
 import PropTypes from "prop-types";
 import ProgressBar from "./ProgressBar";
 import { systemWeights } from "react-native-typography";
 import EvilIcon from "react-native-vector-icons/EvilIcons";
 import LottieView from "lottie-react-native";
-import Animated from "react-native-reanimated";
+
 const {
 	Constants: {
 		colors

@@ -911,7 +911,7 @@ class Settings extends PureComponent {
 		return [
 			{value: "Coingecko", onPress: () => this.updateExchangeRateService({ selectedService: "coingecko" })},
 			{value: "CoinCap", onPress: () => this.updateExchangeRateService({selectedService: "coincap"})}
-			];
+		];
 	};
 
 	getSelectedCurrency = () => {

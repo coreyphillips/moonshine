@@ -9,7 +9,7 @@ import { View, ScrollView } from "../styles/components";
 
 interface DefaultModalComponent {
 	isVisible: boolean,
-	onClose: () => void,
+	onClose?: () => void,
 	style?: object,
 	contentStyle?: object,
 	type?: string,

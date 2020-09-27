@@ -2,15 +2,16 @@ import React, { Component } from "react";
 import {
 	StyleSheet,
 	TouchableOpacity,
+	Animated,
 	Clipboard,
 	LayoutAnimation,
 	Dimensions,
 	Platform,
 	InteractionManager,
 	Keyboard,
+	Easing,
 	BackHandler
 } from "react-native";
-import Animated, { Easing } from "react-native-reanimated";
 import PropTypes from "prop-types";
 import Slider from "@react-native-community/slider";
 import { systemWeights } from "react-native-typography";
@@ -229,8 +230,8 @@ class SendTransaction extends Component {
 
 	getFeesToDisplay = (exchangeRate = 0) => {
 		/*
-		Always cap the users fee slider to 4x what the suggested fee is as long as their (balance-amount sending) is greater than 4x the suggested fee.
-		Otherwise cap the fee to what the user has remaining of their balance minus the amount they are sending.
+		 Always cap the users fee slider to 4x what the suggested fee is as long as their (balance-amount sending) is greater than 4x the suggested fee.
+		 Otherwise cap the fee to what the user has remaining of their balance minus the amount they are sending.
 		 */
 		try {
 			//Return 0 if no exchange rate was given.
@@ -771,9 +772,9 @@ class SendTransaction extends Component {
 					this.updateConfirmationModal({ display: false });
 					await pauseExecution(1000);
 					/*
-					Since we have a listener setup for our change address
-					we only need to prompt a refresh when sending the max amount.
-					*/
+					 Since we have a listener setup for our change address
+					 we only need to prompt a refresh when sending the max amount.
+					 */
 					if (this.state.spendMaxAmount) this.props.refreshWallet({ ignoreLoading: true, reconnectToElectrum: false });
 				});
 			}

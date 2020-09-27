@@ -1,26 +1,6 @@
 const rn_bridge = require("rn-bridge");
 const ElectrumClient = require("electrum-client");
-let api = {
-	coin: "bitcoin",
-	mainClient: {
-		bitcoin: false,
-		litecoin: false,
-		bitcoinTestnet: false,
-		litecoinTestnet: false
-	},
-	peer: {
-		bitcoin: {},
-		litecoin: {},
-		bitcoinTestnet: {},
-		litecoinTestnet: {}
-	},
-	peers: {
-		bitcoin: [],
-		litecoin: [],
-		bitcoinTestnet: [],
-		litecoinTestnet: []
-	}
-}
+const api = require("./api");
 
 const getDefaultPeers = (coin, protocol) => {
 	return require("./peers.json")[coin].map(peer => {
@@ -306,15 +286,10 @@ const pingServer = async ({ id = Math.random() } = {}) => {
 	}));
 	try {
 		if (api.mainClient[api.coin] === false) await connectToRandomPeer(api.coin, api.peers[api.coin]);
-		let pingResponse = { error: true, data: "" };
 		const { error, data } = await promiseTimeout(getTimeout(), api.mainClient[api.coin].server_ping());
-		if (!pingResponse.error) {
-			rn_bridge.channel.send(JSON.stringify({ id, error, method: "pingServer", data }));
-		} else {
-			failure();
-		}
+		rn_bridge.channel.send(JSON.stringify({ id, error, method: "pingServer", data }));
 	} catch (e) {
-		failure(e);
+		rn_bridge.channel.send(JSON.stringify({ id, error: true, method: "pingServer", data: e }));
 	}
 };
 

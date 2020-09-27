@@ -2,12 +2,13 @@ import React, { PureComponent } from "react";
 import {
 	StyleSheet,
 	View,
+	Animated,
 	LayoutAnimation,
 	Dimensions,
 	Platform,
-	InteractionManager
+	InteractionManager,
+	Easing
 } from "react-native";
-import Animated, { Easing } from "react-native-reanimated";
 import PropTypes from "prop-types";
 import Slider from "@react-native-community/slider";
 import { systemWeights } from "react-native-typography";
@@ -424,12 +425,12 @@ class SendTransaction extends PureComponent {
 				);
 
 				/*
-				console.log("Logging Address Balances...");
-				console.log(`${bech32Address}: ${bech32Balance}`);
-				console.log(`${p2shAddress}: ${p2shBalance}`);
-				console.log(`${p2pkhAddress}: ${p2pkhBalance}`);
-				console.log(`Total Balance: ${balance}`);
-				*/
+				 console.log("Logging Address Balances...");
+				 console.log(`${bech32Address}: ${bech32Balance}`);
+				 console.log(`${p2shAddress}: ${p2shBalance}`);
+				 console.log(`${p2pkhAddress}: ${p2pkhBalance}`);
+				 console.log(`Total Balance: ${balance}`);
+				 */
 				this.setState({ loadingMessage: `Balance Summary:\n\nBech32 Balance: ${bech32Balance}\nSegwit Balance: ${p2shBalance}\nLegacy Balance: ${p2pkhBalance}`, loadingProgress: 0.7 });
 
 				//Fetch the utxos for each address
@@ -776,8 +777,8 @@ class SendTransaction extends PureComponent {
 
 	getFeesToDisplay = (exchangeRate = 0) => {
 		/*
-		Always cap the users fee slider to 4x what the suggested fee is as long as their (balance-amount sending) is greater than 4x the suggested fee.
-		Otherwise cap the fee to what the user has remaining of their balance minus the amount they are sending.
+		 Always cap the users fee slider to 4x what the suggested fee is as long as their (balance-amount sending) is greater than 4x the suggested fee.
+		 Otherwise cap the fee to what the user has remaining of their balance minus the amount they are sending.
 		 */
 		try {
 			//Return 0 if no exchange rate was given.
@@ -921,13 +922,13 @@ class SendTransaction extends PureComponent {
 						</View>
 						<View style={styles.sliderRow}>
 							<Slider
-							style={styles.slider}
-							onValueChange={(fee) => this.updateFee(parseInt(fee))}
-							thumbTintColor={colors.white}
-							minimumTrackTintColor={colors.lightPurple}
-							maximumValue={this.state.maximumFee}
-							minimumValue={1}
-							value={Number(this.state.fee) || Number(this.state.recommendedFee)}
+								style={styles.slider}
+								onValueChange={(fee) => this.updateFee(parseInt(fee))}
+								thumbTintColor={colors.white}
+								minimumTrackTintColor={colors.lightPurple}
+								maximumValue={this.state.maximumFee}
+								minimumValue={1}
+								value={Number(this.state.fee) || Number(this.state.recommendedFee)}
 							/>
 						</View>
 

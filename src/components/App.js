@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import {
 	View,
-	Animated as RNAnimated,
+	Animated,
 	AppState,
 	BackHandler,
 	Dimensions,
@@ -15,9 +15,9 @@ import {
 	StyleSheet,
 	TouchableOpacity,
 	TouchableWithoutFeedback,
+	Easing,
 	Linking,
 } from "react-native";
-import Animated, { Easing } from "react-native-reanimated";
 import { ThemeProvider } from "styled-components/native";
 import { LinearGradient, Text } from "../styles/components";
 import { themes } from "../styles/themes";
@@ -155,7 +155,7 @@ export default class App extends Component {
 		 Addr: bc1qcgt450ctz7c0zpgzq0wmua3je7mmpzzed9wyfg
 		 Priv: L323HBXNkhn4ogPvmMZBa5fFVE7BjL6f5osyXYxmVsUjNoBvYAHG
 		 Update: Congrats to whoever managed to find and sweep this key! Thank you for taking the time to check out my code, you are awesome :-)
-		*/
+		 */
 		//Only used to pass as a prop to SweepPrivateKey when sweeping a private key.
 		privateKey: "",
 
@@ -1046,7 +1046,7 @@ export default class App extends Component {
 	updateFlex = ({ upperContentFlex = 1, lowerContentFlex = 1, duration = 250 } = {}) => {
 		return new Promise(async (resolve) => {
 			try {
-				RNAnimated.parallel([
+				Animated.parallel([
 					Animated.timing(
 						this.state.upperContentFlex,
 						{
@@ -1130,7 +1130,7 @@ export default class App extends Component {
 				if (Object.entries(itemsToDisplay).length !== 0 && itemsToDisplay.constructor === Object) this.setState(itemsToDisplay);
 
 				//Start Animations.
-				RNAnimated.parallel(animations).start(async () => {
+				Animated.parallel(animations).start(async () => {
 					//Perform any other action after the update has been completed.
 
 					//Hide necessary items
@@ -1194,7 +1194,12 @@ export default class App extends Component {
 				{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: false, duration: 250 },
 				{ stateId: "displayCamera", opacityId: "cameraOpacity", display: false },
 				{ stateId: "displayPriceHeader", opacityId: "priceHeaderOpacity", display: false, duration: 250 },
-				{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: false, duration: 200 },
+				{
+					stateId: "displayTransactionList",
+					opacityId: "transactionListOpacity",
+					display: false,
+					duration: 200,
+				},
 				{ stateId: "displayXButton", opacityId: "xButtonOpacity", display: true },
 				{ stateId: "displayTextInput", opacityId: "textInputOpacity", display: true, duration: 600 },
 				{ stateId: "displaySettings", opacityId: "settingsOpacity", display: false },
@@ -1889,14 +1894,20 @@ export default class App extends Component {
 			<ThemeProvider theme={this.getTheme()}>
 				<SafeAreaView style={[styles.container, { backgroundColor: this.getTheme().PRIMARY_DARK }]}>
 					<SafeAreaView style={styles.container}>
-						<StatusBar backgroundColor={this.getTheme().PRIMARY_DARK} barStyle="light-content"
-								   animated={true}/>
+						<StatusBar
+							backgroundColor={this.getTheme().PRIMARY_DARK}
+							barStyle="light-content"
+							animated={true}
+						/>
 						<Animated.View style={[styles.upperContent, { flex: this.state.upperContentFlex }]}>
 							<LinearGradient style={styles.linearGradient} start={{ x: 0.0, y: 0.0 }}
 											end={{ x: 1.0, y: 1.0 }}>
 
-								<TouchableWithoutFeedback style={{ flex: 1 }} activeOpacity={1}
-														  onPress={this.dismissKeyboard}>
+								<TouchableWithoutFeedback
+									style={{ flex: 1 }}
+									activeOpacity={1}
+									onPress={this.dismissKeyboard}
+								>
 									<View style={{ flex: 1 }}>
 										{this.state.displayPriceHeader &&
 										<Animated.View style={[styles.settingsContainer, {
@@ -1913,7 +1924,7 @@ export default class App extends Component {
 												}}
 												onPress={this.onSettingsPress}
 											>
-												<Ionicons name={"ios-cog"} size={30} color={colors.white}/>
+												<Ionicons name={"ios-cog"} size={30} color={colors.white} />
 											</TouchableOpacity>
 										</Animated.View>}
 
@@ -2126,7 +2137,7 @@ export default class App extends Component {
 							type="ScrollView"
 							style={styles.modal}
 						>
-							<Welcome onClose={this._closeWelcomeModal}/>
+							<Welcome onClose={this._closeWelcomeModal} />
 						</DefaultModal>
 
 						<DefaultModal
@@ -2152,17 +2163,19 @@ export default class App extends Component {
 						>
 							<View style={styles.centerContent}>
 								<Text style={styles.boldText}>Do you want to login to:</Text>
-								<Text style={[styles.text, {
-									marginTop: 10,
-									color: colors.purple,
-								}]}>{this.state.bitidData["host"]}</Text>
+								<Text
+									style={[styles.text, {
+										marginTop: 10,
+										color: colors.purple
+									}]}
+								>
+									{this.state.bitidData["host"]}
+								</Text>
 							</View>
 							<View style={[styles.centerContent, { flexDirection: "row" }]}>
-								<Button textStyle={styles.text} gradient={true} style={styles.button} text="Cancel"
-										onPress={this._closeBitidModal}/>
-								<View style={{ marginHorizontal: 10 }}/>
-								<Button textStyle={styles.text} gradient={true} style={styles.button} text="Login"
-										onPress={this._loginWithBitid}/>
+								<Button textStyle={styles.text} gradient={true} style={styles.button} text="Cancel" onPress={this._closeBitidModal} />
+								<View style={{ marginHorizontal: 10 }} />
+								<Button textStyle={styles.text} gradient={true} style={styles.button} text="Login" onPress={this._loginWithBitid} />
 							</View>
 						</DefaultModal>
 
