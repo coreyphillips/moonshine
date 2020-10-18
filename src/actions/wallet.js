@@ -470,21 +470,17 @@ const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAdd
 		if (isConnected === false) return failure("Offline");
 		
 		try {
-			//Make sure to dispatch and save new addresses if there are no addresses initially.
-			let addNewAddresses = false;
 			//Create Addresses if none exist
 			if (!addresses.length) {
 				//Generate receiving and change addresses.
 				const newAddresses = await generateAddresses({ addressAmount: 5, changeAddressAmount: 0, addressIndex: 0, selectedCrypto, wallet, keyDerivationPath, addressType });
 				if (!newAddresses.error) addresses = newAddresses.data.addresses;
-				addNewAddresses = true;
 			}
 			//Create Change Addresses if none exist
 			if (!changeAddresses.length) {
 				//Generate receiving and change addresses.
 				const newAddresses = await generateAddresses({ addressAmount: 0, changeAddressAmount: 5, addressIndex: 0, selectedCrypto, wallet, keyDerivationPath, addressType });
 				if (!newAddresses.error) changeAddresses = newAddresses.data.changeAddresses;
-				addNewAddresses = true;
 			}
 			
 			let allAddresses = addresses.slice(addressIndex, addresses.length);
@@ -532,13 +528,8 @@ const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAdd
 					changeAddresses = changeAddresses.concat(newChangeAddresses.data.changeAddresses);
 				}
 				
-				if (foundLastUsedAddress && foundLastUsedChangeAddress) {
-					i = 10;
-					break;
-				}
-			}
-			
-			if (isConnected && (allTransactions.length || addNewAddresses)) {
+				//Ensure that our progress is saved as we go.
+				//This is especially important for larger imports that may be interrupted.
 				const payload = {
 					wallet,
 					selectedCrypto,
@@ -553,10 +544,23 @@ const getNextAvailableAddress = ({ wallet = "wallet0", addresses = [], changeAdd
 					type: actions.UPDATE_NEXT_AVAILABLE_ADDRESS,
 					payload
 				});
-				resolve({error: false, data: payload});
-				return;
+				
+				if (foundLastUsedAddress && foundLastUsedChangeAddress) {
+					i = 10;
+					break;
+				}
 			}
-			resolve({error: false, data: {}});
+			
+			const data = {
+				wallet,
+				selectedCrypto,
+				transactions: allTransactions,
+				addressIndex,
+				changeAddressIndex,
+				addresses,
+				changeAddresses
+			};
+			resolve({ error: false, data });
 		} catch (e) {
 			console.log(e);
 			failure(e);
