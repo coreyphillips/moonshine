@@ -602,9 +602,9 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 						const addressPath = `m/${keyDerivationPath}'/${coinTypePath}'/0'/0/${i + addressIndex}`;
 						const addressKeypair = root.derivePath(addressPath);
 						const address = await getAddress(addressKeypair, network, addressType);
-						//console.log(`Log: Created address ${i + addressIndex}: ${address}`);
-						addresses.push({ address, path: addressPath });
-						return {address, path: addressPath};
+						const scriptHash = getScriptHash(address, network);
+						addresses.push({ address, path: addressPath, scriptHash });
+						return {address, path: addressPath, scriptHash};
 					} catch (e) {}
 				}),
 				changeAddressArray.map(async (item, i) => {
@@ -612,8 +612,9 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 						const changeAddressPath = `m/${keyDerivationPath}'/${coinTypePath}'/0'/1/${i + changeAddressIndex}`;
 						const changeAddressKeypair = root.derivePath(changeAddressPath);
 						const address = await getAddress(changeAddressKeypair, network, addressType);
-						changeAddresses.push({ address, path: changeAddressPath });
-						return {address, path: changeAddressPath};
+						const scriptHash = getScriptHash(address, network);
+						changeAddresses.push({ address, path: changeAddressPath, scriptHash });
+						return {address, path: changeAddressPath, scriptHash};
 					} catch (e) {}
 				})
 			);
@@ -1085,6 +1086,13 @@ const getByteCount = (inputs, outputs, message = "") => {
 	} catch (e) { return 256; }
 };
 
+const getScriptHash = (address = "", network = networks["bitcoin"]) => {
+	const script = bitcoin.address.toOutputScript(address, network);
+	let hash = bitcoin.crypto.sha256(script);
+	const reversedHash = new Buffer(hash.reverse());
+	return reversedHash.toString("hex");
+};
+
 module.exports = {
 	getItem,
 	setItem,
@@ -1133,5 +1141,6 @@ module.exports = {
 	fiatToCrypto,
 	satsToBtc,
 	getLastWordInString,
-	getByteCount
+	getByteCount,
+	getScriptHash
 };
