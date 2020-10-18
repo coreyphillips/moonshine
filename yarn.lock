@@ -3419,6 +3419,10 @@ ee-first@1.1.1:
   resolved "https://registry.yarnpkg.com/ee-first/-/ee-first-1.1.1.tgz#590c61156b0ae2f4f0255732a158b266bc56b21d"
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
+"electrum-client@https://github.com/coreyphillips/node-electrum-client":
+  version "0.0.6"
+  resolved "https://github.com/coreyphillips/node-electrum-client#627511a91a85933ad8a6b0a16333f918a5be26c8"
+
 elliptic@^6.4.0, elliptic@^6.5.2, elliptic@^6.5.3:
   version "6.5.3"
   resolved "https://registry.yarnpkg.com/elliptic/-/elliptic-6.5.3.tgz#cb59eb2efdaf73a0bd78ccd7015a62ad6e0f93d6"
