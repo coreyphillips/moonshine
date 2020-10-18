@@ -2425,9 +2425,10 @@ bitcoinjs-lib@^5.1.10:
     varuint-bitcoin "^1.0.4"
     wif "^2.0.1"
 
-"bitcoinjs-message@https://github.com/coreyphillips/bitcoinjs-message":
-  version "2.1.0"
-  resolved "https://github.com/coreyphillips/bitcoinjs-message#0e450f824d88449710d41dac86fef748c0dbf474"
+bitcoinjs-message@^2.1.3:
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/bitcoinjs-message/-/bitcoinjs-message-2.1.3.tgz#1f9ee333808082d5cfedc875f87d1163f3f3b040"
+  integrity sha512-WKxkDJF7skE4yFWIqdAC2hESlyaf5TQakPGvNPp91borRETRAyUes1+p0qS264+gMt6hFsx5WX7ifFKdKdlzGg==
   dependencies:
     bech32 "^1.1.3"
     bs58check "^2.1.2"
