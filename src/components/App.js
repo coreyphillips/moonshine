@@ -44,13 +44,13 @@ import Biometrics from "./Biometrics";
 import PinPad from "./PinPad";
 import Loading from "./Loading";
 import * as electrum from "../utils/electrum";
-import nodejs from "nodejs-mobile-react-native";
 import bitcoinUnits from "bitcoin-units";
 import DefaultModal from "./DefaultModal";
 import Welcome from "./Welcome";
 import BackupPhrase from "./BackupPhrase";
 import TransactionListHeader from "./TransactionListHeader";
 import { v4 as uuidv4 } from "uuid";
+import { networks } from "../utils/networks";
 //import ElectrumTesting from "./ElectrumTesting";
 
 const { UIManager } = NativeModules;
@@ -74,6 +74,7 @@ const {
 	vibrate,
 	getKeychainValue,
 	getDifferenceBetweenDates,
+	getScriptHash
 } = require("../utils/helpers");
 const moment = require("moment");
 const {
@@ -310,7 +311,6 @@ export default class App extends Component {
 		} catch (e) {
 		}
 
-		this.startDate = new Date();
 		clearInterval(this._refreshWallet);
 
 		this.setState({ loadingMessage: "Fetching Network Status", loadingProgress: 0.35, appHasLoaded: true });
@@ -374,10 +374,45 @@ export default class App extends Component {
 			}
 		} catch {}
 	};
+	
+	checkForScriptHash = () => {
+		try {
+			if (!("scriptHash" in this.props.wallet[selectedWallet].addresses[selectedCrypto][0])) {
+				const addresses = this.props.wallet[selectedWallet].addresses[selectedCrypto].map(data => {
+					const scriptHash = getScriptHash(data.address, networks[selectedCrypto]);
+					return { ...data, scriptHash };
+				});
+				this.props.updateWallet({
+					...this.props.wallet,
+					[selectedWallet]: {
+						...this.props.wallet[selectedWallet],
+						addresses: {
+							...this.props.wallet[selectedWallet].addresses,
+							[selectedCrypto]: addresses
+						}
+					}
+				});
+			}
+			if (!("scriptHash" in this.props.wallet[selectedWallet].changeAddresses[selectedCrypto][0])) {
+				const changeAddresses = this.props.wallet[selectedWallet].changeAddresses[selectedCrypto].map(data => {
+					const scriptHash = getScriptHash(data.address, networks[selectedCrypto]);
+					return { ...data, scriptHash };
+				});
+				this.props.updateWallet({
+					...this.props.wallet,
+					[selectedWallet]: {
+						...this.props.wallet[selectedWallet],
+						changeAddresses: {
+							...this.props.wallet[selectedWallet].changeAddresses,
+							[selectedCrypto]: changeAddresses
+						}
+					}
+				});
+			}
+		} catch {}
+	}
 
 	refreshWallet = async ({ ignoreLoading = false, reconnectToElectrum = true, skipSubscribeActions = false } = {}) => {
-		//This helps to prevent the app from disconnecting and stalling when attempting to connect to an electrum server after some time.
-		//await nodejs.start("main.js");
 
 		try {
 
@@ -418,6 +453,11 @@ export default class App extends Component {
 			}
 
 			this.setExchangeRate({ selectedCrypto, selectedService, selectedCurrency }); //Set the exchange rate for the selected currency
+			
+			//If the address object does not contain scriptHash data, add it for future reference.
+			//TODO: Remove once standard.
+			this.checkForScriptHash();
+			
 			//Update status of the user-facing loading message and progress bar
 			if (!ignoreLoading) this.setState({
 				loadingMessage: "Connecting to Electrum Server...",
@@ -770,26 +810,22 @@ export default class App extends Component {
 	subscribeAddress = async (address = "address", shouldVibrate = true) => {
 		try {
 			const { selectedCrypto } = this.props.wallet;
-			const nextAvailableAddress = this.getNextAvailableAddress()[address];
+			const { address: nextAvailableAddress, addressScriptHash: scriptHash } = this.getNextAvailableAddress();
 			if (nextAvailableAddress === this.subscribedAddress) return;
 			this.subscribedAddress = nextAvailableAddress;
 			if (__DEV__) console.log(`Subscribed to ${address}: ${nextAvailableAddress}`);
-			const scriptHash = await electrum.getAddressScriptHash({
-				address: nextAvailableAddress,
-				coin: selectedCrypto,
-			});
-			const onReceive = async (data) => {
+			const onReceive = data => {
 				try {
 					//Only refresh the wallet if a new transaction is detected.
-					if (Array.isArray(data.data)) {
+					if (Array.isArray(data)) {
 						if (shouldVibrate) vibrate("notificationSuccess"); //Vibrate to notify user.
 						this.refreshWallet({ reconnectToElectrum: false }); //Refresh wallet.
 					}
 				} catch {}
 			};
 			electrum.subscribeAddress({
-				id: scriptHash.data,
-				address: scriptHash.data,
+				id: Math.random(),
+				address: scriptHash,
 				coin: selectedCrypto,
 				onReceive,
 			});
@@ -904,7 +940,6 @@ export default class App extends Component {
 			}
 			if (ignoreAddressCheck === false) {
 				//Spin up the nodejs thread and connect to electrum.
-				//await nodejs.start("main.js");
 				//await electrum.stop({ coin: selectedCrypto });
 				await this.restartElectrum({ coin: selectedCrypto });
 				//Get Current Block Height
@@ -989,9 +1024,6 @@ export default class App extends Component {
 		//This gets called after redux-persist rehydrates
 		RNBootSplash.hide();
 		await pauseExecution(100); //This helps to prevent a flicker on launch.
-
-		//Spin up the nodejs thread
-		await nodejs.start("main.js");
 
 		InteractionManager.runAfterInteractions(async () => {
 			try {
@@ -1526,48 +1558,41 @@ export default class App extends Component {
 		return new Promise(async (resolve) => {
 			try {
 				if (!coin) resolve({ error: true, data: {} });
-
-				//This helps to prevent the app from disconnecting and stalling when attempting to connect to an electrum server after some time.
-				//await nodejs.start("main.js");
-
+				
+				let response = { error: true, data: "" };
 				try {
 					let hasPeers = false;
 					let hasCustomPeers = false;
 					try {
 						if (Array.isArray(this.props.settings.peers[coin]) && this.props.settings.peers[coin].length) hasPeers = true;
-					} catch (e) {
-					}
+					} catch {}
 					try {
 						if (Array.isArray(this.props.settings.customPeers[coin]) && this.props.settings.customPeers[coin].length) hasCustomPeers = true;
-					} catch (e) {
-					}
+					} catch {}
 
 					if (!hasPeers && !hasCustomPeers) {
 						//Attempt to retrieve a list of peers from the default servers.
-						const startResponse = await electrum.start({
+						response = await electrum.start({
 							coin,
 							peers: [],
 							customPeers: [],
 
 						});
-						if (startResponse.error === true) {
-							resolve(startResponse);
-							return;
-						}
-						const peers = await electrum.getPeers({ coin });
-						await this.props.updatePeersList({ peerList: peers.data, coin });
+					} else {
+						//Connect to an electrum server
+						response = await electrum.start({
+							coin,
+							peers: this.props.settings.peers[coin],
+							customPeers: this.props.settings.customPeers[coin],
+							
+						});
 					}
-				} catch (e) {
+				} catch {}
+				if (response.error === false) {
+					const peers = await electrum.getPeers({ coin });
+					await this.props.updatePeersList({ peerList: peers.data, coin });
 				}
-
-				//Connect to an electrum server
-				const result = await electrum.start({
-					coin,
-					peers: this.props.settings.peers[coin],
-					customPeers: this.props.settings.customPeers[coin],
-
-				});
-				resolve(result);
+				resolve(response);
 			} catch (e) {
 				console.log(e);
 			}
@@ -1714,20 +1739,34 @@ export default class App extends Component {
 	//Returns the next available empty address of the selected crypto.
 	getNextAvailableAddress = () => {
 		let address = "";
+		let addressScriptHash = "";
 		let changeAddress = "";
+		let changeAddressScriptHash = "";
 		try {
 			const { selectedWallet, selectedCrypto } = this.props.wallet;
 			try {
 				const addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
-				address = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto][addressIndex].address;
+				const addressObj = this.props.wallet.wallets[selectedWallet].addresses[selectedCrypto][addressIndex];
+				address = addressObj.address;
+				if ("scriptHash" in addressObj) {
+					addressScriptHash = addressObj.scriptHash;
+				} else {
+					addressScriptHash = getScriptHash(address, selectedCrypto);
+				}
 			} catch {}
 			try {
 				const changeAddressIndex = this.props.wallet.wallets[selectedWallet].changeAddressIndex[selectedCrypto];
-				changeAddress = this.props.wallet.wallets[selectedWallet].changeAddresses[selectedCrypto][changeAddressIndex].address;
+				const changeAddressObj = this.props.wallet.wallets[selectedWallet].changeAddresses[selectedCrypto][changeAddressIndex];
+				changeAddress = changeAddressObj.address;
+				if ("scriptHash" in changeAddressObj) {
+					changeAddressScriptHash = changeAddressObj.scriptHash;
+				} else {
+					changeAddressScriptHash = getScriptHash(changeAddress, selectedCrypto);
+				}
 			} catch {}
-			return { address, changeAddress };
+			return { address, addressScriptHash, changeAddress, changeAddressScriptHash };
 		} catch (e) {
-			return { address, changeAddress };
+			return { address, addressScriptHash, changeAddress, changeAddressScriptHash };
 		}
 	};
 
