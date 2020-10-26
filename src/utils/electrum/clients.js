@@ -1,4 +1,4 @@
-class API {
+class Clients {
 	constructor() {
 		this.coin = "bitcoin";
 		this.mainClient = {
@@ -8,10 +8,10 @@ class API {
 			litecoinTestnet: false
 		};
 		this.peer = {
-			bitcoin: {},
-			litecoin: {},
-			bitcoinTestnet: {},
-			litecoinTestnet: {}
+			bitcoin: { port: 0, host: "", protocol: "" },
+			litecoin: { port: 0, host: "", protocol: "" },
+			bitcoinTestnet: { port: 0, host: "", protocol: "" },
+			litecoinTestnet: { port: 0, host: "", protocol: "" }
 		};
 		this.peers = {
 			bitcoin: [],
@@ -20,19 +20,19 @@ class API {
 			litecoinTestnet: []
 		};
 	}
-
+	
 	updateCoin(coin) {
 		this.coin = coin;
-	};
-
+	}
+	
 	updateMainClient(mainClient) {
 		this.mainClient = mainClient;
 	}
-
+	
 	updatePeer(peer) {
 		this.peer = peer;
 	}
-
+	
 }
 
-module.exports = new API();
+module.exports = new Clients();
