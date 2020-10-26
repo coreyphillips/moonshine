@@ -627,6 +627,7 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 };
 
 const getAddress = (keyPair, network, type = "bech32") => {
+	if (typeof network === "string" && network in networks) network = networks[network];
 	switch (type) {
 		case "bech32":
 			//Get Native Bech32 (bc1) addresses
@@ -1087,6 +1088,7 @@ const getByteCount = (inputs, outputs, message = "") => {
 };
 
 const getScriptHash = (address = "", network = networks["bitcoin"]) => {
+	if (typeof network === "string" && network in networks) network = networks[network];
 	const script = bitcoin.address.toOutputScript(address, network);
 	let hash = bitcoin.crypto.sha256(script);
 	const reversedHash = new Buffer(hash.reverse());
