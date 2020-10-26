@@ -102,6 +102,7 @@ const coinGeckoExchangeRateHelper = async ({ selectedCrypto = "bitcoin", selecte
 
 const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], changeAddresses = [], selectedCrypto = "bitcoin" } = {}) => {
 	try {
+		const combinedAddresses = addresses.concat(changeAddresses);
 		//Returns: {error: false, data: [{tx_hash: "", height: ""},{tx_hash: "", height: ""}]
 		let addressHistory = await electrum.getAddressScriptHashesHistory({
 			addresses: allAddresses,
@@ -136,10 +137,7 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 				coin: selectedCrypto
 			});
 			if (!result.error) decodedTransactions = result.data;
-		} catch (e) {
-			console.log(e);
-		}
-
+		} catch {}
 		let transactions = [];
 		let lastUsedAddress = null;
 		let lastUsedChangeAddress = null;
@@ -183,19 +181,22 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 				//Get type and amount
 				let type = "sent";
 				let outputAmount = 0;
+				let transactionOutputAmount = 0;
 				let inputAmount = 0;
+				let transactionInputAmount = 0;
 				let receivedAmount = 0;
 				let sentAmount = 0;
 				let amount = 0;
 				let fee = 0;
 				let messages = []; //OP_RETURN Messages
-				let userSentFundsToSelf = false;
 
 				let inputAddressMatch = false;
+				let outputAddressMatch = false;
 
 				try {
 					//Iterate over all inputs
 					await Promise.all(decodedTransaction.vin.map(async (decodedInput) => {
+						let isInputMatch = false;
 						try {
 							//Push any OP_RETURN messages to messages array
 							try {
@@ -225,7 +226,7 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 								nIndexIsUndefined = true;
 							}
 							try {
-								inputAmount = Number((inputAmount + Number(vout.value)).toFixed(8));
+								if (!("value" in vout)) nIndexIsUndefined = true;
 							} catch {
 								nIndexIsUndefined = true;
 							}
@@ -233,34 +234,34 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 							if (nIndexIsUndefined) return;
 
 							//Ensure that none of the input addresses came from this wallet.
-							//inputAddressMatch = true means that they have come from this wallet.
 							try {
-								if (vout.scriptPubKey.addresses.includes(tx.address)) inputAddressMatch = true;
+								if (vout.scriptPubKey.addresses.includes(tx.address)) {
+									isInputMatch = true;
+									inputAddressMatch = true;
+								}
 							} catch {}
-
-							await Promise.all(
-								changeAddresses.map(changeAddress => {
+							if (!inputAddressMatch) {
+								await Promise.all(combinedAddresses.map(({ address }) => {
 									try {
-										if (vout.scriptPubKey.addresses.includes(changeAddress.address)) inputAddressMatch = true;
+										if (vout.scriptPubKey.addresses.includes(address)) {
+											isInputMatch = true;
+											inputAddressMatch = true;
+										}
 									} catch {}
-								}),
-								addresses.map(addressStash => {
-									try {
-										if (vout.scriptPubKey.addresses.includes(addressStash.address)) inputAddressMatch = true;
-									} catch {}
-								})
-							);
+								}));
+							}
+							
+							try {
+								if (isInputMatch) inputAmount = Number((inputAmount + Number(vout.value)).toFixed(8));
+								transactionInputAmount = Number((transactionInputAmount + Number(vout.value)).toFixed(8));
+							} catch {}
 						} catch {}
 					}));
-
-					let outputLength = 0;
-					try {
-						outputLength = decodedTransaction.vout.length;
-					} catch (e) {}
-
+					
 					//Iterate over each output and add it's satoshi value to outputAmount
 					await Promise.all(decodedTransaction.vout.map(async (output) => {
 						try {
+							let isOutputMatch = false;
 							//Push any OP_RETURN messages to messages array
 							try {
 								const asm = output.scriptPubKey.asm;
@@ -270,49 +271,25 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 								}
 							} catch (e) {}
 							//If an address from this wallet has already matched a previous input we have sent this transaction
-							//If this address is explicitly listed as an output address this is a receive type transaction.
 							let nIndexIsUndefined = false;
 							try {
-								if (output.scriptPubKey.addresses.includes(tx.address)) {
-									if (inputAddressMatch === false) type = "received";
-								}
+								await Promise.all(combinedAddresses.map(({ address }) => {
+									if (output.scriptPubKey.addresses.includes(address)) {
+										isOutputMatch = true;
+										outputAddressMatch = true;
+									}
+								}));
+								
 							} catch {
 								nIndexIsUndefined = true;
 							}
 							if (nIndexIsUndefined) return;
 
-							await Promise.all(addresses.map((address) => {
-								try {
-									if (output.scriptPubKey.addresses.includes(address.address)) {
-										if (inputAddressMatch) {
-											userSentFundsToSelf = true;
-											type = "sent";
-										} else {
-											type = "received";
-											receivedAmount = Number((receivedAmount + output.value).toFixed(8));
-										}
-									}
-								} catch {}
-							}));
-
-							await Promise.all(changeAddresses.map((changeAddress) => {
-								try {
-									if (output.scriptPubKey.addresses.includes(changeAddress.address)) {
-										if (inputAddressMatch && outputLength === 1) type = "received";
-										receivedAmount = Number((receivedAmount + output.value).toFixed(8));
-									}
-								} catch {}
-							}));
-
-							//Potential RBF, or this means the user tried sending funds back to their wallet.
-							if (inputAddressMatch === true && type === "received") {
-								await Promise.all(addresses.map((addr) => {
-									if (addr.address.includes(tx.address)) userSentFundsToSelf = true;
-								}));
-							}
-
 							try {
-								outputAmount = Number((outputAmount + Number(output.value)).toFixed(8));
+								if (isOutputMatch) {
+									outputAmount = Number((outputAmount + Number(output.value)).toFixed(8));
+								}
+								transactionOutputAmount = Number((transactionOutputAmount + Number(output.value)).toFixed(8));
 							} catch {}
 						} catch {}
 					}));
@@ -320,20 +297,37 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 				} catch {}
 				try {
 					inputAmount = bitcoinUnits(inputAmount, "BTC").to("satoshi").value();
+					transactionInputAmount = bitcoinUnits(transactionInputAmount, "BTC").to("satoshi").value();
 					receivedAmount = bitcoinUnits(receivedAmount, "BTC").to("satoshi").value();
 					outputAmount = bitcoinUnits(outputAmount, "BTC").to("satoshi").value();
+					transactionOutputAmount = bitcoinUnits(transactionOutputAmount, "BTC").to("satoshi").value();
 					sentAmount = bitcoinUnits(sentAmount, "BTC").to("satoshi").value();
-					fee = inputAmount - outputAmount;
+					fee = transactionInputAmount - transactionOutputAmount;
 				} catch {}
-				if (type === "sent") sentAmount = Number((inputAmount - receivedAmount));
-				amount = type === "sent" ? Number((inputAmount - receivedAmount) - fee) : receivedAmount;
-
-				//This looks like a potential RBF, or this means the user tried sending funds back to their wallet.
-				//Instead of listing it as a receive type transaction we will list it as a sent type and display the fee as the sent amount.
-				if (userSentFundsToSelf) {
+				inputAmount = Number(inputAmount);
+				transactionInputAmount = Number(transactionInputAmount);
+				outputAmount = Number(outputAmount);
+				transactionOutputAmount = Number(transactionOutputAmount);
+				fee = Number(fee);
+				type = inputAmount > outputAmount ? "sent" : "received";
+				const totalAmount = Math.abs(inputAmount - outputAmount);
+				if (type === "sent") {
+					sentAmount = totalAmount; //What the total tx cost
+					amount = totalAmount - fee; //What the receiver acquired
+				} else {
+					receivedAmount = totalAmount;
+					amount = totalAmount;
+				}
+				
+				if (inputAddressMatch && outputAddressMatch && transactionOutputAmount === outputAmount) {
 					type = "sent";
+					amount = 0;
 					sentAmount = fee;
-					amount = sentAmount - fee;
+				}
+				if (inputAddressMatch && outputAddressMatch && inputAmount-fee === outputAmount) {
+					type = "sent";
+					amount = 0;
+					sentAmount = fee;
 				}
 
 				const transaction = {
@@ -347,6 +341,8 @@ const electrumHistoryHelper = async ({ allAddresses = [], addresses = [], change
 					amount,
 					inputAmount,
 					outputAmount,
+					transactionInputAmount,
+					transactionOutputAmount,
 					fee,
 					sentAmount,
 					receivedAmount,
@@ -473,7 +469,7 @@ const walletHelpers = {
 					//Ensure the block height is defined and its value is greater than 1.
 					if (blockHeight !== undefined && blockHeight > 1) return { error: false, data: blockHeight };
 				}
-				return { error: true, data: "Unable to acquire block height." };
+				return response ;
 			} catch (e) {
 				return { error: true, data: e };
 			}

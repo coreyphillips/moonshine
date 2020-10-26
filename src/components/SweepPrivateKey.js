@@ -27,7 +27,8 @@ const {
 } = require("../../ProjectData.json");
 const {
 	getAddress,
-	validatePrivateKey
+	validatePrivateKey,
+	getScriptHash
 } = require("../utils/helpers");
 const bitcoin = require("bitcoinjs-lib");
 
@@ -345,26 +346,29 @@ class SendTransaction extends PureComponent {
 				//Get addresses from the private key
 				const keyPair = bitcoin.ECPair.fromWIF(privateKey, networks[network]);
 				const bech32Address = await getAddress(keyPair, networks[network], "bech32"); //Bech32
+				const bech32ScriptHash = await getScriptHash(bech32Address, networks[network]);
 				const p2shAddress = await getAddress(keyPair, networks[network], "segwit"); //(3) Address
+				const p2shScriptHash = await getScriptHash(p2shAddress, networks[network]);
 				const p2pkhAddress = await getAddress(keyPair, networks[network], "legacy");//(1) Address
+				const p2pkhScriptHash = await getScriptHash(p2pkhAddress, networks[network]);
 
 				//Get the balance for each address.
 				this.setState({ loadingMessage: `Private Key Detected.\nFetching Bech32 address balance...`, loadingProgress: 0.3 });
 				const bech32BalanceResult = await Promise.all([
-					electrum.getAddressScriptHashBalance({address: bech32Address, id: 6, coin: network}),
-					electrum.getAddressScriptHashMempool({address: bech32Address, id: 5, coin: network})
+					electrum.getAddressScriptHashBalance({scriptHash: bech32ScriptHash, id: 6, coin: network}),
+					electrum.getAddressScriptHashMempool({scriptHash: bech32ScriptHash, id: 5, coin: network})
 				]);
 
 				this.setState({ loadingMessage: `Private Key Detected.\nFetching Segwit address balance...`, loadingProgress: 0.4 });
 				const p2shBalanceResult = await Promise.all([
-					electrum.getAddressScriptHashBalance({address: p2shAddress, id: 1, coin: network}),
-					electrum.getAddressScriptHashMempool({address: p2shAddress, id: 3, coin: network}),
+					electrum.getAddressScriptHashBalance({scriptHash: p2shScriptHash, id: 1, coin: network}),
+					electrum.getAddressScriptHashMempool({scriptHash: p2shScriptHash, id: 3, coin: network}),
 				]);
 
 				this.setState({ loadingMessage: `Private Key Detected.\nFetching Legacy address balance...`, loadingProgress: 0.5 });
 				const p2pkhBalanceResult = await Promise.all([
-					electrum.getAddressScriptHashBalance({address: p2pkhAddress, id: 2, coin: network}),
-					electrum.getAddressScriptHashMempool({address: p2pkhAddress, id: 4, coin: network})
+					electrum.getAddressScriptHashBalance({scriptHash: p2pkhScriptHash, id: 2, coin: network}),
+					electrum.getAddressScriptHashMempool({scriptHash: p2pkhScriptHash, id: 4, coin: network})
 				]);
 
 				let balance = 0;
@@ -439,7 +443,7 @@ class SendTransaction extends PureComponent {
 					if (bech32Balance) {
 						const utxoResponse = await electrum.listUnspentAddressScriptHash({
 							id: Math.random(),
-							address: bech32Address,
+							scriptHash: bech32ScriptHash,
 							network: networks[selectedCrypto],
 							coin: selectedCrypto
 						});
@@ -452,7 +456,7 @@ class SendTransaction extends PureComponent {
 					if (p2shBalance) {
 						const utxoResponse = await electrum.listUnspentAddressScriptHash({
 							id: Math.random(),
-							address: p2shAddress,
+							scriptHash: p2shScriptHash,
 							network: networks[selectedCrypto],
 							coin: selectedCrypto
 						});
@@ -465,7 +469,7 @@ class SendTransaction extends PureComponent {
 					if (p2pkhBalance) {
 						const utxoResponse = await electrum.listUnspentAddressScriptHash({
 							id: Math.random(),
-							address: p2pkhAddress,
+							scriptHash: p2pkhScriptHash,
 							network: networks[selectedCrypto],
 							coin: selectedCrypto
 						});
