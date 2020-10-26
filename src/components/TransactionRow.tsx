@@ -39,7 +39,24 @@ interface TransactionRowComponent {
 	messages: [],
 	isBlacklisted: boolean
 }
-const _TransactionRow = ({ id = "", coin = "bitcoin", address = "", amount = 0, label = "", date = 0, transactionBlockHeight = 0, exchangeRate = "0", currentBlockHeight = 0, fiatSymbol = "$", cryptoUnit = "satoshi", type = "received", onTransactionPress = () => null, messages = [], isBlacklisted = false}: TransactionRowComponent) => {
+const _TransactionRow = (
+	{
+		id = "",
+		coin = "bitcoin",
+		address = "",
+		amount = 0,
+		label = "",
+		date = 0,
+		transactionBlockHeight = 0,
+		exchangeRate = "0",
+		currentBlockHeight = 0,
+		fiatSymbol = "$",
+		cryptoUnit = "satoshi",
+		type = "received",
+		onTransactionPress = () => null,
+		messages = [],
+		isBlacklisted = false
+	}: TransactionRowComponent) => {
 
 	const getCryptoAmountLabel = () => {
 		try {
