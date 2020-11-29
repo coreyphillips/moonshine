@@ -418,13 +418,23 @@ const initialImportSync = ({ wallet = "wallet0", selectedCrypto = "bitcoin", cur
 				return obj2Value - obj1Value || obj2.block - obj1.block || obj1.amount - obj2.amount;
 			});
 			*/
+			let addressIndex = 0;
+			try {
+				addressIndex = Math.max.apply(Math, addressIndexes) || 0;
+				if (isNaN(addressIndex)) addressIndex = 0;
+			} catch {}
+			let changeAddressIndex = 0;
+			try {
+				changeAddressIndex = Math.max.apply(Math, changeAddressIndexes) || 0;
+				if (isNaN(changeAddressIndex)) changeAddressIndex = 0;
+			} catch {}
 			
 			const payload = {
 				wallet,
 				selectedCrypto,
 				transactions,
-				addressIndex: Math.max.apply(Math, addressIndexes),
-				changeAddressIndex: Math.max.apply(changeAddressIndexes),
+				addressIndex,
+				changeAddressIndex,
 				addresses,
 				changeAddresses,
 				timestamp: moment()
