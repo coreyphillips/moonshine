@@ -627,21 +627,23 @@ const generateAddresses = async ({ addressAmount = 0, changeAddressAmount = 0, w
 };
 
 const getAddress = (keyPair, network, type = "bech32") => {
-	if (typeof network === "string" && network in networks) network = networks[network];
-	switch (type) {
-		case "bech32":
-			//Get Native Bech32 (bc1) addresses
-			return bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network }).address;
-		case "segwit":
-			//Get Segwit P2SH Address (3)
-			return bitcoin.payments.p2sh({
-				redeem: bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network }),
-				network
-			}).address;
+	try {
+		if (typeof network === "string" && network in networks) network = networks[network];
+		switch (type) {
+			case "bech32":
+				//Get Native Bech32 (bc1) addresses
+				return bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network }).address;
+			case "segwit":
+				//Get Segwit P2SH Address (3)
+				return bitcoin.payments.p2sh({
+					redeem: bitcoin.payments.p2wpkh({ pubkey: keyPair.publicKey, network }),
+					network
+				}).address;
 			//Get Legacy Address (1)
-		case "legacy":
-			return bitcoin.payments.p2pkh({ pubkey: keyPair.publicKey, network }).address;
-	}
+			case "legacy":
+				return bitcoin.payments.p2pkh({ pubkey: keyPair.publicKey, network }).address;
+		}
+	} catch { return ""; }
 };
 
 //Used to validate price inputs.
