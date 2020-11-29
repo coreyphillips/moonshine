@@ -679,6 +679,7 @@ class SendTransaction extends Component {
 			await this.setState({ loadingMessage: "Sending Transaction...", loadingProgress: 0.8 });
 			let messages = [];
 			try {if (this.props.transaction.message) messages.push(this.props.transaction.message);} catch {}
+			await this.props.refreshWallet({ ignoreLoading: true, reconnectToElectrum: true });
 			let sendTransactionResult = await this.props.sendTransaction({ txHex: transaction.data, selectedCrypto, sendTransactionFallback: this.props.settings.sendTransactionFallback });
 
 			if (sendTransactionResult.error) {
