@@ -10,7 +10,7 @@ import bitcoinUnits from "bitcoin-units";
 import Button from "./Button";
 import DefaultModal from "./DefaultModal";
 import Loading from "./Loading";
-import { View, Text, ScrollView, EvilIcon } from "../styles/components";
+import { View, Text, ScrollView, EvilIcon, TextInput } from "../styles/components";
 
 const {
 	Constants: {
@@ -33,6 +33,35 @@ const {
 } = require("../utils/networks");
 
 const moment = require("moment");
+const memoPlaceholders = [
+	"Alpaca Socks...",
+	"Pizza...",
+	"Coffee...",
+	"Knitting Supplies...",
+	"Money printer go brrr...",
+	"More Coffee...",
+	"Croissants!",
+	"Catnip...",
+	"Dog Food...",
+	"Lamps, I love lamps...",
+	"Graboid Deterrents...",
+	"D20 Dice Case...",
+	"Bag of Hodling...",
+	"Mithril Armour Repair...",
+	"Grayscale Treatment...",
+	"Dire Wolf Boarding...",
+	"Holodeck Rental...",
+	"Bloodwine...",
+	"Striga Removal...",
+	"Tribble Purchase...",
+	"EMH Installation..."
+];
+
+const getRandomPlaceholder = () => {
+	try {
+		return memoPlaceholders[Math.floor((Math.random()*memoPlaceholders.length))];
+	} catch {return memoPlaceholders[0];}
+};
 
 class TransactionDetail extends PureComponent {
 	
@@ -46,7 +75,8 @@ class TransactionDetail extends PureComponent {
 			loadingMessage: `Updating fee.\nOne moment please.`,
 			initialFee: 1, //sat/byte
 			rbfValue: 0, //sat/byte
-			rbfIsSupported
+			rbfIsSupported,
+			randomPlaceholder: getRandomPlaceholder()
 		};
 		
 		//Handle long press when updating rbfValue
@@ -487,6 +517,22 @@ class TransactionDetail extends PureComponent {
 		} catch (e) {}
 	};
 	
+	getMemo = () => {
+		try {
+			const hash = this.props.wallet.selectedTransaction.hash;
+			return this.props.wallet.transactionMemos[hash];
+		} catch {return " ";}
+	}
+	
+	updateMemo = (memo = "") => {
+		try {
+			let transactionMemos = {};
+			try {transactionMemos = this.props.wallet.transactionMemos;} catch {}
+			const hash = this.props.wallet.selectedTransaction.hash;
+			this.props.updateWallet({ transactionMemos: { ...transactionMemos, [hash]: memo } });
+		} catch {return " ";}
+	};
+	
 	render() {
 		if (!this.props.wallet.selectedTransaction) return <View />;
 		const { selectedCrypto } = this.props.wallet;
@@ -525,6 +571,25 @@ class TransactionDetail extends PureComponent {
 						
 						{type === "sent" && this.Row({ title: "Total Sent:", value: totalSent })}
 						{type === "sent" && <View type="text" style={styles.separator} />}
+						
+						<View style={styles.row}>
+							<View style={styles.col1}>
+								<Text type="text2" style={styles.title}>Memo: </Text>
+							</View>
+							<View style={styles.col2}>
+								<TextInput
+									placeholder={this.state.randomPlaceholder}
+									style={styles.textInput}
+									selectionColor={colors.lightPurple}
+									autoCapitalize="none"
+									autoCorrect={false}
+									onChangeText={text => this.updateMemo(text)}
+									value={this.getMemo()}
+									multiline={true}
+								/>
+							</View>
+						</View>
+						<View type="text" style={styles.separator} />
 						
 						{this.Row({ title: "Type:", value: capitalize(type) })}
 						<View type="text" style={styles.separator} />
@@ -644,7 +709,19 @@ const styles = StyleSheet.create({
 	},
 	modalContent: {
 		backgroundColor: colors.lightGray
-	}
+	},
+	textInput: {
+		width: "80%",
+		borderRadius: 10,
+		borderWidth: 1,
+		borderColor: colors.purple,
+		padding: 10,
+		textAlign: "left",
+		alignItems: "center",
+		justifyContent: "center",
+		fontWeight: "bold",
+		paddingTop: 10
+	},
 });
 
 const connect = require("react-redux").connect;
