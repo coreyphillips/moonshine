@@ -19,7 +19,7 @@ import {
 	Linking,
 } from "react-native";
 import { ThemeProvider } from "styled-components/native";
-import { LinearGradient, Text } from "../styles/components";
+import { LinearGradient, Text, TextInput } from "../styles/components";
 import { themes } from "../styles/themes";
 
 import RNBootSplash from "react-native-bootsplash";
@@ -51,6 +51,8 @@ import BackupPhrase from "./BackupPhrase";
 import TransactionListHeader from "./TransactionListHeader";
 import { v4 as uuidv4 } from "uuid";
 import { networks } from "../utils/networks";
+import * as bip38 from "bip38";
+import * as wif from "wif";
 //import ElectrumTesting from "./ElectrumTesting";
 
 const { UIManager } = NativeModules;
@@ -144,6 +146,9 @@ export default class App extends Component {
 		bitidData: { uri: "", host: "" },
 
 		displayWelcomeModal: false,
+		
+		displayBIP38PassphraseModal: false,
+		bip38Data: { encryptedKey: "", passphrase: "", loading: false },
 
 		displayBackupPhrase: false,
 		backupPhrase: [],
@@ -375,8 +380,9 @@ export default class App extends Component {
 		} catch {}
 	};
 	
-	checkForScriptHash = () => {
+	checkForScriptHash = async () => {
 		try {
+			const { selectedWallet, selectedCrypto } = this.props.wallet;
 			if (!("scriptHash" in this.props.wallet[selectedWallet].addresses[selectedCrypto][0])) {
 				const addresses = this.props.wallet[selectedWallet].addresses[selectedCrypto].map(data => {
 					const scriptHash = getScriptHash(data.address, networks[selectedCrypto]);
@@ -411,6 +417,12 @@ export default class App extends Component {
 			}
 		} catch {}
 	}
+	
+	addMemos = async () => {
+		try {
+			if (!("transactionMemos" in this.props.wallet)) this.props.updateWallet({ transactionMemos: {} });
+		} catch {}
+	};
 
 	refreshWallet = async ({ ignoreLoading = false, reconnectToElectrum = true, skipSubscribeActions = false } = {}) => {
 
@@ -456,7 +468,8 @@ export default class App extends Component {
 			
 			//If the address object does not contain scriptHash data, add it for future reference.
 			//TODO: Remove once standard.
-			this.checkForScriptHash();
+			await this.checkForScriptHash();
+			await this.addMemos();
 			
 			//Update status of the user-facing loading message and progress bar
 			if (!ignoreLoading) this.setState({
@@ -507,8 +520,8 @@ export default class App extends Component {
 			} catch (e) {
 			}
 
-			let addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto];
-			let changeAddressIndex = this.props.wallet.wallets[selectedWallet].changeAddressIndex[selectedCrypto];
+			let addressIndex = this.props.wallet.wallets[selectedWallet].addressIndex[selectedCrypto] || 0;
+			let changeAddressIndex = this.props.wallet.wallets[selectedWallet].changeAddressIndex[selectedCrypto] || 0;
 
 			/*
 			 //Rescan Addresses if user is waiting for any pending transactions
@@ -1494,8 +1507,8 @@ export default class App extends Component {
 	};
 
 	//Handles the series of animations necessary to revert the view back to it's original layout.
-	resetView = async () => {
-		if (this.state.isAnimating) return;
+	resetView = async (overrideAnimation = false) => {
+		if (this.state.isAnimating && !overrideAnimation) return;
 		const items = [
 			{ stateId: "displayTransactionList", opacityId: "transactionListOpacity", display: true },
 			{ stateId: "displayCameraRow", opacityId: "cameraRowOpacity", display: true },
@@ -1525,14 +1538,12 @@ export default class App extends Component {
 			this.updateItems(items),
 			this.updateFlex({ duration: 400 }),
 		]);
-		InteractionManager.runAfterInteractions(() => {
-			this.props.updateWallet({ selectedTransaction: "" });
-			this.setState({
-				optionSelected: "",
-				transactionsAreExpanded: false,
-				loadingAnimationName: "loader",
-				privateKey: "",
-			});
+		await this.props.updateWallet({ selectedTransaction: "" });
+		this.setState({
+			optionSelected: "",
+			transactionsAreExpanded: false,
+			loadingAnimationName: "loader",
+			privateKey: "",
 		});
 	};
 
@@ -1598,6 +1609,52 @@ export default class App extends Component {
 			}
 		});
 	};
+	
+	_closeBIP38PassphraseModal = () => {
+		try {
+			this.resetView();
+			this.setState({ displayBIP38PassphraseModal: false, bip38Data: { encryptedKey: "", passphrase: "" }, });
+		} catch {}
+	};
+	
+	decryptBIP38Key = async () => {
+		try {
+			await this.setState({ bip38Data: { ...this.state.bip38Data, loading: true } });
+			await pauseExecution();
+			let decryptedKey = "";
+			try {
+				decryptedKey = bip38.decrypt(this.state.bip38Data.encryptedKey, this.state.bip38Data.passphrase);
+			} catch {}
+			if (!decryptedKey) {
+				await this.setState({ bip38Data: { ...this.state.bip38Data, loading: false } });
+				alert("Invalid key or passphrase.");
+				return;
+			}
+			let privKey = decryptedKey.privateKey;
+			let key = wif.encode(128, privKey, decryptedKey.compressed); // 128 for mainnet
+			
+			const mainnetValidationResults = await validatePrivateKey(key);
+			const { selectedWallet, selectedCrypto } = this.props.wallet;
+			if (mainnetValidationResults.isPrivateKey === true) {
+				if (selectedCrypto !== "bitcoin") await this.onCoinPress({ coin: "bitcoin", walletId: selectedWallet });
+				await this.setState({ bip38Data: { ...this.state.bip38Data, loading: false } });
+				await this._closeBIP38PassphraseModal();
+				this.onSweep(key);
+				return;
+			}
+			key = wif.encode(239, privKey, decryptedKey.compressed); // 239 for testnet
+			const testnetValidationResults = await validatePrivateKey(key);
+			if (testnetValidationResults.isPrivateKey === true) {
+				if (selectedCrypto !== "bitcoinTestnet") await this.onCoinPress({ coin: "bitcoinTestnet", walletId: selectedWallet });
+				await this.setState({ bip38Data: { ...this.state.bip38Data, false: true } });
+				await this._closeBIP38PassphraseModal();
+				this.onSweep(key);
+				return;
+			}
+			await this.setState({ bip38Data: { ...this.state.bip38Data, loading: false } });
+			alert("Invalid key or passphrase.");
+		} catch {}
+	}
 
 	_closeBitidModal = () => {
 		try {
@@ -1650,6 +1707,16 @@ export default class App extends Component {
 			if (bip39.validateMnemonic(data)) {
 				await this.updateItem({ stateId: "displayCamera", opacityId: "cameraOpacity", display: false });
 				this.createNewWallet({ mnemonic: data });
+				return;
+			}
+			const { selectedCrypto } = this.props.wallet;
+			if (bip38.verify(data) && (selectedCrypto === "bitcoin" || selectedCrypto === "bitcoinTestnet")) {
+				//Remove Camera View & Display BIP38 Modal
+				await this.updateItem({ stateId: "displayCamera", opacityId: "cameraOpacity", display: false });
+				this.setState({
+					displayBIP38PassphraseModal: true,
+					bip38Data: { encryptedKey: data, passphrase: "" },
+				});
 				return;
 			}
 
@@ -2083,7 +2150,8 @@ export default class App extends Component {
 
 											<SweepPrivateKey
 												privateKey={this.state.privateKey}
-												refreshWallet={this.refreshWallet} onClose={this.resetView}
+												refreshWallet={this.refreshWallet}
+												onClose={() => this.resetView(true)}
 												updateXButton={this.updateItem}
 											/>
 
@@ -2217,6 +2285,38 @@ export default class App extends Component {
 								<Button textStyle={styles.text} gradient={true} style={styles.button} text="Login" onPress={this._loginWithBitid} />
 							</View>
 						</DefaultModal>
+						
+						<DefaultModal
+							isVisible={this.state.displayBIP38PassphraseModal}
+							onClose={this._closeBIP38PassphraseModal}
+							type="View"
+							style={styles.modal}
+						>
+							<TouchableOpacity activeOpacity={1} onPress={Keyboard.dismiss} style={styles.centerContent}>
+								<Text style={styles.boldText}>BIP38 encrypted key detected:</Text>
+								<TextInput
+									placeholder="Please enter your BIP38 passphrase here."
+									style={styles.textInput}
+									selectionColor={colors.lightPurple}
+									autoCapitalize="none"
+									autoCompleteType="off"
+									autoCorrect={false}
+									onChangeText={text => this.setState({ bip38Data: { ...this.state.bip38Data, passphrase: text } })}
+									value={this.state.bip38Data.passphrase}
+									multiline={true}
+								/>
+							</TouchableOpacity>
+							<View style={styles.centerContent}>
+								<Button
+									textStyle={styles.text}
+									gradient={true}
+									style={[styles.button, { minWidth: 100 }]}
+									text="Decrypt"
+									loading={this.state.bip38Data.loading}
+									onPress={this.decryptBIP38Key}
+								/>
+							</View>
+						</DefaultModal>
 
 					</SafeAreaView>
 				</SafeAreaView>
@@ -2342,6 +2442,18 @@ const styles = StyleSheet.create({
 		minWidth: "20%",
 		paddingHorizontal: 15,
 		paddingVertical: 9,
+	},
+	textInput: {
+		width: "80%",
+		borderRadius: 10,
+		borderWidth: 1,
+		borderColor: colors.purple,
+		padding: 10,
+		textAlign: "center",
+		alignItems: "center",
+		justifyContent: "center",
+		fontWeight: "bold",
+		marginTop: 10
 	},
 });
 
