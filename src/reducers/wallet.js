@@ -29,7 +29,8 @@ module.exports = (state = {
 	selectedTransaction: "",
 	availableCoins,
 	exchangeRate: zeroValueItems,
-	blockHeight: { ...zeroValueItems, timestamp: null }
+	blockHeight: { ...zeroValueItems, timestamp: null },
+	transactionMemos: {}, //{ [txhash]: "memo" }
 }, action) => {
 	switch (action.type) {
 
