@@ -10,8 +10,6 @@ const {
 let electrumKeepAlive = () => null;
 let electrumKeepAliveInterval = 60000;
 
-let subscribedAddresses = [];
-
 const pauseExecution = (duration = 500) => {
 	return new Promise(async (resolve) => {
 		try {
@@ -41,9 +39,9 @@ const getScriptHash = (address = "", network = networks["bitcoin"]) => {
 	return reversedHash.toString("hex");
 };
 
-const getTimeout = ({ arr = undefined, timeout = 1000 } = {}) => {
+const getTimeout = ({ arr = undefined, timeout = 2000 } = {}) => {
 	try {
-		if (arr && Array.isArray(arr)) return arr.length * timeout;
+		if (arr && Array.isArray(arr) && arr.length > 0) return (arr.length * timeout)/2 | timeout;
 		return timeout;
 	} catch {
 		return timeout;
@@ -110,21 +108,33 @@ const connectToPeer = ({ port = 50002, host = "", protocol = "ssl", coin = "bitc
 			if (needToConnect) {
 				clients.mainClient[coin] = new ElectrumClient(port, host, protocol);
 				connectionResponse = await promiseTimeout(1000, clients.mainClient[coin].connect());
-				if (!connectionResponse.error) {
-					try {
-						//Clear/Remove Electrum's keep-alive message.
-						clearInterval(electrumKeepAlive);
-						//Start Electrum's keep-alive function. It’s sent every minute as a keep-alive message.
-						electrumKeepAlive = setInterval(async () => {
-							try {pingServer({ id: Math.random() });} catch {}
-						}, electrumKeepAliveInterval);
-					} catch (e) {}
-					clients.peer[coin] = { port, host, protocol };
+				if (connectionResponse.error) {
+					return resolve(connectionResponse);
 				}
+				/*
+				 * The scripthash doesn't have to be valid.
+				 * We're simply testing if the server will respond to a batch request.
+				 */
+				const scriptHash = "77ca78f9a84b48041ad71f7cc6ff6c33460c25f0cb99f558f9813ed9e63727dd";
+				const testResponses = await Promise.all([
+					pingServer(),
+					getAddressScriptHashesBalance({ coin, addresses: [scriptHash] }),
+				]);
+				if (testResponses[0].error || testResponses[1].error) {
+					return resolve({ error: true, data: "" });
+				}
+				try {
+					//Clear/Remove Electrum's keep-alive message.
+					clearInterval(electrumKeepAlive);
+					//Start Electrum's keep-alive function. It’s sent every minute as a keep-alive message.
+					electrumKeepAlive = setInterval(async () => {
+						try {pingServer({ id: Math.random() });} catch {}
+					}, electrumKeepAliveInterval);
+				} catch (e) {}
+				clients.peer[coin] = { port, host, protocol };
 			}
-			await pauseExecution();
 			resolve(connectionResponse);
-		} catch (e) {resolve({ error: true, data: e, resolve });}
+		} catch (e) {resolve({ error: true, data: e });}
 	});
 };
 
@@ -226,9 +236,12 @@ const promiseTimeout = (ms, promise) => {
 const subscribeHeader = async ({ id = "subscribeHeader", coin = "", onReceive = () => null } = {}) => {
 	try {
 		if (clients.mainClient[coin] === false) await connectToRandomPeer(coin, clients.peers[coin]);
-		clients.mainClient[coin].subscribe.on('blockchain.headers.subscribe', onReceive);
-		if (__DEV__) console.log("Subscribed to headers.");
-		return { id, error: false, method: "subscribeHeader", data: "Subscribed", coin };
+		if (clients.subscribedHeaders[coin] === true) return { id, error: false, method: "subscribeHeader", data: 'Already Subscribed.', coin };
+		const res = await promiseTimeout(10000,  clients.mainClient[coin].subscribe.on('blockchain.headers.subscribe', (onReceive)));
+		if (res.error) return { ...res, id, method: "subscribeHeader" };
+		const response = await promiseTimeout(10000, clients.mainClient[coin].blockchainHeaders_subscribe());
+		if (!response.error) clients.subscribedHeaders[coin] = true;
+		return { ...response, id, method: "subscribeHeader" };
 	} catch (e) {
 		return { id, error: true, method: "subscribeHeader", data: e, coin };
 	}
@@ -238,11 +251,13 @@ const subscribeAddress = async ({ id = "wallet0bitcoin", address = "", coin = "b
 	try {
 		if (clients.mainClient[coin] === false) await connectToRandomPeer(coin, clients.peers[coin]);
 		//Ensure this address is not already subscribed
-		if (subscribedAddresses.includes(address)) return { id, error: false, method: "subscribeAddress", data: "" };
-		const res = await promiseTimeout(10000,  clients.mainClient[coin].subscribe.on('blockchain.scripthash.subscribe', onReceive));
-		if (res.error) return { ...res, id, method: "subscribeAddress" };
+		if (clients.subscribedAddresses[coin].length < 1) {
+			const res = await promiseTimeout(10000,  clients.mainClient[coin].subscribe.on('blockchain.scripthash.subscribe', (onReceive)));
+			if (res.error) return { ...res, id, method: "subscribeAddress" };
+		}
+		if (clients.subscribedAddresses[coin].includes(address)) return { id, error: false, method: "subscribeAddress", data: "" };
 		const response = await promiseTimeout(10000, clients.mainClient[coin].blockchainScripthash_subscribe(address));
-		if (!response.error) subscribedAddresses.push(address);
+		if (!response.error) clients.subscribedAddresses[coin].push(address);
 		return { ...response, id, method: "subscribeAddress" };
 	} catch (e) {
 		return { id, error: true, method: "subscribeAddress", data: e };
@@ -742,12 +757,13 @@ const getBanner = ({ id = Math.random(), coin = "" } = {}) => {
 	});
 };
 
-const pingServer = ({ id = Math.random() } = {}) => {
+const pingServer = ({ id = Math.random(), coin = "" } = {}) => {
 	const method = getFuncName();
 	return new Promise(async (resolve) => {
 		try {
-			if (clients.mainClient[clients.coin] === false) await connectToRandomPeer(clients.coin, clients.peers[clients.coin]);
-			const { error, data } = await promiseTimeout(getTimeout(), clients.mainClient[clients.coin].server_ping());
+			if (!coin) coin = clients.coin;
+			if (clients.mainClient[coin] === false) await connectToRandomPeer(coin, clients.peers[coin]);
+			const { error, data } = await promiseTimeout(getTimeout(), clients.mainClient[coin].server_ping());
 			resolve({ id, error, method, data });
 		} catch (e) {
 			resolve({ id, error: true, method, data: e });

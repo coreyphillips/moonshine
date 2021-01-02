@@ -36,6 +36,9 @@ import {
 import {themes} from "../styles/themes";
 import { MaterialCommunityIcons } from "../styles/components";
 import FeeEstimate from "./FeeEstimate";
+import {
+	pingServer
+} from "../utils/electrum";
 
 const {
 	Constants: {
@@ -679,7 +682,10 @@ class SendTransaction extends Component {
 			await this.setState({ loadingMessage: "Sending Transaction...", loadingProgress: 0.8 });
 			let messages = [];
 			try {if (this.props.transaction.message) messages.push(this.props.transaction.message);} catch {}
-			await this.props.refreshWallet({ ignoreLoading: true, reconnectToElectrum: true });
+			const pingResponse = await pingServer({ coin: selectedCrypto });
+			if (pingResponse.error) {
+				await this.props.refreshWallet({ ignoreLoading: true, reconnectToElectrum: true });
+			}
 			let sendTransactionResult = await this.props.sendTransaction({ txHex: transaction.data, selectedCrypto, sendTransactionFallback: this.props.settings.sendTransactionFallback });
 
 			if (sendTransactionResult.error) {

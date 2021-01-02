@@ -19,6 +19,18 @@ class Clients {
 			bitcoinTestnet: [],
 			litecoinTestnet: []
 		};
+		this.subscribedAddresses = {
+			bitcoin: [],
+			litecoin: [],
+			bitcoinTestnet: [],
+			litecoinTestnet: []
+		};
+		this.subscribedHeaders = {
+			bitcoin: false,
+			litecoin: false,
+			bitcoinTestnet: false,
+			litecoinTestnet: false
+		};
 	}
 	
 	updateCoin(coin) {
