@@ -33,7 +33,8 @@ interface FeeEstimateComponent {
 	updateFee: (number) => void,
 	onClose: () => void,
 	fiatSymbol: string,
-	cryptoUnit: string
+	cryptoUnit: string,
+	fee: number,
 }
 
 interface EstimateData {
@@ -50,7 +51,8 @@ const _FeeEstimate = (
 		updateFee = () => null,
 		onClose = () => null,
 		fiatSymbol = "$",
-		cryptoUnit = "sats"
+		cryptoUnit = "sats",
+		fee = 1,
 	}: FeeEstimateComponent) => {
 	const [feeEstimates, setFeeEstimates] = useState([{ label: "", sats: 0, fiat: 0 }]);
 	const coinData = getCoinData({ selectedCrypto, cryptoUnit });
@@ -108,23 +110,51 @@ const _FeeEstimate = (
 		onClose();
 	};
 
+	const increaseFee = () => {
+		updateFee(fee+1);
+	};
+	const decreaseFee = () => {
+		if (fee >= 1) {
+			updateFee(fee-1);
+		}
+	};
+
 	return (
 		<View style={styles.container}>
+			<View style={styles.header}>
+				<Text style={styles.title}>Adjust Fee</Text>
+			</View>
+			<View style={[styles.row, { alignItems: "center" }]}>
+				<TouchableOpacity borderColor="text" onPress={decreaseFee} style={styles.buttonContainer}>
+					<Text type="text" style={styles.button}>-</Text>
+				</TouchableOpacity>
+				<Text style={[styles.title, { fontSize: 24 }]}>{fee} sats/B</Text>
+				<TouchableOpacity borderColor="text" onPress={increaseFee} style={styles.buttonContainer}>
+					<Text type="text" style={styles.button}>+</Text>
+				</TouchableOpacity>
+			</View>
 			<View style={styles.header}>
 				<Text style={styles.title}>Current Fee Estimates</Text>
 			</View>
 			<View style={styles.content}>
-				{feeEstimates && feeEstimates.length > 5 && feeEstimates.map(({ label, sats, fiat}) => (
-					<TouchableOpacity type="transparent" onPress={() => onFeePress(sats)} key={label}>
-						<Text style={[styles.text, { textAlign: "left", fontSize: 19, paddingTop: 5, ...systemWeights.semibold }]}>{label}</Text>
-						<View style={styles.row}>
-							<Text style={[styles.text, { flex: 1.2, textAlign: "left" }]}>{sats} {coinData.oshi}/B</Text>
-							<Text style={[styles.text, { flex: 1 }]}>{sats*transactionSize} sats</Text>
-							<Text style={[styles.text, { flex: 1, textAlign: "right" }]}>{fiatSymbol}{fiat}</Text>
-						</View>
-						<View type="text2" style={styles.divider} />
-					</TouchableOpacity>
-				))}
+				{feeEstimates && feeEstimates.length > 5 && feeEstimates.map(({ label, sats, fiat}, i) => {
+					if (i > 0) {
+						//Return if the estimates are the same as the previous.
+						if (feeEstimates[i].sats === sats) return;
+					}
+					return (
+						<TouchableOpacity type="transparent" onPress={() => onFeePress(sats)} key={label}>
+							<Text style={[styles.text, { textAlign: "left", fontSize: 19, paddingTop: 5, ...systemWeights.semibold }]}>{label}</Text>
+							<View style={styles.row}>
+								<Text style={[styles.text, { flex: 1.2, textAlign: "left" }]}>{sats} {coinData.oshi}/B</Text>
+								<Text style={[styles.text, { flex: 1 }]}>{sats*transactionSize} sats</Text>
+								<Text style={[styles.text, { flex: 1, textAlign: "right" }]}>{fiatSymbol}{fiat}</Text>
+							</View>
+							<View type="text2" style={styles.divider} />
+						</TouchableOpacity>
+					);
+				}
+				)}
 				{feeEstimates && feeEstimates.length > 5 &&
 					<View style={{ height: 150 }} />
 				}
@@ -160,11 +190,25 @@ const styles = StyleSheet.create({
 	row: {
 		flexDirection: "row",
 		justifyContent: "space-around",
-		paddingVertical: 12
+		paddingVertical: 12,
 	},
 	divider: {
 		height: 1,
 		width: "100%"
+	},
+	buttonContainer: {
+		width: 54,
+		height: 54,
+		borderRadius: 100,
+		borderWidth: 2,
+		marginHorizontal: 6,
+		backgroundColor: "transparent",
+		alignItems:"center",
+		justifyContent:"center",
+	},
+	button: {
+		...systemWeights.semibold,
+		fontSize: 28,
 	}
 });
 

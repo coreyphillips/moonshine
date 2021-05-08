@@ -1142,6 +1142,7 @@ class SendTransaction extends Component {
 						onClose={this.onBack}
 						cryptoUnit={this.props.settings.cryptoUnit}
 						fiatSymbol={this.props.settings.fiatSymbol}
+						fee={!this.state.cryptoBalance ? 0 :this.props.transaction.fee || this.props.transaction.recommendedFee}
 					/>
 				</DefaultModal>
 
